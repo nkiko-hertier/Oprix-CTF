@@ -5,6 +5,7 @@ import { Link, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SignedIn } from "@clerk/clerk-react";
 import { UserButton } from "@clerk/clerk-react";
+import { MobileMenu } from "@/components/MobileMenu";
 
 export default function DashboardLayout() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -20,19 +21,23 @@ export default function DashboardLayout() {
   const toggleTheme = () => setTheme(theme === "light" ? "dark" : "light");
 
   return (
-    <div className="flex h-screen bg-sidebar text-sidebar-foreground w-full">
+    <div className="flex h-screen bg-background dark:bg-sidebar text-foreground w-full">
       {/* Sidebar */}
-      <aside className="flex flex-col justify-between w-1/4 p-6">
+      <aside className="hidden sm:flex flex-col justify-between w-fit lg:w-1/4 p-6">
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
           <Bird className="text-indigo-500" />
-          <h1 className="font-bold text-xl text-indigo-500">Oprix</h1>
+          <h1 className="font-bold text-xl text-indigo-500 hidden lg:block">
+            Oprix
+          </h1>
         </div>
 
         {/* Navigation Links */}
         <div className="flex flex-col justify-between h-full">
           <nav className="flex-1">
-            <h2 className="text-sm text-zinc-500 mb-2 ">OVERVIEW</h2>
+            <h2 className="text-sm text-zinc-500 mb-2 hidden lg:block ">
+              OVERVIEW
+            </h2>
             <ul className="space-y-1">
               {Links.map((link, i) => {
                 if (link.role === "student") {
@@ -43,7 +48,7 @@ export default function DashboardLayout() {
                         className="flex items-center gap-2 py-2 px-1 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-sm"
                       >
                         {link.icon}
-                        <span>{link.label}</span>
+                        <span className="hidden lg:block">{link.label}</span>
                       </Link>
                     </li>
                   );
@@ -52,14 +57,16 @@ export default function DashboardLayout() {
             </ul>
           </nav>
           <div className="mt-5">
-            <h2 className="text-sm text-zinc-500 mb-2 ">SETTINGS</h2>
+            <h2 className="text-sm text-zinc-500 mb-2 hidden lg:block ">
+              SETTINGS
+            </h2>
             <div>
               <Link
                 to="/settings"
                 className="flex items-center gap-2 py-2 px-1 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-sm"
               >
                 <Settings size={17} />
-                <span>Settings</span>
+                <span className="hidden lg:block">Settings</span>
               </Link>
 
               <Link
@@ -67,7 +74,7 @@ export default function DashboardLayout() {
                 className="flex items-center gap-2 py-2 px-1 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors text-sm"
               >
                 <LogOut size={17} />
-                <span>Logout</span>
+                <span className="hidden lg:block">Logout</span>
               </Link>
             </div>
           </div>
@@ -78,8 +85,8 @@ export default function DashboardLayout() {
 
       {/* Main Content */}
       <div className="h-screen w-full">
-        <nav className=" p-6 bg-sidebar flex justify-between">
-          <>...</>
+        <nav className=" px-6 py-3 flex justify-between">
+          <MobileMenu />
           <div className="flex items-center gap-2">
             <Button variant="ghost" onClick={toggleTheme}>
               <Bell />
@@ -92,7 +99,7 @@ export default function DashboardLayout() {
             </SignedIn>
           </div>
         </nav>
-        <main className="flex-1 h-full rounded-2xl p-5 overflow-auto bg-background">
+        <main className="flex-1 h-full rounded-2xl p-5 overflow-auto bg-sidebar dark:bg-background">
           <Outlet />
         </main>
       </div>

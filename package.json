@@ -1,0 +1,13 @@
+{
+  "name": "general-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "frontend": "cd frontend && vite",
+    "dev": "cd vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  }
+}
