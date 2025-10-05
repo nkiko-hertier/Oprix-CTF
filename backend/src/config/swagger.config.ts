@@ -5,7 +5,7 @@ export function setupSwagger(app: INestApplication): void {
   const config = new DocumentBuilder()
     .setTitle('CTF Platform API')
     .setDescription(
-      'Production-grade API for CTF (Capture The Flag) competition management platform. ' +
+      'APIs for CTF (Capture The Flag) competition management platform. ' +
       'Handles authentication, competitions, challenges, submissions, and real-time leaderboards.'
     )
     .setVersion('1.0')
@@ -17,8 +17,8 @@ export function setupSwagger(app: INestApplication): void {
     .addTag('leaderboard', 'Leaderboard and scoring')
     .addTag('teams', 'Team management')
     .addTag('files', 'File uploads and downloads')
-    .addTag('admin', 'Admin operations')
-    .addTag('superadmin', 'Super admin operations')
+    .addTag('admin', 'Admin operations (CTF organizers)')
+    .addTag('superadmin', 'SuperAdmin operations (platform owners)')
     .addTag('monitoring', 'Health checks and monitoring')
     .addBearerAuth(
       {
@@ -34,7 +34,7 @@ export function setupSwagger(app: INestApplication): void {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
+  SwaggerModule.setup('api/v1/docs', app, document, {
     customSiteTitle: 'CTF Platform API Docs',
     customfavIcon: 'https://nestjs.com/img/logo_text.svg',
     customCss: '.swagger-ui .topbar { display: none }',
