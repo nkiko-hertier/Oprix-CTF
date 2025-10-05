@@ -10,7 +10,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 /**
- * Logging interceptor - logs all requests and responses
+ * Logging interceptor - logs all the requests and responses
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {

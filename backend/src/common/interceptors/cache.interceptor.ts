@@ -27,7 +27,7 @@ export class CacheInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap((response) => {
         this.cache.set(key, response);
-        // Simple TTL - clear after 5 minutes
+        // Simple TTL - clears after 5 minutes
         setTimeout(() => this.cache.delete(key), 5 * 60 * 1000);
       }),
     );

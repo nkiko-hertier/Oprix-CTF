@@ -14,7 +14,7 @@ export interface Response<T> {
 }
 
 /**
- * Transform interceptor - standardizes response format
+ * Transform interceptor - standardizes the response format
  */
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> {
