@@ -1,63 +1,376 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Oprix CTF Platform - Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+**A production-ready SaaS platform for hosting Capture The Flag competitions**
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+[![Status](https://img.shields.io/badge/status-production--ready-brightgreen)]()
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)]()
+[![NestJS](https://img.shields.io/badge/NestJS-11.0-red)]()
+[![License](https://img.shields.io/badge/license-MIT-blue)]()
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📋 Overview
 
-## Project setup
+Oprix CTF is a complete, enterprise-grade platform for organizing and participating in Capture The Flag competitions. Built with **NestJS**, **TypeScript**, **PostgreSQL**, and **Prisma ORM**.
 
-```bash
-$ pnpm install
+### **🎯 Key Features**
+
+✅ **SaaS Multi-Tenancy** - SuperAdmin → Admin → User hierarchy  
+✅ **Real-time Leaderboards** - Individual, team, and global rankings with caching  
+✅ **Flag Submission Engine** - Rate-limited, secure flag validation  
+✅ **Team Management** - Captain-based system with invite codes  
+✅ **Competition Lifecycle** - Draft → Registration → Active → Completed  
+✅ **WebSocket Live Updates** - Real-time notifications and leaderboard updates  
+✅ **Background Jobs** - Cleanup, notifications, score recalculation  
+✅ **Health Monitoring** - Kubernetes-ready health checks  
+✅ **Audit Logging** - Complete system activity tracking  
+✅ **File Management** - Secure challenge file uploads/downloads  
+
+---
+
+## 🏗️ Architecture
+
+### **SaaS Hierarchy**
+
+```
+SuperAdmin (Platform Owner)
+    ↓ Creates admin accounts
+Admin (CTF Organizer) 
+    ↓ Creates competitions, manages players
+User (CTF Player)
+    ↓ Participates in competitions
 ```
 
-## Compile and run the project
+### **Technology Stack**
+
+- **Framework:** NestJS 11.x
+- **Language:** TypeScript 5.x
+- **Database:** PostgreSQL 14+ with Prisma ORM
+- **Authentication:** Clerk + JWT
+- **Real-time:** Socket.io WebSocket
+- **Caching:** In-memory (Redis optional)
+- **Jobs:** Bull with Redis
+- **Documentation:** Swagger/OpenAPI
+
+---
+
+## 🚀 Quick Start
+
+### **Prerequisites**
+
+- Node.js 18+ (LTS recommended)
+- PostgreSQL 14+
+- Redis 6+ (optional for jobs)
+- npm or yarn
+
+### **1. Installation**
 
 ```bash
-# development
-$ pnpm run start
+# Clone repository
+cd backend
 
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+# Install dependencies
+npm install
 ```
 
-## Run tests
+### **2. Environment Setup**
+
+Create `.env` file:
 
 ```bash
-# unit tests
-$ pnpm run test
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/oprix_ctf"
 
-# e2e tests
-$ pnpm run test:e2e
+# Authentication
+CLERK_FRONTEND_API=https://your-app.clerk.accounts.dev
+CLERK_SECRET_KEY=sk_live_xxxxx
+JWT_SECRET=your-super-secret-key
+JWT_EXPIRES_IN=7d
 
-# test coverage
-$ pnpm run test:cov
+# Redis (optional)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# SuperAdmin (for seeding)
+SUPERADMIN_PASSWORD=YourStrongPassword123!
 ```
 
-## Deployment
+### **3. Database Setup**
+
+```bash
+# Complete database setup (migrations + seed)
+npm run db:setup
+
+# Or step-by-step:
+npm run prisma:generate  # Generate Prisma client
+npm run prisma:migrate   # Run migrations
+npm run prisma:seed      # Create SuperAdmin account
+```
+
+### **4. Start Development Server**
+
+```bash
+npm run start:dev
+```
+
+Server runs on `http://localhost:3000`
+
+### **5. Access SuperAdmin**
+
+**Default credentials (created by seed):**
+- Email: `superadmin@oprix-ctf.com`
+- Username: `superadmin`
+- Password: Set via `SUPERADMIN_PASSWORD` env variable
+
+---
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| **[DEPLOYMENT.md](./DEPLOYMENT.md)** | Production deployment guide (Docker, PM2, Nginx) |
+| **[API_GUIDE.md](./API_GUIDE.md)** | Complete API reference with examples |
+| **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** | Full implementation details |
+| **[Swagger Docs](http://localhost:3000/api/docs)** | Interactive API documentation |
+
+---
+
+## Available Scripts
+
+```bash
+# Development
+npm run start:dev          # Start with hot-reload
+npm run build              # Build for production
+npm run start:prod         # Start production server
+
+# Database
+npm run prisma:generate    # Generate Prisma client
+npm run prisma:migrate     # Run migrations
+npm run prisma:seed        # Seed SuperAdmin
+npm run db:setup           # Complete database setup
+
+# Code Quality
+npm run lint               # Lint code
+npm run format             # Format code with Prettier
+
+# Testing
+npm run test               # Run unit tests
+npm run test:e2e           # Run e2e tests
+npm run test:cov           # Generate coverage report
+```
+
+---
+
+## 📊 Project Structure
+
+```
+backend/
+├── prisma/
+│   ├── schema.prisma      # Database schema
+│   ├── seed.ts            # SuperAdmin seeding
+│   └── migrations/        # Database migrations
+├── src/
+│   ├── common/            # Shared utilities
+│   │   ├── database/      # Prisma service
+│   │   ├── guards/        # Auth guards
+│   │   ├── decorators/    # Custom decorators
+│   │   └── services/      # Crypto, rate-limit
+│   ├── modules/
+│   │   ├── auth/          # Authentication
+│   │   ├── users/         # User management
+│   │   ├── competitions/  # Competition CRUD
+│   │   ├── challenges/    # Challenge management
+│   │   ├── submissions/   # Flag submission
+│   │   ├── teams/         # Team management
+│   │   ├── leaderboard/   # Leaderboard service
+│   │   ├── admin/         # Admin operations
+│   │   ├── superadmin/    # SuperAdmin operations
+│   │   ├── notifications/ # Notification system
+│   │   ├── websockets/    # WebSocket gateway
+│   │   ├── jobs/          # Background jobs
+│   │   └── monitoring/    # Health checks
+│   ├── config/            # Configuration
+│   └── main.ts            # Application entry
+├── uploads/               # File storage
+├── .env                   # Environment variables
+└── package.json
+```
+
+---
+
+## 🔐 Security Features
+
+- ✅ **JWT Authentication** - Secure token-based auth
+- ✅ **Role-Based Access Control** - SuperAdmin/Admin/User hierarchy
+- ✅ **Password Hashing** - bcrypt with salt rounds
+- ✅ **Rate Limiting** - 5 submissions per minute per challenge
+- ✅ **CORS Protection** - Configurable origins
+- ✅ **Helmet Security** - HTTP security headers
+- ✅ **Input Validation** - class-validator on all inputs
+- ✅ **SQL Injection Prevention** - Prisma ORM parameterization
+- ✅ **Secure Flag Storage** - Flags hashed, never exposed in API
+- ✅ **Audit Logging** - All admin/superadmin actions logged
+
+---
+
+## ⚡ Performance
+
+- ✅ **Caching** - In-memory cache for leaderboards (30s TTL)
+- ✅ **Database Indexing** - All foreign keys and timestamps indexed
+- ✅ **Pagination** - All list endpoints support pagination
+- ✅ **Connection Pooling** - Prisma connection pool
+- ✅ **WebSocket** - Real-time updates without polling
+- ✅ **Background Jobs** - Async processing with Bull
+- ✅ **Lazy Loading** - Relations loaded on-demand
+
+---
+
+## 🎯 API Endpoints
+
+### **Health & Monitoring**
+- `GET /api/health` - Basic health check
+- `GET /api/health/detailed` - Detailed health with dependencies
+- `GET /api/health/ready` - Kubernetes readiness probe
+- `GET /api/health/live` - Kubernetes liveness probe
+
+### **Authentication**
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/profile` - Get current user
+
+### **SuperAdmin** (8 endpoints)
+- `POST /api/superadmin/admins` - Create admin
+- `GET /api/superadmin/admins` - List admins
+- `GET /api/superadmin/stats` - Platform statistics
+- `GET /api/superadmin/audit-logs` - View audit logs
+
+### **Admin** (5+ endpoints)
+- `GET /api/admin/dashboard` - Dashboard overview
+- `GET /api/admin/players` - View players in competitions
+- `GET /api/admin/submissions` - Monitor submissions
+- `GET /api/admin/competitions/:id/stats` - Competition stats
+
+### **Competitions** (10+ endpoints)
+- `GET /api/competitions` - List competitions
+- `POST /api/competitions` - Create (admin only)
+- `POST /api/competitions/:id/register` - Register for competition
+
+### **Challenges** (8+ endpoints)
+- `GET /api/competitions/:id/challenges` - List challenges
+- `POST /api/competitions/:id/challenges` - Create (admin)
+- `GET /api/challenges/:id` - Get challenge details
+
+### **Submissions** (4 endpoints)
+- `POST /api/submissions` - Submit flag
+- `GET /api/submissions` - Get my submissions
+
+### **Teams** (8+ endpoints)
+- `POST /api/teams` - Create team
+- `POST /api/teams/:id/join` - Join team
+- `POST /api/teams/:id/leave` - Leave team
+
+### **Leaderboard** (6 endpoints)
+- `GET /api/competitions/:id/leaderboard/individual`
+- `GET /api/competitions/:id/leaderboard/team`
+- `GET /api/leaderboard/global`
+- `GET /api/competitions/:id/leaderboard/my-rank`
+
+**Total: 50+ endpoints**
+
+---
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Coverage report
+npm run test:cov
+```
+
+---
+
+## 🐳 Docker Deployment
+
+```bash
+# Build and run with Docker Compose
+docker-compose up -d
+
+# Run migrations
+docker-compose exec backend npm run prisma:migrate
+
+# Seed SuperAdmin
+docker-compose exec backend npm run prisma:seed
+
+# View logs
+docker-compose logs -f backend
+```
+
+See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for complete deployment guide.
+
+---
+
+## 🔧 Troubleshooting
+
+### **Database Connection Failed**
+```bash
+# Check PostgreSQL is running
+sudo systemctl status postgresql
+
+# Test connection
+psql -U oprix_admin -d oprix_ctf
+```
+
+### **Port Already in Use**
+```bash
+# Find process on port 3000
+lsof -i :3000
+
+# Kill process
+kill -9 <PID>
+```
+
+### **Prisma Client Not Generated**
+```bash
+npm run prisma:generate
+```
+
+---
+
+## 📝 License
+
+MIT License - see LICENSE file for details
+
+---
+
+## Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
+
+---
+
+## ✨ Acknowledgments
+
+Built with:
+- [NestJS](https://nestjs.com/) - Progressive Node.js framework
+- [Prisma](https://www.prisma.io/) - Next-generation ORM
+- [PostgreSQL](https://www.postgresql.org/) - Advanced open source database
+- [Socket.io](https://socket.io/) - Real-time engine
+- [Bull](https://github.com/OptimalBits/bull) - Premium Queue package
+
+---
+
+**Status:** ✅ Production Ready  
+**Version:** 1.0.0  
+**Last Updated:** October 5, 2024
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
