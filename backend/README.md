@@ -9,26 +9,26 @@
 
 ---
 
-## 📋 Overview
+## Overview
 
 Oprix CTF is a complete, enterprise-grade platform for organizing and participating in Capture The Flag competitions. Built with **NestJS**, **TypeScript**, **PostgreSQL**, and **Prisma ORM**.
 
-### **🎯 Key Features**
+### **Key Features**
 
-✅ **SaaS Multi-Tenancy** - SuperAdmin → Admin → User hierarchy  
-✅ **Real-time Leaderboards** - Individual, team, and global rankings with caching  
-✅ **Flag Submission Engine** - Rate-limited, secure flag validation  
-✅ **Team Management** - Captain-based system with invite codes  
-✅ **Competition Lifecycle** - Draft → Registration → Active → Completed  
-✅ **WebSocket Live Updates** - Real-time notifications and leaderboard updates  
-✅ **Background Jobs** - Cleanup, notifications, score recalculation  
-✅ **Health Monitoring** - Kubernetes-ready health checks  
-✅ **Audit Logging** - Complete system activity tracking  
-✅ **File Management** - Secure challenge file uploads/downloads  
+**SaaS Multi-Tenancy** - SuperAdmin → Admin → User hierarchy  
+**Real-time Leaderboards** - Individual, team, and global rankings with caching  
+**Flag Submission Engine** - Rate-limited, secure flag validation  
+**Team Management** - Captain-based system with invite codes  
+**Competition Lifecycle** - Draft → Registration → Active → Completed  
+**WebSocket Live Updates** - Real-time notifications and leaderboard updates  
+**Background Jobs** - Cleanup, notifications, score recalculation  
+**Health Monitoring** - Kubernetes-ready health checks  
+**Audit Logging** - Complete system activity tracking  
+**File Management** - Secure challenge file uploads/downloads  
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### **SaaS Hierarchy**
 
@@ -54,7 +54,7 @@ User (CTF Player)
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### **Prerequisites**
 
@@ -124,7 +124,7 @@ Server runs on `http://localhost:3000`
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 | Document | Description |
 |----------|-------------|
@@ -161,7 +161,7 @@ npm run test:cov           # Generate coverage report
 
 ---
 
-## 📊 Project Structure
+## Project Structure
 
 ```
 backend/
@@ -200,32 +200,32 @@ backend/
 
 ## 🔐 Security Features
 
-- ✅ **JWT Authentication** - Secure token-based auth
-- ✅ **Role-Based Access Control** - SuperAdmin/Admin/User hierarchy
-- ✅ **Password Hashing** - bcrypt with salt rounds
-- ✅ **Rate Limiting** - 5 submissions per minute per challenge
-- ✅ **CORS Protection** - Configurable origins
-- ✅ **Helmet Security** - HTTP security headers
-- ✅ **Input Validation** - class-validator on all inputs
-- ✅ **SQL Injection Prevention** - Prisma ORM parameterization
-- ✅ **Secure Flag Storage** - Flags hashed, never exposed in API
-- ✅ **Audit Logging** - All admin/superadmin actions logged
+- **JWT Authentication** - Secure token-based auth
+- **Role-Based Access Control** - SuperAdmin/Admin/User hierarchy
+- **Password Hashing** - bcrypt with salt rounds
+- **Rate Limiting** - 5 submissions per minute per challenge
+- **CORS Protection** - Configurable origins
+- **Helmet Security** - HTTP security headers
+- **Input Validation** - class-validator on all inputs
+- **SQL Injection Prevention** - Prisma ORM parameterization
+- **Secure Flag Storage** - Flags hashed, never exposed in API
+- **Audit Logging** - All admin/superadmin actions logged
 
 ---
 
-## ⚡ Performance
+## Performance
 
-- ✅ **Caching** - In-memory cache for leaderboards (30s TTL)
-- ✅ **Database Indexing** - All foreign keys and timestamps indexed
-- ✅ **Pagination** - All list endpoints support pagination
-- ✅ **Connection Pooling** - Prisma connection pool
-- ✅ **WebSocket** - Real-time updates without polling
-- ✅ **Background Jobs** - Async processing with Bull
-- ✅ **Lazy Loading** - Relations loaded on-demand
+- **Caching** - In-memory cache for leaderboards (30s TTL)
+- **Database Indexing** - All foreign keys and timestamps indexed
+- **Pagination** - All list endpoints support pagination
+- **Connection Pooling** - Prisma connection pool
+- **WebSocket** - Real-time updates without polling
+- **Background Jobs** - Async processing with Bull
+- **Lazy Loading** - Relations loaded on-demand
 
 ---
 
-## 🎯 API Endpoints
+## API Endpoints
 
 ### **Health & Monitoring**
 - `GET /api/health` - Basic health check
@@ -279,7 +279,7 @@ backend/
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Unit tests
@@ -294,7 +294,7 @@ npm run test:cov
 
 ---
 
-## 🐳 Docker Deployment
+## Docker Deployment
 
 ```bash
 # Build and run with Docker Compose
@@ -314,7 +314,7 @@ See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for complete deployment guide.
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### **Database Connection Failed**
 ```bash
@@ -341,7 +341,7 @@ npm run prisma:generate
 
 ---
 
-## 📝 License
+## License
 
 MIT License - see LICENSE file for details
 
@@ -367,10 +367,6 @@ Built with:
 - [Bull](https://github.com/OptimalBits/bull) - Premium Queue package
 
 ---
-
-**Status:** ✅ Production Ready  
-**Version:** 1.0.0  
-**Last Updated:** October 5, 2024
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
