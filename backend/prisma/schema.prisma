@@ -29,7 +29,8 @@ model User {
   notifications Notification[]  // Notifications sent to user
   scores       Score[]     // Individual scores
   captainedTeams Team[]    @relation("TeamCaptain")  // Teams where user is captain
-  firstBloods  Challenge[] @relation("FirstBlood")   // Challenges where user got first blood
+  // DISABLED: First blood feature
+  // firstBloods  Challenge[] @relation("FirstBlood")   // Challenges where user got first blood
 
   @@index([role])
   @@index([email])
@@ -114,9 +115,9 @@ model Challenge {
   description   String
   category      String?     // String-based category (Web, Crypto, etc.)
   points        Int
-  flag          String      // The flag to submit
-  flagHash      String?     // Optional hashed flag for security
-  alternativeFlags String[] @default([]) // Alternative flag formats
+  flagHash      String      // Secure hash of the flag - NEVER store actual flags
+  caseSensitive Boolean     @default(false) // Whether flag comparison is case sensitive
+  normalizeFlag Boolean     @default(true)  // Whether to normalize whitespace
   competitionId String
   difficulty    Difficulty  @default(MEDIUM)
   solveCount    Int         @default(0) // Track popularity/difficulty
@@ -127,12 +128,12 @@ model Challenge {
   isDynamic     Boolean     @default(false) // Is challenge dynamic (instances per user)
   url           String?     // Challenge URL/endpoint
   metadata      Json?       // Additional challenge metadata
-  firstBloodUserId String?  // User who got first blood
-  firstBloodAt  DateTime?   // When first blood occurred
+  // firstBloodUserId String?  // User who got first blood
+  // firstBloodAt  DateTime?   // When first blood occurred
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  firstBlood    User?       @relation("FirstBlood", fields: [firstBloodUserId], references: [id])
+  // firstBlood    User?       @relation("FirstBlood", fields: [firstBloodUserId], references: [id])
   hints         Hint[]
   files         File[]      // Attached files for the challenge
   submissions   Submission[]
@@ -194,8 +195,7 @@ model Submission {
   challengeId String
   teamId      String?   // If team-based submission
   competitionId String  // Added for easier queries
-  flag        String
-  isCorrect   Boolean
+  isCorrect   Boolean  // Result of flag validation - NEVER store actual submitted flags
   points      Int       @default(0) // Points awarded (0 if incorrect)
   attemptNumber Int     @default(1) // Which attempt this was
   ipAddress   String?   // For security/auditing
@@ -225,7 +225,8 @@ model Score {
   competitionId String
   submissionId  String      @unique // Link to the submission that earned this score
   points        Int
-  isFirstBlood  Boolean     @default(false) // Bonus points for first solve
+  solvedAt      DateTime    @default(now()) // When the challenge was solved
+  // isFirstBlood  Boolean     @default(false) // Bonus points for first solve
   createdAt     DateTime    @default(now())
   user          User?       @relation(fields: [userId], references: [id])
   team          Team?       @relation(fields: [teamId], references: [id])
