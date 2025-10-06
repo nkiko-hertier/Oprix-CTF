@@ -35,7 +35,7 @@ Oprix CTF is a complete, enterprise-grade platform for organizing and participat
 ```
 SuperAdmin (Platform Owner)
     ↓ Creates admin accounts
-Admin (CTF Organizer) 
+Admin (CTF Hoster) 
     ↓ Creates competitions, manages players
 User (CTF Player)
     ↓ Participates in competitions
@@ -99,12 +99,12 @@ SUPERADMIN_PASSWORD=YourStrongPassword123!
 
 ```bash
 # Complete database setup (migrations + seed)
-npm run db:setup
+pnpm run db:setup
 
 # Or step-by-step:
-npm run prisma:generate  # Generate Prisma client
-npm run prisma:migrate   # Run migrations
-npm run prisma:seed      # Create SuperAdmin account
+pnpm run prisma:generate  # Generate Prisma client
+pnpm run prisma:migrate   # Run migrations
+pnpm run prisma:seed      # Create SuperAdmin account
 ```
 
 ### **4. Start Development Server**
@@ -139,24 +139,24 @@ Server runs on `http://localhost:3000`
 
 ```bash
 # Development
-npm run start:dev          # Start with hot-reload
-npm run build              # Build for production
-npm run start:prod         # Start production server
+pnpm run start:dev          # Start with hot-reload
+pnpm run build              # Build for production
+pnpm run start:prod         # Start production server
 
 # Database
-npm run prisma:generate    # Generate Prisma client
-npm run prisma:migrate     # Run migrations
-npm run prisma:seed        # Seed SuperAdmin
-npm run db:setup           # Complete database setup
+pnpm run prisma:generate    # Generate Prisma client
+pnpm run prisma:migrate     # Run migrations
+pnpm run prisma:seed        # Seed SuperAdmin
+pnpm run db:setup           # Complete database setup
 
 # Code Quality
-npm run lint               # Lint code
-npm run format             # Format code with Prettier
+pnpm run lint               # Lint code
+pnpm run format             # Format code with Prettier
 
 # Testing
-npm run test               # Run unit tests
-npm run test:e2e           # Run e2e tests
-npm run test:cov           # Generate coverage report
+pnpm run test               # Run unit tests
+pnpm run test:e2e           # Run e2e tests
+pnpm run test:cov           # Generate coverage report
 ```
 
 ---
@@ -198,7 +198,7 @@ backend/
 
 ---
 
-## 🔐 Security Features
+## Security Features
 
 - **JWT Authentication** - Secure token-based auth
 - **Role-Based Access Control** - SuperAdmin/Admin/User hierarchy
@@ -222,60 +222,6 @@ backend/
 - **WebSocket** - Real-time updates without polling
 - **Background Jobs** - Async processing with Bull
 - **Lazy Loading** - Relations loaded on-demand
-
----
-
-## API Endpoints
-
-### **Health & Monitoring**
-- `GET /api/health` - Basic health check
-- `GET /api/health/detailed` - Detailed health with dependencies
-- `GET /api/health/ready` - Kubernetes readiness probe
-- `GET /api/health/live` - Kubernetes liveness probe
-
-### **Authentication**
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/auth/profile` - Get current user
-
-### **SuperAdmin** (8 endpoints)
-- `POST /api/superadmin/admins` - Create admin
-- `GET /api/superadmin/admins` - List admins
-- `GET /api/superadmin/stats` - Platform statistics
-- `GET /api/superadmin/audit-logs` - View audit logs
-
-### **Admin** (5+ endpoints)
-- `GET /api/admin/dashboard` - Dashboard overview
-- `GET /api/admin/players` - View players in competitions
-- `GET /api/admin/submissions` - Monitor submissions
-- `GET /api/admin/competitions/:id/stats` - Competition stats
-
-### **Competitions** (10+ endpoints)
-- `GET /api/competitions` - List competitions
-- `POST /api/competitions` - Create (admin only)
-- `POST /api/competitions/:id/register` - Register for competition
-
-### **Challenges** (8+ endpoints)
-- `GET /api/competitions/:id/challenges` - List challenges
-- `POST /api/competitions/:id/challenges` - Create (admin)
-- `GET /api/challenges/:id` - Get challenge details
-
-### **Submissions** (4 endpoints)
-- `POST /api/submissions` - Submit flag
-- `GET /api/submissions` - Get my submissions
-
-### **Teams** (8+ endpoints)
-- `POST /api/teams` - Create team
-- `POST /api/teams/:id/join` - Join team
-- `POST /api/teams/:id/leave` - Leave team
-
-### **Leaderboard** (6 endpoints)
-- `GET /api/competitions/:id/leaderboard/individual`
-- `GET /api/competitions/:id/leaderboard/team`
-- `GET /api/leaderboard/global`
-- `GET /api/competitions/:id/leaderboard/my-rank`
-
-**Total: 50+ endpoints**
 
 ---
 
@@ -357,7 +303,7 @@ MIT License - see LICENSE file for details
 
 ---
 
-## ✨ Acknowledgments
+## Acknowledgments
 
 Built with:
 - [NestJS](https://nestjs.com/) - Progressive Node.js framework
@@ -396,11 +342,6 @@ Check out a few resources that may come in handy when working with NestJS:
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
 
 ## License
 
