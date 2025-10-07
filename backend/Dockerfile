@@ -40,11 +40,16 @@ RUN apk add --no-cache dumb-init
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nestjs -u 1001
 
-# Copy built application from builder (includes generated Prisma Client)
+# Copy package files, prisma schema, and built app from builder
+COPY --chown=nestjs:nodejs package*.json pnpm-lock.yaml ./
+COPY --chown=nestjs:nodejs prisma ./prisma
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nestjs:nodejs /app/package*.json ./
+
+# Install pnpm and ALL dependencies with flat structure (fixes symlink issues)
+RUN npm install -g pnpm && \
+    pnpm install --frozen-lockfile --shamefully-hoist && \
+    pnpm exec prisma generate && \
+    pnpm store prune
 
 # Create uploads directory
 RUN mkdir -p uploads && chown -R nestjs:nodejs uploads
@@ -63,4 +68,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start application directly (more efficient than using pnpm in production)
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
