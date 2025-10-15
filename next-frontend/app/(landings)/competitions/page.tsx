@@ -1,6 +1,5 @@
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { CompetitionCard } from "@/app/components/HomeCards";
 import { Search } from "lucide-react";
 function page() {

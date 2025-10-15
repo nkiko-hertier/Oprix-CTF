@@ -13,7 +13,6 @@ interface AccordionItemProps {
 const AccordionItem: React.FC<AccordionItemProps> = ({
   question,
   answer,
-  Icon,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -151,7 +150,7 @@ function page() {
 
           <h3 className="text-2xl font-bold mb-3">Still have questions?</h3>
           <p className="text-slate-400 text-center  mb-6">
-            If you couldn't find an answer here, please don't hesitate to reach
+            If you couldn&apos;t find an answer here, please don&apos;t hesitate to reach
             out to our support team.
           </p>
           <a

@@ -1,6 +1,8 @@
-import { Users2, LucideIcon } from "lucide-react";
+'use client'
+import { LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ReactNode } from "react";
 
 interface HomeFeatureCardProps {
   metric: string;
@@ -40,7 +42,7 @@ interface stepsCardProps {
 
 export function HomeStepsCard({ step, title, children }: stepsCardProps) {
   return (
-    <div className=" w-full min-h-[220px] overflow-hidden rounded-2xl bg-gradient-to-bl from-slate-800/75 relative">
+    <div className=" w-full min-h-[220px] overflow-hidden rounded-2xl bg-gradient-to-bl from-slate-800/75 relative backdrop-blur-md">
       <div className="bg-blue-500 size-[50px] blur-2xl absolute bottom-[-40px] left-[40%]"></div>
       <div className="bg-pink-500 size-[20px] h-[140px] blur-3xl absolute bottom-[10px] left-[10px]"></div>
       <h1 className="absolute text-8xl font-extrabold bottom-[-15px] [-webkit-text-stroke:1px_#fff2] rotate-12 left-5 text-white/10">
@@ -70,7 +72,7 @@ export function ReviewCard({
   imageAlt,
 }: ReviewCardProps) {
   return (
-    <div className="w-full min-h-[100px] overflow-hidden rounded-2xl bg-gradient-to-bl from-slate-800/75 relative">
+    <div className="w-full min-h-[100px] overflow-hidden rounded-2xl bg-gradient-to-bl from-slate-800/75 relative backdrop-blur-md">
       <div className="bg-yellow-500 size-[50px] blur-3xl absolute bottom-[-40px] left-[40%]"></div>
       <div className="bg-indigo-500 size-[20px] h-[140px] blur-3xl absolute bottom-[10px] left-[10px]"></div>
 
@@ -98,13 +100,13 @@ export function ReviewCard({
 
 export function CompetitionCard() {
   return (
-    <div className=" w-full min-h-[220px] overflow-hidden rounded-2xl bg-gradient-to-bl from-slate-800/75 relative">
+    <div className=" w-full min-h-[220px] overflow-hidden rounded-2xl bg-gradient-to-bl from-slate-800/75 relative backdrop-blur-md">
       <div className="bg-blue-500 size-[50px] blur-2xl absolute bottom-[-40px] left-[40%]"></div>
       <div className="bg-pink-500 size-[20px] h-[140px] blur-3xl absolute bottom-[10px] left-[10px]"></div>
       <div className="size-full p-5">
         <div className="cover-img h-[200px]">
           <Image
-            src="/home_bg.jpg"
+            src="/img/homebg.webp"
             className=" object-center object-cover size-full rounded-md"
             width={300}
             height={300}
@@ -128,8 +130,11 @@ export function CompetitionCard() {
     </div>
   );
 }
-
-export function GradientCard({ children, className }: any) {
+interface GradProps {
+  children: ReactNode,
+  className: string
+}
+export function GradientCard({ children, className }: GradProps) {
   return (
     <div
       className={

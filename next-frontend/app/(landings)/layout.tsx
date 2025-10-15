@@ -8,11 +8,11 @@ function layout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-col bg-slate-950 text-white h-screen overflow-y-auto">
-      <div className="w-[85%] mx-auto">
-        <nav className="flex justify-between min-h-[100px] items-center">
+    <div className="bg-cover bg-top-[40px] bg-slate-950 text-white h-screen overflow-y-auto overflow-x-hidden">
+      <div>
+        <nav className="flex justify-between min-h-[100px] items-center w-[85%]">
           <div>
-            <p>Logo</p>
+            <p>Logos</p> 
           </div>
           <div className="lg:hidden">
             <Menu />

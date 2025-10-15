@@ -1,10 +1,14 @@
+'use client'
 import {
+
   Facebook,
   Linkedin,
   MessageCircleMore,
   Twitter,
   Youtube,
 } from "lucide-react";
+
+import ScrollVelocity from '@/components/ScrollVelocity';
 import Link from "next/link";
 import React from "react";
 import {
@@ -12,12 +16,13 @@ import {
   HomeStepsCard,
   ReviewCard,
 } from "../components/HomeCards";
+import Image from 'next/image'
 import { ctfFeatures, ctfReviews } from "@/lib/objects";
 
 function page() {
   return (
     <div>
-      <div className="">
+      <div>
         <section className="md:text-center md:h-[calc(100vh-100px)] max-md:my-15  gap-7 flex flex-col justify-center">
           <h1 className="text-4xl md:text-6xl font-bold">
             We Launch Competitions
@@ -54,7 +59,9 @@ function page() {
           </div>
         </section>
       </div>
-      <section className="md:p-30 max-md:mt-20">
+      <section className="md:p-30 max-md:mt-20 relative">
+        <div className="bg-gradient-to-bl from-blue-500 absolute to-blue-200 w-[500px] blur-3xl h-[40px] rotate-45 left-[-300px] bottom-[500px]"></div>
+        <div className="bg-gradient-to-bl from-blue-500 absolute to-blue-200 w-[500px] blur-3xl h-[40px] -rotate-45 right-[-300px] bottom-[500px]"></div>
         <h1 className="text-3xl font-bold sm:text-center max-md:mt-5">
           How It works
         </h1>
@@ -76,6 +83,13 @@ function page() {
             friendly challenges.
           </HomeStepsCard>
         </div>
+      </section>
+      <section className="w-screen! srollv-section relative overflow-x-hidden">
+        <ScrollVelocity
+          texts={['React Bits', 'Scroll Down']} 
+          velocity={20} 
+          className="custom-scroll-text"
+        />
       </section>
       <section>
         <div className="mt-10">
@@ -103,12 +117,19 @@ function page() {
         </div>
       </section>
       <section className="mt-20">
-        <h1 className="text-5xl font-bold text-center mt-10">
-          Hear It From Our Community{" "}
-        </h1>
-        <p className="text-center mt-4 text-xl text-slate-500">
-          what our customers says!
-        </p>
+        <div className="relative">
+
+        <div className="w-[200px] absolute translate-x-[-50%] left-[50%] top-[-50px]">
+          <Image src={'/img/grid.png'} width={1000} height={400} alt="" className=" scale-170" />
+        </div>
+        <div className="bg-gradient-to-bl from-blue-500/25 absolute to-blue-200/25 w-[500px] blur-3xl h-[40px] translate-x-[-50%] left-[50%]"></div>
+          <h1 className="text-5xl font-bold text-center mt-10">
+            Hear It From Our Community{" "}
+          </h1>
+          <p className="text-center mt-4 text-xl text-slate-500">
+            what our customers says!
+          </p>
+        </div>
 
         <div className="grid md:grid-cols-3 mt-20 gap-3">
           {ctfReviews.map((review) => (
@@ -124,7 +145,13 @@ function page() {
         </Link>
       </section>
 
-      <section className="my-10">
+      <section className="my-10 relative">
+
+
+
+        <div className="absolute translate-x-[-50%] left-[50%] top-[130px]">
+          <Image src={'/img/social.png'} width={1000} height={400} alt="" className=" scale-170" />
+        </div>
         <h1 className="text-5xl font-bold text-center mt-30">Social</h1>
 
         <div className="mx-auto my-10 w-fit">Logo</div>

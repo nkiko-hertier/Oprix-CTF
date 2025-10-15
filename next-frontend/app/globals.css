@@ -118,7 +118,7 @@
         transition: 0.35s ease-out;
     }
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground overflow-x-hidden;
     }
     .card-gradient-line {
         background: linear-gradient(
@@ -127,5 +127,12 @@
             white,
             transparent 10%
         );
+    }
+    section {
+        width: 85%;
+        @apply mx-auto;
+    }
+    .srollv-section > section {
+        @apply w-screen!
     }
 }
