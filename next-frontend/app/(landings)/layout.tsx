@@ -10,7 +10,7 @@ function layout({
   return (
     <div className="bg-cover bg-top-[40px] bg-slate-950 text-white h-screen overflow-y-auto overflow-x-hidden">
       <div>
-        <nav className="flex justify-between min-h-[100px] items-center w-[85%]">
+        <nav className="flex justify-between min-h-[100px] items-center mx-auto w-[85%]">
           <div>
             <p>Logos</p> 
           </div>
