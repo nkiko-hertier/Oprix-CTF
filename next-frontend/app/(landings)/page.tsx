@@ -84,7 +84,7 @@ function page() {
           </HomeStepsCard>
         </div>
       </section>
-      <section className="w-screen! srollv-section relative overflow-x-hidden">
+      <section className="w-screen! text-zinc-700! hidden md:block srollv-section relative overflow-x-hidden">
         <ScrollVelocity
           texts={['React Bits', 'Scroll Down']} 
           velocity={20} 
