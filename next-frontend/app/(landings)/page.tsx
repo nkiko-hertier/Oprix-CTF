@@ -86,7 +86,7 @@ function page() {
       </section>
       <section className="w-screen! text-slate-700/50! hidden md:block srollv-section relative overflow-x-hidden">
         <ScrollVelocity
-          texts={['React Bits', 'Scroll Down']} 
+          texts={[' * African', 'Solutions * ']} 
           velocity={20} 
           className="custom-scroll-text"
         />
