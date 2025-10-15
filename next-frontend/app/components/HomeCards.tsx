@@ -132,7 +132,7 @@ export function CompetitionCard() {
 }
 interface GradProps {
   children: ReactNode,
-  className: string
+  className?: string
 }
 export function GradientCard({ children, className }: GradProps) {
   return (
