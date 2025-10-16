@@ -23,7 +23,10 @@ function page() {
   return (
     <div>
       <div>
-        <section className="md:text-center md:h-[calc(100vh-100px)] max-md:my-15  gap-7 flex flex-col justify-center">
+        <section className="md:text-center md:h-[calc(100vh-100px)] max-md:my-15  gap-7 flex flex-col justify-center relative">
+
+        <div className="bg-gradient-to-bl from-blue-500 absolute to-blue-200 w-[500px] blur-3xl h-[40px] rotate-45 left-[-300px] bottom-[500px]"></div>
+        <div className="bg-gradient-to-bl from-pink-500 absolute to-pink-200 w-[500px] blur-3xl h-[10px] -rotate-45 left-[-100px] bottom-[550px]"></div>
           <h1 className="text-4xl md:text-6xl font-bold">
             We Launch Competitions
           </h1>
@@ -149,12 +152,21 @@ function page() {
 
 
 
-        <div className="absolute translate-x-[-50%] left-[50%] top-[130px]">
-          <Image src={'/img/social.png'} width={1000} height={400} alt="" className=" scale-170" />
+        <div className="absolute translate-x-[-50%] left-[50%] bottom-[10px]">
+          <Image src={'/img/social.png'} width={1000} height={400} alt="" className=" scale-190" />
         </div>
         <h1 className="text-5xl font-bold text-center mt-30">Social</h1>
 
-        <div className="mx-auto my-10 w-fit">Logo</div>
+        <div className="mx-auto my-10 w-fit">
+
+          <Image
+            src="/img/logo_icon.png"
+            alt="logo"
+            width={100}
+            height={100}
+            className="z-20 relative"
+          /> 
+        </div>
 
         <div className="mx-auto w-fit flex gap-5">
           <Link href={"#"}>

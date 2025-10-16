@@ -1,6 +1,8 @@
 import { ArrowRight, Menu } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import React from "react";
+import { MobNav } from "./competitions/MobNav";
 
 function layout({
   children,
@@ -12,10 +14,29 @@ function layout({
       <div>
         <nav className="flex justify-between min-h-[100px] items-center mx-auto w-[85%]">
           <div>
-            <p>Logos</p> 
+            <div className="flex gap-2 items-center relative max-md:hidden ">
+              <Image
+              src="/img/logo_icon.png"
+              alt="logo"
+              width={70}
+              height={70}
+              className="block max-md:hidden relative left-[-35px]"
+            /> 
+            <div className="absolute left-[25px]">
+              <h1 className="font-semibold">Oprix&nbsp;CTF</h1>
+              <p className="text-sm">african</p>
+              </div>
+            </div>
+            <Image
+              src="/img/logo_icon.png"
+              alt="logo"
+              width={70}
+              height={70}
+              className="hidden max-md:block relative left-[-35px]"
+            /> 
           </div>
           <div className="lg:hidden">
-            <Menu />
+            <MobNav />
           </div>
           <div className="lg:flex gap-20 hidden">
             <ul className="flex gap-5">
