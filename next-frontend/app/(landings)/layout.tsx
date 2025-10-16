@@ -13,7 +13,7 @@ function layout({
     <div className="bg-cover bg-top-[40px] bg-slate-950 text-white h-screen overflow-y-auto overflow-x-hidden">
       <div>
         <nav className="flex justify-between min-h-[100px] items-center mx-auto w-[85%]">
-          <div>
+          <Link href={'/'}>
             <div className="flex gap-2 items-center relative max-md:hidden ">
               <Image
               src="/img/logo_icon.png"
@@ -21,7 +21,7 @@ function layout({
               width={70}
               height={70}
               className="block max-md:hidden relative left-[-35px]"
-            /> 
+              /> 
             <div className="absolute left-[25px]">
               <h1 className="font-semibold">Oprix&nbsp;CTF</h1>
               <p className="text-sm">african</p>
@@ -34,7 +34,7 @@ function layout({
               height={70}
               className="hidden max-md:block relative left-[-35px]"
             /> 
-          </div>
+          </Link>
           <div className="lg:hidden">
             <MobNav />
           </div>
