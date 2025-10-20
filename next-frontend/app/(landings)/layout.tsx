@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import React from "react";
 import { MobNav } from "./competitions/MobNav";
+import { SignIn, SignInButton, SignUpButton } from "@clerk/nextjs";
 
 function layout({
   children,
@@ -64,12 +65,16 @@ function layout({
               </li>
             </ul>
             <div className="flex gap-2 *:cursor-pointer">
+              <SignInButton>
               <button className="p-1 rounded-full px-5 bg-gradient-to-tl from-slate-800 to-slate-900 border-slate-700 border">
                 Login
               </button>
+              </SignInButton>
+              <SignUpButton>
               <button className="p-1 rounded-full px-5 bg-gradient-to-tl from-blue-500 to-blue-700 border-slate-700 border flex gap-2 items-center">
                 Signup <ArrowRight size={17} />
               </button>
+              </SignUpButton>
             </div>
           </div>
         </nav>
