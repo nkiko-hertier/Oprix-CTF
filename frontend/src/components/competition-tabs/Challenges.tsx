@@ -2,6 +2,9 @@ import { cn } from '@/lib/utils';
 import { BookOpen, CheckCircle, FileQuestion, Pencil, Plus } from 'lucide-react';
 import { CreateChallenge } from '../CreateChallange';
 import { Button } from '@mui/material';
+import RequireAccess from '../RequireAccess';
+import { Link } from 'react-router-dom';
+
 
 interface ChallengesProps {
   activeTab: string;
@@ -37,15 +40,19 @@ function Challenges({ activeTab }: ChallengesProps) {
                 </div>
               </div>
               <div className='gap-2 flex flex-wrap'>
+                <RequireAccess  roles={['user']}>
                 {
-                  false ?
-                <Button onClick={() => {}} variant="contained" color="success" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <BookOpen size={13} /> Solve </Button> :
+                  true ? // check if user has solved the challenge
+                <Link to="./challenge/22uwhshhhh2"><Button onClick={() => {}} variant="contained" color="success" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <BookOpen size={13} /> Solve </Button></Link> :
                 <Button variant="contained" color="success" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <CheckCircle size={13} /> Solved </Button>
                 }
-                <Button variant="contained" color="primary" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <Pencil size={13} /> Edit </Button>
+                </RequireAccess>
+                <RequireAccess roles={['admin', 'hoster']}>
+                  <Button variant="contained" color="primary" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <Pencil size={13} /> Edit </Button>
+                </RequireAccess>
               </div>
             </div>
-            <div className="grid grid-cols-4 items-center px-5 py-2 text-muted-foreground text-sm">
+             <div className="grid grid-cols-4 items-center px-5 py-2 text-muted-foreground text-sm">
               <div className='col-span-3'>
                 <div className="flex items-center gap-2">
                   <div>
@@ -57,7 +64,18 @@ function Challenges({ activeTab }: ChallengesProps) {
                   </div>
                 </div>
               </div>
-              <div>Actions</div>
+              <div className='gap-2 flex flex-wrap'>
+                <RequireAccess  roles={['user']}>
+                {
+                  false ?
+                <Button onClick={() => {}} variant="contained" color="success" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <BookOpen size={13} /> Solve </Button> :
+                <Button variant="contained" color="success" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <CheckCircle size={13} /> Solved </Button>
+                }
+                </RequireAccess>
+                <RequireAccess roles={['admin', 'hoster']}>
+                  <Button variant="contained" color="primary" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <Pencil size={13} /> Edit </Button>
+                </RequireAccess>
+              </div>
             </div>
           </div>
 

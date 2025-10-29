@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { Plus } from 'lucide-react';
 import React from 'react'
+import RequireAccess from '../RequireAccess';
 
 interface MembersProps {
   activeTab: string;
@@ -11,7 +12,9 @@ function Members({activeTab}: MembersProps) {
     <div className={cn("", activeTab == 'Members' ? 'block' : 'hidden')}>
         <div className="flex justify-between items-center">
                 <h1 className="my-4 py-4">Members</h1>
-                <button className="flex items-center text-sm gap-1 bg-indigo-500 text-white rounded-md p-2 px-3 h-fit"><Plus size={14} /> Create user</button>
+                <RequireAccess roles={['user']}>
+                    <button className="flex items-center text-sm gap-1 bg-indigo-500 text-white rounded-md p-2 px-3 h-fit"><Plus size={14} /> Join</button>
+                </RequireAccess>
             </div>
             <hr />
             <div className="mt-3">

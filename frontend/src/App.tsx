@@ -15,29 +15,18 @@ import { Backdrop, CircularProgress } from "@mui/material";
 
 export default function App() {
 
-  const { isLoaded, isSignedIn, getToken, sessionId } = useAuth();
-  const [token, setToken] = React.useState<string | null>(null);
-  
+  const { isLoaded, isSignedIn } = useAuth();
+
   if (!isLoaded) {
     return (
       <Backdrop
-  sx={(theme) => ({ color: '#423badff', zIndex: theme.zIndex.drawer + 1 })}
-  open={true}
-  // onClick={handleClose}
->
-  <CircularProgress color="inherit" />
-</Backdrop>
+        sx={(theme) => ({ color: '#423badff', zIndex: theme.zIndex.drawer + 1 })}
+        open={true}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     );
   }
-
-  
-    // This will run once when the component mounts
-    const fetchToken = async () => {
-      const token = await getToken();
-      console.log("Clerk Token:", token);
-    }
-
-    fetchToken();
 
 
 
@@ -50,16 +39,14 @@ export default function App() {
           element={
             <RequireAuth>
               <DashboardLayout />
-              {sessionId}
-              s{token}E
             </RequireAuth>
           }
         >
-          <Route path="/" element={ isSignedIn ? <DashboardHome /> : <SignInPage />} />
-          <Route path="/users" element={ <Users />} />
-          <Route path="/settings" element={ <Settings />} />
-          <Route path="/competition/:id" element={ <Competition />} />
-          <Route path="/competition/:id/challenge/:challengeId" element={ <Challenge />} />
+          <Route path="/" element={isSignedIn ? <DashboardHome /> : <SignInPage />} />
+          <Route path="/users" element={<Users />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/competition/:id" element={<Competition />} />
+          <Route path="/competition/:id/challenge/:challengeId" element={<Challenge />} />
         </Route>
       </Routes>
     </BrowserRouter>

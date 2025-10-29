@@ -9,8 +9,9 @@ interface RequireAccessProps {
 const RequireAccess: React.FC<RequireAccessProps> = ({ roles, children }) => {
     const { user } = useUser();
     const userRole = user?.publicMetadata?.role as string | undefined;
+    const userRole1 = userRole ?? 'user';
 
-    if (!userRole || !roles.includes(userRole)) {
+    if (!(userRole1) || !roles.includes(userRole1)) {
         return null;
     }
 
