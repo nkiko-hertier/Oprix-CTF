@@ -1,5 +1,6 @@
 import AlertBox from "@/components/AlertBox";
 import { CreateCompetition } from "@/components/CreateCompetition";
+import RequireAccess from "@/components/RequireAccess";
 import { ArrowRight, Circle, Flag } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -13,11 +14,13 @@ export default function DashboardHome() {
       <h1 className="my-4 text-lg font-semibold py-4">Competitions</h1>
 
       <div className="grid relative sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <CreateCompetition>
-          <div className="bg-accent cursor-pointer h-[200px] border border-dashed rounded-md flex">
-            <p className="mx-auto my-auto text-muted-foreground">+ create competition</p>
-          </div>
-        </CreateCompetition>
+        <RequireAccess roles={['admin', 'hoster']}>
+          <CreateCompetition>
+            <div className="bg-accent cursor-pointer h-[200px] border border-dashed rounded-md flex">
+              <p className="mx-auto my-auto text-muted-foreground">+ create competition</p>
+            </div>
+          </CreateCompetition>
+        </RequireAccess>
         <Link to={'/competition/123'} className=" bg-sidebar cursor-pointer group h-[200px] flex flex-col border border-dashed rounded-md p-1">
           <div className="h-full bg-accent w-full rounded-md border-border flex flex-col justify-between p-4">
             <div className="flex justify-between">

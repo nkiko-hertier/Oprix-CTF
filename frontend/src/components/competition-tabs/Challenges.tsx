@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
-import { FileQuestion, Plus } from 'lucide-react';
+import { BookOpen, CheckCircle, FileQuestion, Pencil, Plus } from 'lucide-react';
 import { CreateChallenge } from '../CreateChallange';
+import { Button } from '@mui/material';
 
 interface ChallengesProps {
   activeTab: string;
@@ -35,7 +36,14 @@ function Challenges({ activeTab }: ChallengesProps) {
                   </div>
                 </div>
               </div>
-              <div>Actions</div>
+              <div className='gap-2 flex flex-wrap'>
+                {
+                  false ?
+                <Button onClick={() => {}} variant="contained" color="success" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <BookOpen size={13} /> Solve </Button> :
+                <Button variant="contained" color="success" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <CheckCircle size={13} /> Solved </Button>
+                }
+                <Button variant="contained" color="primary" className='shadow-none! text-capitalized! flex gap-2 text-sm!'> <Pencil size={13} /> Edit </Button>
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center px-5 py-2 text-muted-foreground text-sm">
               <div className='col-span-3'>

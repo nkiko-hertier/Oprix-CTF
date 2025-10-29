@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import { shadcn } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner";
 import "./index.css";
+import "./App.css";
 import App from "./App.tsx";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;

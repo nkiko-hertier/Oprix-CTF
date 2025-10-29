@@ -4,6 +4,7 @@ import { Link, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SignedIn } from "@clerk/clerk-react";
 import { UserButton } from "@clerk/clerk-react";
+import RequireAccess from "@/components/RequireAccess";
 
 export default function DashboardLayout() {
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -44,9 +45,11 @@ export default function DashboardLayout() {
                 <li>
                   <Link to="/" className="py-3 block border-b border-black dark:border-white text-white " >Competitions</Link>
                 </li>
-                <li>
-                  <Link to="/users" className="py-3 block " >Users</Link>
-                </li>
+                <RequireAccess roles={['admin']}>
+                  <li>
+                    <Link to="/users" className="py-3 block " >Users</Link>
+                  </li>
+                </RequireAccess>
                 <li>
                   <Link to="/settings" className="py-3 block " >Settings</Link>
                 </li>

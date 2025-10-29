@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils'
 import { Bell, FileQuestion, Podcast } from 'lucide-react';
 import React from 'react'
+import RequireAccess from '../RequireAccess';
 interface AnnouncementsProps {
   activeTab: string;
 }
@@ -8,6 +9,7 @@ function Announcements({ activeTab }: AnnouncementsProps) {
   return (
     <div className={cn("", activeTab == 'Announcements' ? 'block' : 'hidden')}>
       <div className="mt-3">
+        <RequireAccess roles={['admin', 'hoster']}>
         <div className="rounded-md p-1 min-h-10 bg-background dark:bg-zinc-950/50">
           <div className="px-5 py-2 text-muted-foreground text-sm">
             <div>Create Announcement</div>
@@ -19,6 +21,7 @@ function Announcements({ activeTab }: AnnouncementsProps) {
             <button className="flex ml-auto mt-1 items-center text-sm gap-1 bg-indigo-500 text-white rounded-md p-1 px-3 h-fit"><Bell size={15} /> Post Announcement</button>
           </div>
         </div>
+        </RequireAccess>
         <div className="rounded-md p-1 mt-2 min-h-10 bg-background dark:bg-zinc-950/50">
           <div className="flex items-center gap-2 p-2">
             <div>
