@@ -54,3 +54,7 @@ Role Based Access:
 Important Data:
 
 API_Base: https://oprix-ctf-backend-production.up.railway.app/
+Message: Above is ApiSchema.json from swagger json with all end points, their body and response,
+my frontend plan (instruction.txt) analyse it and improve where neccessary also make sure you
+read through my frontend(all files) to understand current state then create a plan of tasks required in Task.md then 
+do one by one and tick done as well..  
