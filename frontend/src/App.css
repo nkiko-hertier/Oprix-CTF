@@ -1,8 +1,0 @@
-/* Import the light theme (default) */
-@import 'github-markdown-css/github-markdown-light.css'; 
-@import 'github-markdown-css/github-markdown-dark.css';
-
-.dark .markdown-body {
-    background-color: #0d1117; /* GitHub Dark background color for the content container */
-    color: #c9d1d9; /* GitHub Dark default text color */
-}
