@@ -130,9 +130,12 @@
     }
     section {
         width: 85%;
-        @apply mx-auto;
+        @apply mx-auto scroll-mt-[100px] md:scroll-mt-[120px];
     }
     .srollv-section > section {
         @apply w-screen!
+    }
+    .cl-internal-1dauvpw{
+        @apply hidden!;
     }
 }

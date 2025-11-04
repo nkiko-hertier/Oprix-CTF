@@ -1,0 +1,153 @@
+"use client"
+import React, { useState } from 'react';
+
+/**
+ * Converts a string from kebab-case (e.g., stop-color) to camelCase (e.g., stopColor).
+ * @param {string} kebabString - The string to convert.
+ * @returns {string} The camelCase string.
+ */
+const kebabToCamel = (kebabString) => {
+    // This regex looks for a hyphen followed by any letter (the word character).
+    // The replacement function capitalizes that letter and removes the hyphen.
+    return kebabString.replace(/-(\w)/g, (_, char) => char.toUpperCase());
+};
+
+/**
+ * Fixes common SVG attributes from kebab-case to camelCase for React/JSX compatibility.
+ * It uses a robust regex to target attributes and apply the kebabToCamel conversion.
+ * @param {string} svgCode - The raw SVG code string.
+ * @returns {string} The fixed SVG code string.
+ */
+const fixSvgAttributes = (svgCode) => {
+    // Regex explanation:
+    // \s: Matches any whitespace character (like space, tab, newline).
+    // ([\w-]+): Captures the attribute name (one or more word characters or hyphens).
+    // =: Matches the literal equals sign.
+    // The match is then checked to see if it contains a hyphen, indicating kebab-case.
+    // The 'g' flag ensures global replacement across the entire string.
+    const attributeRegex = /\s([\w-]+)=/g;
+
+    let fixedCode = svgCode.replace(attributeRegex, (match, p1) => {
+        // p1 is the captured attribute name (e.g., "fill-rule", "class").
+
+        // 1. Handle the specific React conversion for 'class' -> 'className'
+        if (p1.toLowerCase() === 'class') {
+            return ' className=';
+        }
+        
+        // 2. Apply general kebab-case to camelCase conversion
+        const camelCaseAttribute = kebabToCamel(p1);
+        
+        // Return the whitespace, the new attribute name, and the equals sign
+        return ` ${camelCaseAttribute}=`;
+    });
+    
+    // An alternative (and simpler for this specific error) is to target the CSS-style
+    // properties inside a 'style' attribute if the user's SVG is using inline styles.
+    // This specifically converts things like 'stop-color:...' to 'stopColor:...'
+    fixedCode = fixedCode.replace(/([;{]\s*)(\w+-[\w-]+)(:)/g, (match, before, attr, after) => {
+        return before + kebabToCamel(attr) + after;
+    });
+
+    return fixedCode;
+};
+
+// --- React Component ---
+
+const SvgFixer = () => {
+    const [inputSvg, setInputSvg] = useState('');
+    const [copyStatus, setCopyStatus] = useState(false);
+
+    // Process the input SVG when the input state changes
+    const improvedSvg = fixSvgAttributes(inputSvg);
+
+    const handleCopy = async () => {
+        if (!improvedSvg) return;
+
+        try {
+            await navigator.clipboard.writeText(improvedSvg);
+            setCopyStatus(true);
+            // Reset the 'Copied!' message after a short time
+            setTimeout(() => setCopyStatus(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy text:', err);
+            alert('Failed to copy the fixed SVG code.');
+        }
+    };
+
+    return (
+        <div style={styles.container} className='text-black'>
+            <h1>SVG to JSX Attribute Fixer 🔧</h1>
+            <p>Paste your SVG code below to convert **kebab-case** attributes (like `stop-color`) to React-compatible **camelCase** (`stopColor`).</p>
+
+            <div style={styles.section}>
+                <h2>Input SVG Code</h2>
+                <textarea
+                    style={styles.textarea}
+                    rows="10"
+                    placeholder="Paste your SVG code here (e.g., <path fill-rule='evenodd' stop-color='#000'/>)"
+                    value={inputSvg}
+                    onChange={(e) => setInputSvg(e.target.value)}
+                />
+            </div>
+
+            <div style={styles.section}>
+                <h2>Fixed JSX Code</h2>
+                <textarea
+                    style={styles.textarea}
+                    rows="10"
+                    readOnly
+                    value={improvedSvg}
+                    placeholder="Fixed SVG code will appear here..."
+                />
+                <button 
+                    onClick={handleCopy} 
+                    disabled={!improvedSvg}
+                    style={{ 
+                        ...styles.button,
+                        backgroundColor: copyStatus ? 'green' : '#007bff'
+                    }}
+                >
+                    {copyStatus ? '✅ Copied!' : '📋 Copy Fixed Code'}
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// Simple inline styles for the component
+const styles = {
+    container: {
+        maxWidth: '900px',
+        margin: '0 auto',
+        padding: '20px',
+        fontFamily: 'Arial, sans-serif',
+    },
+    section: {
+        marginBottom: '20px',
+        border: '1px solid #ccc',
+        padding: '15px',
+        borderRadius: '8px',
+        backgroundColor: '#f9f9f9'
+    },
+    textarea: {
+        width: '100%',
+        padding: '10px',
+        fontSize: '14px',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        boxSizing: 'border-box',
+        marginBottom: '10px',
+    },
+    button: {
+        padding: '10px 20px',
+        fontSize: '16px',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        transition: 'background-color 0.3s',
+    }
+};
+
+export default SvgFixer;

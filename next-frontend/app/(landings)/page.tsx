@@ -1,190 +1,279 @@
-'use client'
-import {
-
-  Facebook,
-  Linkedin,
-  MessageCircleMore,
-  Twitter,
-  Youtube,
-} from "lucide-react";
-
-import ScrollVelocity from '@/components/ScrollVelocity';
-import Link from "next/link";
-import React from "react";
-import {
-  HomeFeatureCard,
-  HomeStepsCard,
-  ReviewCard,
-} from "../components/HomeCards";
+"use client"
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { ctfFeatures, ctfReviews } from "@/lib/objects";
+import { FaFacebook, FaLinkedin } from 'react-icons/fa'
+import Link from 'next/link'
+import { GrTwitter } from 'react-icons/gr'
+import { TfiYoutube } from 'react-icons/tfi'
+import { BiMenu } from 'react-icons/bi'
+import { MobileMenu } from './competitions/MobileMenu'
+import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
+import { ArrowRight } from 'lucide-react'
+// import SvgFixer from './competitions/SVgFixer'
 
 function page() {
-  return (
-    <div>
-      <div>
-        <section className="md:text-center md:h-[calc(100vh-100px)] max-md:my-15  gap-7 flex flex-col justify-center relative">
+    const [menuOpen, setMenuOpen] = useState(false)
+    const [activeSection, setActiveSection] = useState("home")
 
-        <div className="bg-gradient-to-bl from-blue-500 absolute to-blue-200 w-[500px] blur-3xl h-[40px] rotate-45 left-[-300px] bottom-[500px]"></div>
-        <div className="bg-gradient-to-bl from-pink-500 absolute to-pink-200 w-[500px] blur-3xl h-[10px] -rotate-45 left-[-100px] bottom-[550px]"></div>
-          <h1 className="text-4xl md:text-6xl font-bold">
-            We Launch Competitions
-          </h1>
-          <p className="text-slate-400">Grow endlessly with our platform</p>
-          <div className="flex md:justify-center gap-3 mt-5">
-            <Link
-              className="p-3 px-5 w-fit rounded-md block bg-gradient-to-bl hover:scale-110 from-blue-500 to-blue-700"
-              href={"#"}
-            >
-              Get Started
-            </Link>
-            <Link
-              className="p-3 px-5 w-fit rounded-md block bg-gradient-to-bl hover:scale-110 from-slate-700 to-slate-900"
-              href={"#"}
-            >
-              Explore More
-            </Link>
-          </div>
-        </section>
-        <section>
-          <div className="overflow-x-auto">
-            <div className="grid grid-cols-4 gap-4 max-sm:w-[calc((100vw*4)-(100px*4))] max-md:w-[calc((100vw*2)-(100px*4))]">
-              {ctfFeatures.map((feature) => (
-                <HomeFeatureCard
-                  key={feature.id}
-                  metric={feature.metric}
-                  label={feature.label}
-                  Icon={feature.Icon}
-                  iconColorClass={feature.iconColorClass}
-                />
-              ))}
+    const toggleMenu = () => setMenuOpen(!menuOpen)
+
+    // Detect which section is in view (scroll spy)
+    useEffect(() => {
+        const sections = document.querySelectorAll("section[id]")
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setActiveSection(entry.target.id)
+                    }
+                })
+            },
+            { threshold: 0.4 }
+        )
+        sections.forEach(section => observer.observe(section))
+        return () => sections.forEach(section => observer.unobserve(section))
+    }, [])
+
+    const scrollToSection = (id: string) => {
+        const section = document.getElementById(id)
+        if (section) {
+            section.scrollIntoView({ behavior: "smooth" })
+            setMenuOpen(false)
+        }
+    }
+    return (
+        <div className='bg-[#100E19] h-screen relative overflow-y-auto text-white'>
+            <div className='-z-20'>
+                <div className='bg-[url(/img/pattern1.png)] opacity-30 absolute left-0 top-0 w-full bg-cover bg-center min-h-screen'></div>
+                {/* Gradient BG */}
+                <div className='bg-linear-to-b to-[#100E19] via-[#100E19]/80 from-[#100E19]/0 absolute left-0 top-0 w-full h-full'></div>
             </div>
-          </div>
-        </section>
-      </div>
-      <section className="md:p-30 max-md:mt-20 relative">
-        <div className="bg-gradient-to-bl from-blue-500 absolute to-blue-200 w-[500px] blur-3xl h-[40px] rotate-45 left-[-300px] bottom-[500px]"></div>
-        <div className="bg-gradient-to-bl from-blue-500 absolute to-blue-200 w-[500px] blur-3xl h-[40px] -rotate-45 right-[-300px] bottom-[500px]"></div>
-        <h1 className="text-3xl font-bold sm:text-center max-md:mt-5">
-          How It works
-        </h1>
-        <div className="md:mt-20 mt-5 grid md:grid-cols-2 gap-4">
-          <HomeStepsCard step={1} title="Create an account">
-            Create a free account via our platform, complete your profile
-            details and Explore the platform.
-          </HomeStepsCard>
-          <HomeStepsCard step={2} title="Explore Competitions">
-            Our platform is designed to host different competition around Africa
-            in all levels + beginner friendly ones.
-          </HomeStepsCard>
-          <HomeStepsCard step={3} title="Join a Competitions">
-            You will be able to join different competitions to grow your talent
-            and earn rewards
-          </HomeStepsCard>
-          <HomeStepsCard step={4} title="Grow forever">
-            You think you arent good yet! you still enjoy our dairly beginner
-            friendly challenges.
-          </HomeStepsCard>
-        </div>
-      </section>
-      <section className="w-screen! text-slate-700/50! hidden md:block srollv-section relative overflow-x-hidden">
-        <ScrollVelocity
-          texts={[' * African', 'Solutions * ']} 
-          velocity={20} 
-          className="custom-scroll-text"
-        />
-      </section>
-      <section>
-        <div className="mt-10">
-          <div className=" w-full h-[420px] overflow-hidden rounded-2xl bg-gradient-to-bl from-slate-800/75 relative">
-            <div className="bg-blue-500 size-[50px] blur-2xl absolute bottom-[-40px] left-[40%]"></div>
-            <div className="bg-pink-500 size-[20px] h-[140px] blur-3xl absolute bottom-[10px] left-[10px]"></div>
-            <div className="py-10 flex flex-col justify-center size-full">
-              <h1 className="text-xl text-center flex gap-2 bg-gradient-to-r from-slate-700/25 to-slate-900/25 w-fit p-2 rounded-full px-5 mx-auto text-slate-400 mt-5">
-                <MessageCircleMore className="text-white" />
-                Hi 👋 there. Hope yo good?
-              </h1>
-              <h1 className="text-5xl font-bold text-center">
-                Lets pray a game!
-              </h1>
-              <div className="bg-gradient-to-r mt-10 mx-auto w-[300px] flex justify-between p-2 rounded-full bg-slate-700/25 to-slate-900/25 ">
-                <p className="p-1 pl-3">
-                  Sure lets do it 🥴 <span className="animate-pulse">|</span>
-                </p>
-                <button className="p-1 px-5 w-fit rounded-full cursor-pointer shadow-2xl block bg-gradient-to-bl hover:scale-110 from-blue-500 to-blue-700">
-                  Send
-                </button>
-              </div>
+
+            <div className='md:p-10 p-5 sticky top-0 z-30'>
+                <nav className='min-h-[70px] backdrop-blur-sm bg-slate-600/10 borders rounded-full border-[#4e486a] px-5 flex justify-between items-center'>
+                    <div className="logo">
+                        <Image
+                            src="/img/logo_icon.png"
+                            alt="logo"
+                            width={50}
+                            height={50}
+                            className="left-[-35px]"
+                        />
+                    </div>
+                    <div className="links">
+                        <ul className='gap-10 items-center h-full hidden md:flex'>
+                            {[
+                                { id: "home", label: "Home" },
+                                { id: "howitworks", label: "How it works" },
+                                { id: "faq", label: "FAQ" },
+                                { id: "contact", label: "Contact us" },
+                            ].map((link) => (
+                                <li
+                                    key={link.id}
+                                    onClick={() => scrollToSection(link.id)}
+                                    className={`cursor-pointer transition-colors duration-300 ${activeSection === link.id ? 'text-white' : 'text-gray-400 hover:text-white'}`}
+                                >
+                                    {link.label}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className='hidden md:block'>
+                        <SignedOut>
+                            <SignInButton>
+                                <button className='bg-[#573BA8] p-3 px-7 rounded-full text-sm'>Get Started</button>
+                            </SignInButton>
+                        </SignedOut>
+                        <SignedIn>
+                            <Link href={'/platform'} className='bg-[#573BA8] flex gap-2 p-3 px-7 items-center rounded-full text-sm'>Dashboard <ArrowRight size={15} /> </Link>
+                        </SignedIn>
+                    </div>
+                    <div className=' md:hidden'>
+                        <MobileMenu scrollToSection={scrollToSection} activeSection={activeSection} />
+                    </div>
+                </nav>
             </div>
-          </div>
+            <section id='home' className='my-20 text-center z-10 relative space-y-5 min-h-[50vh] flex flex-col justify-center items-center'>
+                <div className='size-10 w-[200px] bg-indigo-500 blur-3xl absolute top-15'></div>
+                <h1 className='text-4xl md:text-5xl font-semibold'>Your Digital Safety Net,<br /> On Autopilot</h1>
+                <p className='text-sm'>Think Deeper. Build Better. Think Deeper. Build Better.</p>
+
+                <div className='mt-10 flex gap-5'>
+                    <button className='bg-[#573BA8] p-3 px-7 rounded-full text-sm'>Try Now for free</button>
+                    <button className='bg-white p-3 px-7 rounded-full text-black text-sm'>Learn More</button>
+                </div>
+            </section>
+
+            {/* Features SEction */}
+            <section id="features" className='my-20 z-20 relative'>
+                <div className='grid md:grid-cols-3 gap-5'>
+                    <div className='md:col-span-2'>
+                        <h1 className='text-2xl'>Building Cyber-Smart Communities Across Africa</h1>
+                        <p className='text-slate-300 mt-5'>
+                            Oprix CTF connects students, universities, and tech enthusiasts through
+                            real-world cybersecurity challenges. Our mission is to strengthen
+                            digital awareness and inspire young talents to protect Africa’s digital
+                            future through hands-on Capture The Flag (CTF) experiences.
+                        </p>
+                    </div>
+                    <div className='min-h-[200px] flex flex-col items-center justify-center md:items-end md:justify-end p-3 border border-[#4e486a]'>
+                        <h1 className='text-6xl'>23,000 <span className='text-[#573BA8]'>+</span></h1>
+                        <p className='text-slate-300'>Students in the Pregram</p>
+                    </div>
+                    <div className='min-h-[200px] flex flex-col items-center justify-center md:items-end md:justify-end p-3 border border-[#4e486a]'>
+                        <h1 className='text-6xl'>230 <span className='text-[#573BA8]'>+</span></h1>
+                        <p className='text-slate-300'>Students in the Pregram</p>
+                    </div>
+                    <div className='min-h-[200px] flex flex-col items-center justify-center md:items-end md:justify-end p-3 border border-[#4e486a]'>
+                        <h1 className='text-6xl'>980.00 <span className='text-[#573BA8]'>+</span></h1>
+                        <p className='text-slate-300'>Students in the Pregram</p>
+                    </div>
+                    <div className='min-h-[200px] flex flex-col items-center justify-center md:items-end md:justify-end p-3 border border-[#4e486a]'>
+                        <h1 className='text-6xl'>40.00 <span className='text-[#573BA8]'>+</span></h1>
+                        <p className='text-slate-300'>Students in the Pregram</p>
+                    </div>
+                </div>
+            </section>
+
+            {/* How it works section */}
+
+            <section id="howitworks" className='my-20 md:mt-30'>
+                <h1 className='text-3xl font-semibold text-center'>How it Works</h1>
+
+                <div className='mt-10 md:mt-30 flex flex-col gap-10'>
+                    <div className='flex gap-5 md:gap-10 md:w-1/2 md:flex-row-reverse'>
+                        <p className='text-8xl text-indigo-700/25'>1</p>
+                        <div className='md:text-right'>
+                            <h2 className='text-2xl'>Create an Account</h2>
+                            <p className='mt-4'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem placeat delectus odit, quaerat a dolor officiis ipsum non asperiores velit dolorem eligendi rem laboriosam. Odit, omnis? Dolore facilis a dolor?</p>
+                        </div>
+                    </div>
+                    <div className='flex gap-5 md:gap-10 md:w-1/2 ml-auto'>
+                        <p className='text-8xl text-indigo-700/25'>2</p>
+                        <div className=''>
+                            <h2 className='text-2xl'>Create an Account</h2>
+                            <p className='mt-4'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem placeat delectus odit, quaerat a dolor officiis ipsum non asperiores velit dolorem eligendi rem laboriosam. Odit, omnis? Dolore facilis a dolor?</p>
+                        </div>
+                    </div>
+                    <div className='flex gap-5 md:gap-10 md:w-1/2 md:flex-row-reverse'>
+                        <p className='text-8xl text-indigo-700/25'>3</p>
+                        <div className='md:text-right'>
+                            <h2 className='text-2xl'>Create an Account</h2>
+                            <p className='mt-4'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem placeat delectus odit, quaerat a dolor officiis ipsum non asperiores velit dolorem eligendi rem laboriosam. Odit, omnis? Dolore facilis a dolor?</p>
+                        </div>
+                    </div>
+                    <div className='flex gap-5 md:gap-10 md:w-1/2 ml-auto'>
+                        <p className='text-8xl text-indigo-700/25'>4</p>
+                        <div className=''>
+                            <h2 className='text-2xl'>Create an Account</h2>
+                            <p className='mt-4'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem placeat delectus odit, quaerat a dolor officiis ipsum non asperiores velit dolorem eligendi rem laboriosam. Odit, omnis? Dolore facilis a dolor?</p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+
+            {/* Frequently Asked Questions */}
+
+            <hr className='my-10 md:mt-30 border-[#4e486a]' />
+
+            <section id='faq' className='my-20 grid md:grid-cols-3'>
+                <h1 className="text-3xl font-semibold mb-10 md:mb-0">Frequently <br />Asked <br /> Questions</h1>
+                <div className=" flex col-span-2 flex-col gap-5 mx-auto w-full">
+                    <div className="p-5 w-full rounded-md">
+                        <h2 className="font-semibold">What is Oprix CTF African?</h2>
+                        <p className="text-slate-300 mt-2">
+                            Oprix CTF African is a platform that offers Capture The Flag
+                            competitions focused on cybersecurity challenges for individuals
+                            and teams across Africa.
+                        </p>
+                    </div>
+                    <div className="p-5 w-full rounded-md">
+                        <h2 className="font-semibold">How do I participate in a CTF?</h2>
+                        <p className="text-slate-300 mt-2">
+                            To participate, simply create an account on our platform, browse
+                            the available CTF competitions, and register for the one that
+                            interests you.
+                        </p>
+                    </div>
+                    <div className="p-5 w-full rounded-md">
+                        <h2 className="font-semibold">Are there any fees to join?</h2>
+                        <p className="text-slate-300 mt-2">
+                            Many of our CTF competitions are free to join, but some may have
+                            entry fees. Please check the specific competition details for
+                            more information.
+                        </p>
+                    </div>
+                    <div className="p-5 w-full rounded-md">
+                        <h2 className="font-semibold">What skills do I need?</h2>
+                        <p className="text-slate-300 mt-2">
+                            Oprix CTF African welcomes participants of all skill levels, from
+                            beginners to advanced cybersecurity enthusiasts. We offer a range
+                            of challenges to suit different expertise levels.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+
+            {/* Conatct Us section */}
+
+            <section id='contact' className='py-20 bg-linear-to-br from-[#2b293799] via-[#03010C99] shadow-2xl rounded-lg to-[#2b293799] min-h-[100px] p-10'>
+                <h1 className='text-3xl font-semibold text-center'>Have more questions?</h1>
+                <p className='text-slate-300 text-center mt-5'>In the work that I do, I sometimes need ireframes/prototypes that are in or. <br />To make the work easier, I'</p>
+                <div className='mt-10 flex justify-center bg-white/10 text-white p-1 rounded-full w-fit mx-auto'>
+                    <input type="text" placeholder='Leave your email..' className='outline-none text-white px-4' />
+                    <button className='bg-[#573BA8] p-3 md:px-7 px-4 rounded-full text-sm'>Contact Us</button>
+                </div>
+            </section>
+
+            <footer className='bg-[#03010C99] min-h-[200px] mt-10 p-5'>
+                <div className='grid md:grid-cols-2 md:w-[90%] mx-auto'>
+                    <div>
+                        <div className="logo flex gap-2 items-center">
+                            <Image
+                                src="/img/logo_icon.png"
+                                alt="logo"
+                                width={70}
+                                height={70}
+                                className="block max-md:hidden left-[-35px]"
+                            />
+                            <p>Oprix CTF</p>
+                        </div>
+                        <p className='md:w-[90%] mt-5 text-zinc-400'>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto, eos. Magnam totam, ipsam repellat eum earum iusto nemo laudantium amet vero natus voluptatem odio alias veritatis distinctio illum ea dignissimos.</p>
+                        {/* Social Links */}
+                        <div className='flex gap-5 mt-5'>
+                            <Link href={'#'} className='bg-slate-800 p-3 rounded-full'>
+                                <FaLinkedin />
+                            </Link>
+                            <Link href={'#'} className='bg-slate-800 p-3 rounded-full'>
+                                <FaFacebook />
+                            </Link>
+                            <Link href={'#'} className='bg-slate-800 p-3 rounded-full'>
+                                <GrTwitter />
+                            </Link>
+                            <Link href={'#'} className='bg-slate-800 p-3 rounded-full'>
+                                <TfiYoutube />
+                            </Link>
+                        </div>
+                    </div>
+                    <div className="links">
+                        <ul className='flex gap-5 items-start mt-10 md:justify-end h-full'>
+                            <li><a href="#">Home</a></li>
+                            <li><a href="#">How it works</a></li>
+                            <li><a href="#">FAQ</a></li>
+                            <li><a href="#">Contact us</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div className='mt-10 md:w-[90%] mx-auto'>
+                    <p>&copy; Copyright Oprix 2025. All Right reserved.</p>
+                </div>
+            </footer>
+
         </div>
-      </section>
-      <section className="mt-20">
-        <div className="relative">
-
-        <div className="w-[200px] absolute translate-x-[-50%] left-[50%] top-[-50px]">
-          <Image src={'/img/grid.png'} width={1000} height={400} alt="" className=" scale-170" />
-        </div>
-        <div className="bg-gradient-to-bl from-blue-500/25 absolute to-blue-200/25 w-[500px] blur-3xl h-[40px] translate-x-[-50%] left-[50%]"></div>
-          <h1 className="text-5xl font-bold text-center mt-10">
-            Hear It From Our Community{" "}
-          </h1>
-          <p className="text-center mt-4 text-xl text-slate-500">
-            what our customers says!
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 mt-20 gap-3">
-          {ctfReviews.map((review) => (
-            <ReviewCard key={review.id} {...review} />
-          ))}
-        </div>
-
-        <Link
-          className="p-3 px-15 mt-10 mx-auto w-fit rounded-md block bg-gradient-to-bl hover:scale-110 from-blue-500 to-blue-700"
-          href={"#"}
-        >
-          Create Account
-        </Link>
-      </section>
-
-      <section className="my-10 relative">
-
-
-
-        <div className="absolute translate-x-[-50%] left-[50%] bottom-[10px]">
-          <Image src={'/img/social.png'} width={1000} height={400} alt="" className=" scale-190" />
-        </div>
-        <h1 className="text-5xl font-bold text-center mt-30">Social</h1>
-
-        <div className="mx-auto my-10 w-fit">
-
-          <Image
-            src="/img/logo_icon.png"
-            alt="logo"
-            width={100}
-            height={100}
-            className="z-20 relative"
-          /> 
-        </div>
-
-        <div className="mx-auto w-fit flex gap-5">
-          <Link href={"#"}>
-            <Facebook size={30} />
-          </Link>
-          <Link href={"#"}>
-            <Linkedin size={30} />
-          </Link>
-          <Link href={"#"}>
-            <Twitter size={30} />
-          </Link>
-          <Link href={"#"}>
-            <Youtube size={30} />
-          </Link>
-        </div>
-      </section>
-    </div>
-  );
+    )
 }
 
-export default page;
+export default page

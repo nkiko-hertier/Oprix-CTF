@@ -2,7 +2,7 @@ import { ArrowRight, Menu } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
-import { MobNav } from "./competitions/MobNav";
+import { MobNav } from "../competitions/MobNav";
 import { SignIn, SignInButton, SignUpButton } from "@clerk/nextjs";
 
 function layout({
