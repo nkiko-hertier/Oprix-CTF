@@ -10,7 +10,7 @@ function page() {
             <div>
                 {/* Recent courses section */}
                 <section className='mx-0! w-full!'>
-                    <h2 className='text-xl mb-4 mt-10'>Recent Courses</h2>
+                    <h2 className='text-xl mb-4 mt-10'>your competitions</h2>
                     <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
                         {/* Course Card */}
                         <div className='bg-white/10 p-4 relative rounded-lg hover:bg-white/20 cursor-pointer'>
@@ -37,7 +37,7 @@ function page() {
                     </div>
                     <div className='mt-20'>
                         <div className='flex justify-between mb-5'>
-                            <h2 className='text-xl'>Other Courses</h2>
+                            <h2 className='text-xl'>Other Competitions</h2>
                             <div className='flex items-center bg-white/10s  px-2 gap-3 border-b '>
                                 <input type="text" placeholder='Search by keyword...' className='px-3 py-1 text-sm rounded-md outline-none text-white placeholder-gray-400 transition-all'/>
                                 <RiSearch2Line />
