@@ -135,7 +135,10 @@
     .srollv-section > section {
         @apply w-screen!
     }
-    .cl-internal-1dauvpw{
+    .cl-internal-1dauvpw, .cl-userButtonPopoverFooter{
         @apply hidden!;
+    }
+    .cl-internal-ybjomz{
+        @apply bg-slate-600/10;
     }
 }

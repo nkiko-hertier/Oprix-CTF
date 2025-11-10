@@ -19,8 +19,8 @@ function layout({
               <Image
               src="/img/logo_icon.png"
               alt="logo"
-              width={70}
-              height={70}
+              width={30}
+              height={30}
               className="block max-md:hidden relative left-[-35px]"
               /> 
             <div className="absolute left-[25px]">
@@ -31,8 +31,8 @@ function layout({
             <Image
               src="/img/logo_icon.png"
               alt="logo"
-              width={70}
-              height={70}
+              width={30}
+              height={30}
               className="hidden max-md:block relative left-[-35px]"
             /> 
           </Link>

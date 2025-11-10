@@ -1,12 +1,12 @@
 import { UserButton } from "@clerk/nextjs";
 import { Crown, Dot, Home, LayoutDashboard } from "lucide-react";
-import { GradientCard } from "../components/HomeCards";
+import { GradientCard } from "../../components/HomeCards";
 import { RiHomeSmile2Fill, RiVipCrown2Fill } from "react-icons/ri";
 import { GiTargetPrize } from "react-icons/gi";
 import { FaGraduationCap } from "react-icons/fa";
 import { HiDotsVertical } from "react-icons/hi";
 import { PiSidebarSimpleFill, PiSidebarSimpleLight } from "react-icons/pi";
-import SwitchBack from "../components/SwitchBack";
+import SwitchBack from "../../components/SwitchBack";
 
 function layout({
   children,

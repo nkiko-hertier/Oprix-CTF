@@ -55,8 +55,8 @@ function page() {
                         <Image
                             src="/img/logo_icon.png"
                             alt="logo"
-                            width={50}
-                            height={50}
+                            width={30}
+                            height={30}
                             className="left-[-35px]"
                         />
                     </div>
@@ -98,9 +98,9 @@ function page() {
                 <h1 className='text-4xl md:text-5xl font-semibold'>Your Digital Safety Net,<br /> On Autopilot</h1>
                 <p className='text-sm'>Think Deeper. Build Better. Think Deeper. Build Better.</p>
 
-                <div className='mt-10 flex gap-5'>
-                    <button className='bg-[#573BA8] p-3 px-7 rounded-full text-sm'>Try Now for free</button>
-                    <button className='bg-white p-3 px-7 rounded-full text-black text-sm'>Learn More</button>
+                <div className='mt-10 flex-col flex sm:flex-row gap-5'>
+                    <button className='sm:w-fit w-full bg-[#573BA8] p-3 px-7 rounded-full text-sm'>Try Now for free</button>
+                    <button className='sm:w-fit w-full bg-white p-3 px-7 rounded-full text-black text-sm'>Learn More</button>
                 </div>
             </section>
 
@@ -219,12 +219,12 @@ function page() {
 
             {/* Conatct Us section */}
 
-            <section id='contact' className='py-20 bg-linear-to-br from-[#2b293799] via-[#03010C99] shadow-2xl rounded-lg to-[#2b293799] min-h-[100px] p-10'>
+            <section id='contact' className='py-20 bg-linear-to-br from-[#2b293799] via-[#03010C99] shadow-2xl rounded-lg to-[#2b293799] min-h-[100px] p-3 sm:p-10'>
                 <h1 className='text-3xl font-semibold text-center'>Have more questions?</h1>
                 <p className='text-slate-300 text-center mt-5'>In the work that I do, I sometimes need ireframes/prototypes that are in or. <br />To make the work easier, I'</p>
-                <div className='mt-10 flex justify-center bg-white/10 text-white p-1 rounded-full w-fit mx-auto'>
-                    <input type="text" placeholder='Leave your email..' className='outline-none text-white px-4' />
-                    <button className='bg-[#573BA8] p-3 md:px-7 px-4 rounded-full text-sm'>Contact Us</button>
+                <div className='mt-10 sm:flex justify-center sm:bg-white/10 text-white p-1 rounded-full w-fit mx-auto'>
+                    <input type="text" placeholder='Leave your email..' className='outline-none text-white px-4 max-sm:bg-white/10 w-full rounded-full max-sm:p-3' />
+                    <button className='bg-[#573BA8] sm:w-fit w-full p-3 md:px-7 px-4 rounded-full text-sm max-sm:mt-3'>Contact Us</button>
                 </div>
             </section>
 
