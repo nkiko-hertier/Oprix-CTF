@@ -17,7 +17,7 @@ function AppRouter() {
 
         {/* Landing Pages */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/onboard" element={<Onboarding />} />
 
         {/* auth Pages */}
         <Route element={<AuthLayout />}>
