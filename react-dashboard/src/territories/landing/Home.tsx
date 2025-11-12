@@ -78,9 +78,7 @@ function HomePage() {
                     </div>
                     <div className='hidden md:block'>
                         <SignedOut>
-                            <SignInButton>
-                                <button className='bg-[#573BA8] p-3 px-7 rounded-full text-sm'>Get Started</button>
-                            </SignInButton>
+                                <Link to="auth/sign-up" className='bg-[#573BA8] p-3 px-7 rounded-full text-sm'>Get Started</Link>
                         </SignedOut>
                         <SignedIn>
                             <Link to={'/onboarding'} className='bg-[#573BA8] flex gap-2 p-3 px-7 items-center rounded-full text-sm'>Dashboard <ArrowRight size={15} /> </Link>
