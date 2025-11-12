@@ -111,10 +111,35 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+    * {
+        @apply border-border outline-ring/50;
+        transition: 0.35s ease-out;
+    }
+    body {
+        @apply bg-background text-foreground overflow-x-hidden;
+    }
+    .card-gradient-line {
+        background: linear-gradient(
+            to right,
+            transparent 70%,
+            white,
+            transparent 10%
+        );
+    }
+    section {
+        width: 85%;
+        @apply mx-auto scroll-mt-[100px] md:scroll-mt-[120px];
+    }
+    .srollv-section > section {
+        @apply w-screen!
+    }
+    .cl-internal-1dauvpw, .cl-userButtonPopoverFooter{
+        @apply hidden!;
+    }
+    .cl-internal-ybjomz{
+        @apply bg-slate-600/10!;
+    }
+    .cl-providerIcon__github{
+        @apply brightness-0 invert!;
+    }
 }

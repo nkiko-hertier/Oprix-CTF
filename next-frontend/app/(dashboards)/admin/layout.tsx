@@ -1,10 +1,6 @@
-import Link from "next/link";
 import Image from "next/image";
-import { BiSolidHomeSmile } from "react-icons/bi";
-import { BsFillPeopleFill, BsLayoutSidebarReverse } from "react-icons/bs";
-import { HiMiniPresentationChartLine } from "react-icons/hi2";
-import { IoNotifications, IoSettings } from "react-icons/io5";
-import { TbAwardFilled } from "react-icons/tb";
+import { BsLayoutSidebarReverse } from "react-icons/bs";
+import { IoNotifications } from "react-icons/io5";
 import { UserButton } from "@clerk/nextjs";
 import { GradientCard } from "@/app/components/HomeCards";
 import SidebarLinks from "./components/SideBarLinks";

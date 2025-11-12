@@ -37,7 +37,7 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: "http://192.168.1.66:3001",
+    origin: "https://nondiagrammatically-unmaligned-daniela.ngrok-free.dev",
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
