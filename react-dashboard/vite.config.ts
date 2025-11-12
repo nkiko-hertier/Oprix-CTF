@@ -7,13 +7,15 @@ import { defineConfig } from "vite"
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    port: 3000,
+    host: "0.0.0.0",
     proxy: {
       '/api/v1': {
         target: 'https://oprix-ctf.up.railway.app',
         changeOrigin: true,
+        secure: true,
       },
     },
-    allowedHosts: true,
   },
   resolve: {
     alias: {

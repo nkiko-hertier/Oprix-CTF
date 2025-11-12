@@ -1,9 +1,12 @@
 {
     "rewrites": [
-        { "source": "/(.*)", "destination": "/index.html" },
         {
-      "source": "/api/v1/:path*",
-      "destination": "https://oprix-ctf.up.railway.app/api/v1/:path*"
-    }
+            "source": "/(.*)",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/api/v1/:path*",
+            "destination": "https://oprix-ctf.up.railway.app/api/v1/:path*"
+        }
     ]
 }
