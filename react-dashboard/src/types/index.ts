@@ -47,7 +47,7 @@ export interface Competition {
   startTime: string
   prize: string,
   endTime: string
-  type: CompetitionType
+  // type: CompetitionType
   status: CompetitionStatus
   isTeamBased: boolean
   maxTeamSize?: number
@@ -60,6 +60,11 @@ export interface Competition {
   createdAt: string
   updatedAt: string
   admin?: User
+  _count: {
+    registrations: number
+    challenges: number
+  }
+
 }
 
 // Challenge Types

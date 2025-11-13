@@ -7,10 +7,13 @@ import getApiClient from '@/lib/api-client'
 import { API_ENDPOINTS } from '@/config/api.config';
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
+import NoContent from '@/components/NoContent'
+import { JoinCompetition } from '@/components/Models/JoinCompetition'
 
 function CompetitionPage() {
     const [competitions, setCompetitions] = useState<Competition[]>([]);
     const [myCompetitions, setMyCompetitions] = useState<Competition[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         getApiClient().get<PaginatedResponse<Competition>>(API_ENDPOINTS.COMPETITIONS.LIST).then((res) => {
@@ -18,8 +21,9 @@ function CompetitionPage() {
             console.log(res.data)
         })
         getApiClient().get<PaginatedResponse<Competition>>(API_ENDPOINTS.COMPETITIONS.LIST + "?myCompetitions=true").then((res) => {
-            setMyCompetitions(res.data.data)
+            // setMyCompetitions(res.data.data)
             console.log(res.data)
+            setLoading(false);
         })
     }, [])
 
@@ -30,9 +34,14 @@ function CompetitionPage() {
             <div>
                 {/* Recent courses section */}
                 <section className='mx-0! w-full!'>
-                    <h2 className='text-xl mb-4 mt-10'>your competitions</h2>
+                    <h2 className='text-xl mb-4 mt-10'>Continue solving</h2>
+
+                    {(myCompetitions.length == 0 && !loading) && <NoContent title="You have not joined any competitions yet" description="Browse competitions below to find one that interests you." />}
                     <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
-                        {/* Course Card */}
+                         {
+                                (loading) && [1,2,3,4].map(() =>
+                            <div className='skeleton min-h-[130px]'></div>)
+                            }
                         {myCompetitions.map((competition) => {
                                 if(competition.status == "DRAFT") return
                                 const status = (competition.status == "REGISTRATION_OPEN") ? "OPEN" : competition.status;
@@ -51,7 +60,10 @@ function CompetitionPage() {
                                     </div>
                                     <div>
                                         {competition.status === 'REGISTRATION_OPEN' ? 
-                                        <p className='text-blue-500 flex items-center gap-1 mt-3'>Join now</p>
+                                        <p className='text-blue-500 flex items-center gap-1 mt-3'>
+                                            <JoinCompetition competition={competition} />
+                                        </p>
+
                                         : 
                                         <Link to={`/platform/competition/${competition.id}`} className='text-blue-500 flex items-center gap-1 mt-3'>
                                             Read more <ArrowRight size={15} />
@@ -72,6 +84,10 @@ function CompetitionPage() {
                         </div>
                         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
                             {/* Course Card */}
+                            {
+                                (loading) && [1,2,3,4].map(() =>
+                            <div className='skeleton min-h-[130px]'></div>)
+                            }
                             {competitions.map((competition) => {
                                 if(competition.status == "DRAFT") return
                                 const status = (competition.status == "REGISTRATION_OPEN") ? "OPEN" : competition.status;
@@ -90,7 +106,9 @@ function CompetitionPage() {
                                     </div>
                                     <div>
                                         {competition.status === 'REGISTRATION_OPEN' ? 
-                                        <p className='text-blue-500 flex items-center gap-1 mt-3'>Join now</p>
+                                        <p className='text-blue-500 flex items-center gap-1 mt-3'>
+                                            <JoinCompetition competition={competition} />
+                                        </p>
                                         : 
                                         <Link to={`/platform/competition/${competition.id}`} className='text-blue-500 flex items-center gap-1 mt-3'>
                                             Read more <ArrowRight size={15} />

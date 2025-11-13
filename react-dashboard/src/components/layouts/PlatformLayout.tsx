@@ -1,12 +1,21 @@
-import { UserButton } from "@clerk/clerk-react";
+import { UserButton, useUser } from "@clerk/clerk-react";
 import { GradientCard } from "../../components/HomeCards";
 import { RiHomeSmile2Fill, RiVipCrown2Fill } from "react-icons/ri";
 import { FaGraduationCap } from "react-icons/fa";
 import { PiSidebarSimpleFill } from "react-icons/pi";
 import SwitchBack from "../SwitchBack";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 
 function PlatformLayout() {
+
+  const navigate = useNavigate();
+  const { user, isLoaded, isSignedIn } = useUser();
+
+if (!isLoaded || !isSignedIn) {
+    return navigate('/'); // Redirect to home if not signed in
+ } else if (user.publicMetadata.role !== 'USER') {
+    return navigate('/');
+ }
   return (
     <>
     <div className='h-screen overflow-y-auto bg-zinc-950 text-white p-2'>

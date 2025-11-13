@@ -1,16 +1,22 @@
 
 import { BsLayoutSidebarReverse } from "react-icons/bs";
 import { IoNotifications } from "react-icons/io5";
-import { UserButton } from "@clerk/clerk-react";
+import { UserButton, useUser } from "@clerk/clerk-react";
 import { GradientCard } from "../HomeCards";
 import SidebarLinks from "../SideBarLinks";
 import CTFCompetitionForm from "../Models/CompetitionsForm";
 import { MdAddModerator } from "react-icons/md";
 import { Toaster } from "sonner";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 export default function AdminLayout() {
+    const navigate = useNavigate();
+    const { user, isLoaded, isSignedIn } = useUser();
+
+    if (!isLoaded || !isSignedIn) {
+        return navigate('/'); // Redirect to home if not signed in
+    }
     return (
-        <div className="h-screen bg-[#181d27] bg-background">
+        <div className="h-screen bg-background">
             <Toaster />
             <div className="flex">
                 <aside className="h-screen w-1/3 md:w-1/4">
@@ -40,9 +46,9 @@ export default function AdminLayout() {
                             </div>
                             <div className="flex items-center gap-4">
                                 <CTFCompetitionForm>
-                                <div className="hover:bg-accent p-2 cursor-pointer rounded-md relative">
-                                    <MdAddModerator size={18} />
-                                </div>
+                                    <div className="hover:bg-accent p-2 cursor-pointer rounded-md relative">
+                                        <MdAddModerator size={18} />
+                                    </div>
                                 </CTFCompetitionForm>
                                 <div className="hover:bg-accent p-2 cursor-pointer rounded-md relative">
                                     <IoNotifications size={20} />
@@ -53,7 +59,7 @@ export default function AdminLayout() {
                         </GradientCard>
                     </header>
                     <div className="p-2">
-                    <Outlet />
+                        <Outlet />
                     </div>
                 </main>
             </div>
