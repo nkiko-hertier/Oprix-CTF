@@ -102,16 +102,26 @@ export const JoinCompetition = ({ competition }: JoinCompetitionProps) => {
                     <p className='text-zinc-400'><strong className='flex text-white gap-2 items-center'><PiUsersThreeFill /> Participants:</strong> {competition._count.registrations}</p>
                 </div>
 
-                {competition.isTeamBased && (
-                    <div className="grid gap-2 py-2">
-                        <Label htmlFor="teamId">Team ID</Label>
-                        <Input
-                            id="teamId"
-                            type="text"
-                            value={teamId}
-                            onChange={(e) => setTeamId(e.target.value)}
-                            placeholder="Enter your team ID"
-                        />
+                {(competition.isTeamBased && competition.status == "REGISTRATION_OPEN") && (
+                    // <div className="grid gap-2 py-2">
+                    //     <Label htmlFor="teamId">Team ID</Label>
+                    //     <Input
+                    //         id="teamId"
+                    //         type="text"
+                    //         value={teamId}
+                    //         onChange={(e) => setTeamId(e.target.value)}
+                    //         placeholder="Enter your team ID"
+                    //     />
+                    // </div>
+                    <div className="grid bg-white/10 p-3 py-6 rounded-md">
+                        <div className='mb-5'>
+                        <h1 className='text-center text-xl'>You Need a team to join</h1>
+                        <p className='text-center text-zinc-400'>join by invitation code or create a new team</p>
+                        </div>
+                        <div className='flex justify-center gap-2'>
+                            <Button>Join existing</Button>
+                            <Button>Create new</Button>
+                        </div>
                     </div>
                 )}
 
@@ -126,9 +136,9 @@ export const JoinCompetition = ({ competition }: JoinCompetitionProps) => {
                             </Button>
                             :
                             ((!isMember) ?
-                                <Button onClick={handleJoin} disabled={loading}>
+                                (<Button onClick={handleJoin} disabled={loading || (competition.isTeamBased && !teamId)}>
                                     {loading ? 'Joining...' : 'Join'}
-                                </Button> :
+                                </Button>) :
                                 <Button asChild>
                                     <Link to={`/platform/competition/${competition.id}#challanges`}>
                                         Continue Solving

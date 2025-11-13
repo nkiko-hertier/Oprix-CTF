@@ -9,6 +9,7 @@ import PlatformLayout from './layouts/PlatformLayout';
 import PlatformHome from '@/territories/platform/Home';
 import CompetitionPage from '@/territories/platform/CompetitionPage';
 import SingleCompetitionsPage from '@/territories/platform/SingleCompetitionsPage';
+import NotFound from '@/territories/landing/NotFound';
 
 function AppRouter() {
   return (
@@ -38,6 +39,8 @@ function AppRouter() {
             <Route path="/platform/competition/:id" element={<SingleCompetitionsPage />} />
             <Route path="/platform/*" element={<div>Platform - To be implemented</div>} />
           </Route>
+
+          <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   )
