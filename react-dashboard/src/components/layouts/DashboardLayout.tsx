@@ -7,13 +7,13 @@ import SidebarLinks from "../SideBarLinks";
 import CTFCompetitionForm from "../Models/CompetitionsForm";
 import { MdAddModerator } from "react-icons/md";
 import { Toaster } from "sonner";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
+
 export default function AdminLayout() {
-    const navigate = useNavigate();
     const { user, isLoaded, isSignedIn } = useUser();
 
     if (!isLoaded || !isSignedIn) {
-        return navigate('/'); // Redirect to home if not signed in
+        return <Navigate to="/" replace />
     }
     return (
         <div className="h-screen bg-background">

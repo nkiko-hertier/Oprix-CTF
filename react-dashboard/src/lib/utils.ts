@@ -32,3 +32,12 @@ export function formatTimeAgoOrRemaining(timestamp: string): string {
   return "just now"
 }
 
+
+export const CompButtonText = {
+  REGISTRATION_OPEN: "Join Competition",
+  ACTIVE: "View Competition",
+  COMPLETED: "View Results",
+  PAUSED: "View Competition",
+  CANCELLED: "View Competition",
+  DRAFT: "View Competition",
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Competition, PaginatedResponse } from '@/types';
 import {
     Dialog,
@@ -20,6 +20,10 @@ import { PiUsersThreeFill } from 'react-icons/pi';
 import { API_ENDPOINTS } from '@/config/api.config';
 import getApiClient from '@/lib/api-client';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
+import { set } from 'zod';
+import { is } from 'zod/v4/locales';
+import { CompButtonText } from '@/lib/utils';
 
 interface JoinCompetitionProps {
     competition: Competition;
@@ -32,6 +36,23 @@ interface JoinPayload {
 export const JoinCompetition = ({ competition }: JoinCompetitionProps) => {
     const [teamId, setTeamId] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isMember, setIsMember] = useState(false);
+
+
+
+    const checkRegistration = async () => {
+        try {
+            const isReged = await getApiClient().get(
+                API_ENDPOINTS.COMPETITIONS.GET(competition.id)
+            );
+            setIsMember(isReged.data.isRegistered);
+            (isReged.data.isRegistered) && toast.message("You or your team is already registered for this competition.");
+        } catch (error) {
+            toast.error("Something went wrong while checking registration status.");
+            setLoading(false);
+            return;
+        }
+    }
 
     const handleJoin = async () => {
         setLoading(true);
@@ -42,23 +63,29 @@ export const JoinCompetition = ({ competition }: JoinCompetitionProps) => {
                 API_ENDPOINTS.COMPETITIONS.REGISTER(competition.id),
                 payload && payload
             );
+
             toast.success(res.data.message[0]);
             setLoading(false);
         } catch (error: any) {
             if (error.response?.status === 409) {
                 toast.warning("You or your team is already registered for this competition.");
-            setLoading(false);
+                setLoading(false);
             } else {
                 toast.error(error.response?.data?.message || "Something went wrong.");
-            setLoading(false);
+                setLoading(false);
             }
         }
     };
 
+
     return (
-        <Dialog>
+        <Dialog
+            onOpenChange={(open) => {
+                if (open) checkRegistration();
+            }}
+        >
             <DialogTrigger asChild>
-                <Button>Join Competition</Button>
+                <Button>View Competition</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg bg-[#1b1d21] border-none">
                 <DialogHeader>
@@ -89,9 +116,26 @@ export const JoinCompetition = ({ competition }: JoinCompetitionProps) => {
                 )}
 
                 <DialogFooter>
-                    <Button onClick={handleJoin} disabled={loading}>
-                        {loading ? 'Joining...' : 'Join'}
-                    </Button>
+                    {isMember ? <p className='text-zinc-500'>You are already registered for this competition.</p> : null}
+                    {
+                        (competition.status !== 'REGISTRATION_OPEN') ?
+                            <Button asChild>
+                                <Link to={`/platform/competition/${competition.id}`}>
+                                   { CompButtonText[competition.status] || "View Competition" }
+                                </Link>
+                            </Button>
+                            :
+                            ((!isMember) ?
+                                <Button onClick={handleJoin} disabled={loading}>
+                                    {loading ? 'Joining...' : 'Join'}
+                                </Button> :
+                                <Button asChild>
+                                    <Link to={`/platform/competition/${competition.id}#challanges`}>
+                                        Continue Solving
+                                    </Link>
+                                </Button>
+                            )
+                    }
                 </DialogFooter>
             </DialogContent>
         </Dialog>

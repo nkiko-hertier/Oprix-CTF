@@ -4,17 +4,15 @@ import { RiHomeSmile2Fill, RiVipCrown2Fill } from "react-icons/ri";
 import { FaGraduationCap } from "react-icons/fa";
 import { PiSidebarSimpleFill } from "react-icons/pi";
 import SwitchBack from "../SwitchBack";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Navigate, Outlet} from "react-router-dom";
 
 function PlatformLayout() {
-
-  const navigate = useNavigate();
   const { user, isLoaded, isSignedIn } = useUser();
 
 if (!isLoaded || !isSignedIn) {
-    return navigate('/'); // Redirect to home if not signed in
+    return <Navigate to="/" replace />
  } else if (user.publicMetadata.role !== 'USER') {
-    return navigate('/');
+    return <Navigate to="/" replace />
  }
   return (
     <>

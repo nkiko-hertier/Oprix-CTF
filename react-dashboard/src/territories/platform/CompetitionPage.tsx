@@ -48,7 +48,6 @@ function CompetitionPage() {
                                 return (
                                 <div className='bg-white/10 p-4 relative rounded-lg hover:bg-white/20 cursor-pointer' key={competition.id}>
                                     {/* Cover picture */}
-                                    {}
                                     <div className='h-[200px] mb-2 hidden'>
                                         <img src="https://cdn.pixabay.com/collection/thumbnail/2025/06/05/island-2722471_1280.jpg" className='rounded-md size-full object-cover' alt="" />
                                     </div>
@@ -105,15 +104,9 @@ function CompetitionPage() {
                                         <button className='absolute top-6 right-6 bg-white/10 px-3 text-sm py-1 rounded-full hover:bg-white/20 flex gap-2 items-center'><BsStars /> {(status).toLowerCase()}</button>
                                     </div>
                                     <div>
-                                        {competition.status === 'REGISTRATION_OPEN' ? 
                                         <p className='text-blue-500 flex items-center gap-1 mt-3'>
                                             <JoinCompetition competition={competition} />
                                         </p>
-                                        : 
-                                        <Link to={`/platform/competition/${competition.id}`} className='text-blue-500 flex items-center gap-1 mt-3'>
-                                            Read more <ArrowRight size={15} />
-                                        </Link> 
-                                        }
                                     </div>
                                 </div>
                             )}
