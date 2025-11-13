@@ -71,3 +71,150 @@ export default defineConfig([
   },
 ])
 ```
+
+
+
+Sure! Here’s a **step-by-step summary** of everything you did to get your app deployed on Railway, from creating `deploy.sh` to having the live API:
+
+---
+
+### **1. Prepare your deployment script (`deploy.sh`)**
+
+* You created a shell script to automate starting containers and building images.
+
+* Commands included:
+
+  ```bash
+  # Stop and remove previous containers
+  podman stop oprix-ctf-postgres oprix-ctf-redis oprix-ctf-backend
+  podman rm oprix-ctf-postgres oprix-ctf-redis oprix-ctf-backend
+
+  # Start services
+  podman run -d --name oprix-ctf-postgres postgres:15
+  podman run -d --name oprix-ctf-redis redis:7-alpine
+
+  # Build and run backend
+  cd /path/to/backend
+  podman build -t localhost/oprix-ctf-backend .
+  podman run -d --name oprix-ctf-backend -p 3000:3000 localhost/oprix-ctf-backend
+  ```
+
+* This script handled **stopping old containers**, **starting new ones**, and **building/running the backend**.
+
+---
+
+### **2. Build multi-stage Docker image**
+
+* You created a **Dockerfile** with **multi-stage builds** for production:
+
+  * **Builder stage**: installs dependencies, runs `pnpm install`, generates Prisma client, builds the NestJS app.
+  * **Production stage**: copies built app, installs runtime dependencies, sets up non-root user, exposes port, and sets `ENTRYPOINT` and `CMD`.
+* Installed extra tools in the image: `dumb-init`, `openssl`.
+* Created uploads folder and fixed permissions for `nestjs` user.
+* Healthcheck added (though warned by Podman about OCI format).
+
+---
+
+### **3. Run `deploy.sh` locally**
+
+* Executed `./deploy.sh`.
+* Podman built images using cached layers when possible.
+* Started PostgreSQL and Redis containers.
+* Built backend image.
+* Ran backend container; initially got errors due to:
+
+  * **Port 3000 already in use** → resolved by stopping/removing existing containers.
+  * **Container names already in use** → resolved by removing old containers first.
+* Verified backend connected successfully to Redis and PostgreSQL:
+
+  ```
+  Redis connected successfully
+  Database connection established
+  Server listening on http://localhost:8080
+  ```
+
+---
+
+### **4. Log in to GitHub Container Registry**
+
+* Logged into GHCR via Podman:
+
+  ```bash
+  podman login ghcr.io
+  ```
+* Username: `nkiko-hertier`
+* Password: GitHub personal access token (PAT) with `write:packages` scope.
+* Login succeeded.
+
+---
+
+### **5. Tag images for GitHub Container Registry**
+
+* Tagged local images for pushing:
+
+  ```bash
+  GITHUB_USER="nkiko-hertier"
+
+  podman tag localhost/oprix-ctf-backend ghcr.io/$GITHUB_USER/oprix-ctf-backend:latest
+  podman tag localhost/oprix-ctf-postgres ghcr.io/$GITHUB_USER/oprix-ctf-postgres:latest
+  podman tag localhost/oprix-ctf-redis ghcr.io/$GITHUB_USER/oprix-ctf-redis:latest
+  ```
+* Note: Postgres and Redis images were not built locally as custom images; used official images → tagging failed for them. Backend tagging worked.
+
+---
+
+### **6. Push backend image to GHCR**
+
+* Push image to registry:
+
+  ```bash
+  podman push ghcr.io/$GITHUB_USER/oprix-ctf-backend:latest
+  ```
+* GHCR accepted the image → ready for deployment.
+
+---
+
+### **7. Deploy to Railway**
+
+* Connected Railway to GHCR image (`ghcr.io/nkiko-hertier/oprix-ctf-backend:latest`).
+* Set environment variables for PostgreSQL and Redis.
+* Started deployment:
+
+  * Containers initialized.
+  * Backend connected to database and Redis.
+  * Logs showed successful startup:
+
+    ```
+    Redis connected successfully
+    Database connection established
+    Nest application successfully started
+    Server listening on http://localhost:8080
+    API available at http://localhost:8080/api/v1
+    ```
+
+---
+
+### **8. Verify live deployment**
+
+* Opened Swagger docs in browser:
+
+  ```
+  https://oprix-ctf.up.railway.app/api/v1/docs
+  ```
+* Confirmed routes were visible and working:
+
+  * `/api/v1/health/detailed`
+  * `/api/v1/health/ready`
+  * `/api/v1/health/live`
+* Backend is now live and fully functional.
+
+---
+
+✅ **Summary:**
+You automated building and running your NestJS app with Podman, pushed the backend image to GitHub Container Registry, deployed it on Railway, and verified that Redis and Postgres connections were working and API routes accessible.
+
+---
+
+If you want, I can **also make a clean flowchart of this deployment process** that you can keep as a reference for future projects. This will make it visually easier to follow.
+
+Do you want me to do that?

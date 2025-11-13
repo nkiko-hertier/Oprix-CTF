@@ -48,9 +48,7 @@ COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 # Install pnpm and ALL dependencies with flat structure (fixes symlink issues)
 RUN npm install -g pnpm && \
     pnpm install --frozen-lockfile --shamefully-hoist && \
-    npx prisma generate && \
-    npx prisma migrate deploy && \ 
-    npm run prisma:seed \
+    pnpm exec prisma generate && \
     pnpm store prune
 
 # Create uploads directory

@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  baseURL: "/api/v1",
+  baseURL: "https://hospitable-hope-production-613b.up.railway.app/api/v1",
   timeout: 30000,
   retryAttempts: 3,
   retryDelay: 1000,
