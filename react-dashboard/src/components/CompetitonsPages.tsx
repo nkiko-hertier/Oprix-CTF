@@ -19,7 +19,7 @@ function CompetitionsPages({ competition }: { competition: Competition }) {
 
   const Links = [
     { name: "Overview", tab: "Overview" },
-    { name: "Announcements", tab: "announcements" },
+    // { name: "Announcements", tab: "announcements" },
     { name: "Challanges", tab: "challanges" },
     { name: "Members", tab: "memebers" },
     { name: "Teams", tab: "teams" },
@@ -81,7 +81,7 @@ function CompetitionsPages({ competition }: { competition: Competition }) {
         </MainTab>
 
         <MainTab tab="challanges" activeTab={activeTab}>
-          <Challanges id={id} />
+          <Challanges competitionId={id} />
         </MainTab>
 
         <MainTab tab="memebers" activeTab={activeTab}>

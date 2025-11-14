@@ -41,3 +41,11 @@ export const CompButtonText = {
   CANCELLED: "View Competition",
   DRAFT: "View Competition",
 }
+
+
+export const isClerkAuthed = () => {
+  const cookie = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('__session='));
+  return Boolean(cookie);
+};

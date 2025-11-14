@@ -17,12 +17,11 @@ function CompetitionPage() {
 
     useEffect(() => {
         getApiClient().get<PaginatedResponse<Competition>>(API_ENDPOINTS.COMPETITIONS.LIST).then((res) => {
-            setCompetitions(res.data.data)
-            console.log(res.data)
+            if (res.data.data) setCompetitions(res.data.data)
+            setLoading(false);
         })
-        getApiClient().get<PaginatedResponse<Competition>>(API_ENDPOINTS.COMPETITIONS.LIST + "?myCompetitions=true").then((res) => {
-            // setMyCompetitions(res.data.data)
-            console.log(res.data)
+        getApiClient().get<PaginatedResponse<Competition>>(API_ENDPOINTS.COMPETITIONS.MY).then((res) => {
+            setMyCompetitions(res.data.data)
             setLoading(false);
         })
     }, [])
@@ -60,7 +59,7 @@ function CompetitionPage() {
                                     <div>
                                         {competition.status === 'REGISTRATION_OPEN' ? 
                                         <p className='text-blue-500 flex items-center gap-1 mt-3'>
-                                            <JoinCompetition competition={competition} />
+                                            <JoinCompetition isReged={true} competition={competition} />
                                         </p>
 
                                         : 

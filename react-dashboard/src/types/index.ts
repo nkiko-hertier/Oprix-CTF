@@ -86,6 +86,7 @@ export interface Challenge {
   metadata?: Record<string, any>
   hints?: Hint[]
   solveCount?: number
+  timeLimit: number | null
   isSolved?: boolean
   createdAt: string
   updatedAt: string

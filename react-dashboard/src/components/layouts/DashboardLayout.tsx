@@ -8,11 +8,16 @@ import CTFCompetitionForm from "../Models/CompetitionsForm";
 import { MdAddModerator } from "react-icons/md";
 import { Toaster } from "sonner";
 import { Navigate, Outlet } from "react-router-dom";
+import { isClerkAuthed } from "@/lib/utils";
 
 export default function AdminLayout() {
     const { user, isLoaded, isSignedIn } = useUser();
 
-    if (!isLoaded || !isSignedIn) {
+    if (!isClerkAuthed()) {
+        return <Navigate to="/" replace />
+    }
+
+    if (isLoaded && !isSignedIn) {
         return <Navigate to="/" replace />
     }
     return (

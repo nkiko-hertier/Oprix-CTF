@@ -2,13 +2,15 @@ import React from "react";
 import { Trophy, Timer, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GradientCard } from "./HomeCards";
+import type { ChallengeDifficulty } from "@/types";
 
 interface ChallengeCardProps {
   title: string;
   description: string;
-  difficulty: "Easy" | "Medium" | "Hard";
+  difficulty: ChallengeDifficulty;
   points: number;
-  timeLimit?: string;
+  timeLimit?: number | null;
+  isSolved?: boolean;
   onStart?: () => void;
 }
 
@@ -19,13 +21,14 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
   points,
   timeLimit,
   onStart,
+  isSolved
 }) => {
-  const difficultyColor =
-    difficulty === "Easy"
-      ? "text-green-400"
-      : difficulty === "Medium"
-      ? "text-yellow-400"
-      : "text-red-400";
+  const difficultyColor = "text-red-400"
+    // difficulty === "Easy"
+    //   ? "text-green-400"
+    //   : difficulty === "Medium"
+    //   ? "text-yellow-400"
+    //   : "text-red-400";
 
   return (
     <GradientCard className="min-h-fit p-4 flex flex-col justify-between space-y-3">
@@ -55,7 +58,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           onClick={onStart}
           className="flex items-center gap-1"
         >
-          Start <ArrowRight size={16} />
+          Start <ArrowRight size={16} /> {isSolved ? "(Solved)" : ""}
         </Button>
       </div>
     </GradientCard>

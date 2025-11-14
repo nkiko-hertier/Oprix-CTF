@@ -5,6 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Loader2, Trophy, Timer, Globe, Folder } from "lucide-react";
 import { GradientCard } from "./HomeCards";
+import getApiClient from "@/lib/api-client";
+import { API_ENDPOINTS } from "@/config/api.config";
+import { toast } from "sonner";
 
 interface Challenge {
     id: string;
@@ -12,110 +15,74 @@ interface Challenge {
     description: string;
     category?: string;
     points: number;
-    flagHash: string;
-    caseSensitive: boolean;
-    normalizeFlag: boolean;
-    competitionId: string;
     difficulty: "EASY" | "MEDIUM" | "HARD";
     solveCount: number;
-    maxAttempts?: number;
     timeLimit?: number;
-    isActive: boolean;
-    isVisible: boolean;
-    isDynamic: boolean;
     url?: string;
-    metadata?: Record<string, any>;
-    createdAt: string;
-    updatedAt: string;
     files?: { id: string; name: string; url: string }[];
 }
 
 interface ChallengePopupProps {
     challengeId: string | null;
+    competitionId: string;
     open: boolean;
     onClose: () => void;
 }
 
-const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onClose }) => {
+const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onClose, competitionId }) => {
     const [loading, setLoading] = useState(true);
     const [challenge, setChallenge] = useState<Challenge | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [flag, setFlag] = useState("");
 
-    useEffect(() => {
+    // 🔥 Fetch real challenge from API
+    const fetchChallenge = async () => {
         if (!challengeId) return;
 
-        const fetchChallenge = async () => {
-            try {
-                setLoading(true);
+        try {
+            setLoading(true);
 
-                // 🔹 TEMPORARY DEFAULT MOCK DATA (for testing before API integration)
-                const mockChallenges: Challenge[] = [
-                    {
-                        id: "1",
-                        title: "SQL Injection Challenge",
-                        description: "Exploit a SQL Injection to dump user credentials from the database.",
-                        category: "Web",
-                        points: 150,
-                        flagHash: "a1b2c3d4e5f6",
-                        caseSensitive: false,
-                        normalizeFlag: true,
-                        competitionId: "comp123",
-                        difficulty: "EASY",
-                        solveCount: 24,
-                        maxAttempts: 5,
-                        timeLimit: 30,
-                        isActive: true,
-                        isVisible: true,
-                        isDynamic: false,
-                        url: "https://challenge.lab/sql",
-                        metadata: { hints: 2 },
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        files: [
-                            { id: "f1", name: "vuln.sql", url: "/files/vuln.sql" },
-                            { id: "f2", name: "db_schema.txt", url: "/files/db_schema.txt" },
-                        ],
-                    },
-                    {
-                        id: "2",
-                        title: "Reverse Engineering Intro",
-                        description: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Officia perferendis fugit minima at earum inventore neque alias ea quasi ipsum commodi eligendi rerum, aut voluptas fugiat sint maxime, facere tempore?",
-                        category: "Binary",
-                        points: 300,
-                        flagHash: "b7f1c9d2",
-                        caseSensitive: true,
-                        normalizeFlag: false,
-                        competitionId: "comp123",
-                        difficulty: "MEDIUM",
-                        solveCount: 10,
-                        maxAttempts: 3,
-                        timeLimit: 60,
-                        isActive: true,
-                        isVisible: true,
-                        isDynamic: false,
-                        url: "https://challenge.lab/rev",
-                        metadata: {},
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                        files: [{ id: "f1", name: "challenge.bin", url: "/files/challenge.bin" }, { id: "f2", name: "challenge.bin", url: "/files/challenge.bin" }],
-                    },
-                ];
+            const res = await getApiClient().get(
+                API_ENDPOINTS.CHALLENGES.GET(competitionId, challengeId)
+            );
 
-                // Simulate fetching delay
-                await new Promise((res) => setTimeout(res, 800));
+            setChallenge(res.data);
+        } catch (error: any) {
+            toast.error("Failed to load challenge details");
+            setChallenge(null);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-                // Replace with real fetch later
-                const found = mockChallenges.find((c) => c.id === challengeId);
-                setChallenge(found ?? null);
-            } catch (error) {
-                console.error(error);
-                setChallenge(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchChallenge();
+    useEffect(() => {
+        if (challengeId) fetchChallenge();
     }, [challengeId]);
+
+    // 🔥 Flag submission handler
+    const submitFlag = async () => {
+        if (!flag.trim()) return toast.warning("Flag cannot be empty.");
+
+        try {
+            setSubmitting(true);
+
+            const res = await getApiClient().post(
+                API_ENDPOINTS.SUBMISSIONS.CREATE,
+                { 
+                    challengeId,
+                    flag
+                    // teamId: optional teamId if needed
+                }
+            );
+
+            toast.success(res.data?.message || "Flag submitted!");
+            setFlag("");
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Invalid flag");
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     const difficultyColor =
         challenge?.difficulty === "EASY"
@@ -131,9 +98,6 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                     <DialogHeader>
                         <DialogTitle className="flex justify-between items-center">
                             <span>{challenge ? challenge.title : "Loading..."}</span>
-                            {/* <Button variant="ghost" size="icon" onClick={onClose}>
-                                <X size={18} />
-                            </Button> */}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -142,9 +106,11 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                             <Loader2 className="animate-spin" />
                         </div>
                     ) : challenge ? (
-                        <GradientCard className="p-4 space-y-3 mt-5">
+                        <GradientCard className="p-4 space-y-4 mt-5">
+
                             <p className="text-slate-300">{challenge.description}</p>
 
+                            {/* 🔗 Challenge URL */}
                             {challenge.url && (
                                 <a
                                     href={challenge.url}
@@ -156,8 +122,9 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                 </a>
                             )}
 
+                            {/* 📎 Attached Files */}
                             {challenge.files && challenge.files.length > 0 && (
-                                <div className="mt-3">
+                                <div>
                                     <p className="font-semibold mb-1">Attached Files:</p>
                                     <ul className="text-sm space-y-1">
                                         {challenge.files.map((file) => (
@@ -176,7 +143,9 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
 
                             <div className="flex items-center justify-between border-t border-dashed border-slate-700 pt-3 text-sm">
                                 <div className="flex flex-wrap items-center gap-4 text-slate-400">
-                                    <span className={`font-semibold ${difficultyColor}`}>{challenge.difficulty}</span>
+                                    <span className={`font-semibold ${difficultyColor}`}>
+                                        {challenge.difficulty}
+                                    </span>
                                     <div className="flex items-center gap-1">
                                         <Trophy size={16} /> {challenge.points} pts
                                     </div>
@@ -192,21 +161,34 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                     Start Challenge
                                 </Button>
                             </div>
+
+                            {/* 🏁 Flag submission */}
                             <div>
                                 <div className="flex bg-slate-300/10 p-2 rounded-md">
-                                    <input type="text" className="w-full px-3 outline-none" placeholder="something like Oprix-{y0urF1ag}" />
-                                    <div>
-                                    <button className="bg-blue-500 p-2 rounded-md text-sm px-5">Sumit&nbsp;flag</button>
-                                    </div>
+                                    <input
+                                        type="text"
+                                        value={flag}
+                                        onChange={(e) => setFlag(e.target.value)}
+                                        className="w-full px-3 outline-none bg-transparent text-white"
+                                        placeholder="Oprix-{myFlagHere}"
+                                    />
+                                    <button
+                                        className="bg-blue-500 p-2 rounded-md text-sm px-5"
+                                        onClick={submitFlag}
+                                        disabled={submitting}
+                                    >
+                                        {submitting ? "Submitting..." : "Submit"}
+                                    </button>
                                 </div>
                             </div>
+
                         </GradientCard>
                     ) : (
                         <p className="text-center text-slate-400 py-10">Challenge not found.</p>
                     )}
                 </GradientCard>
             </DialogContent>
-        </Dialog >
+        </Dialog>
     );
 };
 

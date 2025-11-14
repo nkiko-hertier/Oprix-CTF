@@ -6,6 +6,7 @@ import type { Competition } from '@/types';
 import { useEffect, useState } from 'react';
 import getApiClient from '@/lib/api-client';
 import { API_ENDPOINTS } from '@/config/api.config';
+import CompetionsPageSkeleton from '@/components/CompetionsPageSkeleton';
 
 
 
@@ -21,7 +22,7 @@ function SingleCompetitionsPage() {
     }, [competitionId]);
 
     if (!competition) {
-        return <div>Loading...</div>;
+        return <CompetionsPageSkeleton />
     }
 
     return (
