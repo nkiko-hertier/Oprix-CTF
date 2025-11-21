@@ -13,8 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { GradientCard } from '../HomeCards'
-import axios from 'axios'
 import { toast } from 'sonner'
+import getApiClient from '@/lib/api-client'
+import { API_ENDPOINTS } from '@/config/api.config'
 
 // --- Zod schema for validation ---
 const competitionSchema = z.object({
@@ -89,31 +90,21 @@ export default function CTFCompetitionForm({
             endTime: new Date(values.endTime).toISOString(),
         }
 
-        // Replace this with your API call
-        console.log('Submitting competition payload:', payload);
-
-        const AuthBearer = await (window as any).Clerk.session.getToken({ template: "default" });
-
         try {
-            const response = await axios.post(
-                'https://nondiagrammatically-unmaligned-daniela.ngrok-free.dev/api/v1/competitions',
-                payload, // Axios automatically stringifies JSON
-                { headers: { Authorization: `Bearer ${AuthBearer}`, },}
+            const response = await getApiClient().post(
+                API_ENDPOINTS.COMPETITIONS.CREATE,
+                payload
             );
+            
             toast.success('Competition created successfully!');
-            // close the dialog
             form.reset(defaultValues);
             setIsOpen(false);
-
-            console.log('Competition created successfully:', response.data);
         } catch (error: any) {
-            if (error.response) {
-                // Server responded with a status outside 2xx
-                console.error('Failed to create competition', error.response.data);
-            } else {
-                // Network or other errors
-                console.error('Error submitting competition:', error.message);
-            }
+            const errorMessage = error.response?.data?.message || 
+                                error.response?.data?.error || 
+                                'Failed to create competition. Please try again.';
+            toast.error(errorMessage);
+            console.error('Error creating competition:', error);
         }
     }
 

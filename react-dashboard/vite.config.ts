@@ -10,8 +10,8 @@ export default defineConfig({
     port: 3000,
     host: "0.0.0.0",
     proxy: {
-      '/api/v1': {
-        target: 'https://oprix-ctf.up.railway.app',
+      '/models': {
+        target: 'https://api-inference.huggingface.co/',
         changeOrigin: true,
         secure: true,
       },

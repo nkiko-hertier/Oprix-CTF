@@ -15,9 +15,8 @@ export default function SidebarLinks() {
   const links = [
     { label: "Home", href: "/dashboard", icon: <BiSolidHomeSmile size={23} />},
     { label: "Competitions", href: "/dashboard/competitions", icon: <TbAwardFilled size={23} /> },
-    { label: "Analytics", href: "/dashboard/analytics", icon: <HiMiniPresentationChartLine size={23} /> },
     { label: "Users", href: "/dashboard/users", icon: <BsFillPeopleFill size={23} /> },
-    { label: "Settings", href: "/dashboard/settings", icon: <IoSettings size={23} /> },
+    { label: "Submissions", href: "/dashboard/submissions", icon: <HiMiniPresentationChartLine size={23} /> },
   ]
 
   return (

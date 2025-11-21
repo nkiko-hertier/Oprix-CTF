@@ -104,7 +104,7 @@ export const JoinCompetition = ({ competition, isReged = false }: JoinCompetitio
                 API_ENDPOINTS.COMPETITIONS.GET(competition.id)
             );
             setIsMember(isReged.data.isRegistered);
-            (isReged.data.isRegistered) && toast.message("You or your team is already registered for this competition.");
+            // (isReged.data.isRegistered) && toast.message("You or your team is already registered for this competition.");
         } catch (error) {
             toast.error("Something went wrong while checking registration status.");
             setLoading(false);

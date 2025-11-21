@@ -1,12 +1,15 @@
 import AppRouter from './components/AppRouter'
 import { Toaster } from 'sonner'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
   return (
-    <div>
-      <Toaster />
-      <AppRouter />
-    </div>
+    <ErrorBoundary>
+      <div>
+        <Toaster />
+        <AppRouter />
+      </div>
+    </ErrorBoundary>
   )
 }
 

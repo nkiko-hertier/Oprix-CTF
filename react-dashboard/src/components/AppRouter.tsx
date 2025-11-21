@@ -9,7 +9,15 @@ import PlatformLayout from './layouts/PlatformLayout';
 import PlatformHome from '@/territories/platform/Home';
 import CompetitionPage from '@/territories/platform/CompetitionPage';
 import SingleCompetitionsPage from '@/territories/platform/SingleCompetitionsPage';
+import UserProfile from '@/territories/platform/UserProfile';
+import SubmissionsHistory from '@/territories/platform/SubmissionsHistory';
 import NotFound from '@/territories/landing/NotFound';
+import Dashboard from '@/territories/admin/Dashboard';
+import CompetitionManagement from '@/territories/admin/CompetitionManagement';
+import ChallengeManagement from '@/territories/admin/ChallengeManagement';
+import PlayerManagement from '@/territories/admin/PlayerManagement';
+import SubmissionReview from '@/territories/admin/SubmissionReview';
+import PlatformLearning from '@/territories/platform/LearningPage';
 
 function AppRouter() {
   return (
@@ -28,15 +36,22 @@ function AppRouter() {
 
           {/* Admin Routes */}
           <Route element={<AdminLayout />}>
-            <Route path="/dashboard/*" element={<div>Admin Panel - To be implemented</div>} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/competitions" element={<CompetitionManagement />} />
+            <Route path="/dashboard/challenges/:competitionId" element={<ChallengeManagement />} />
+            <Route path="/dashboard/users" element={<PlayerManagement />} />
+            <Route path="/dashboard/submissions" element={<SubmissionReview />} />
+            <Route path="/dashboard/*" element={<Dashboard />} />
           </Route>
 
           {/* Platform Routes */}
           <Route element={<PlatformLayout />}>
             <Route path="/platform/" element={<PlatformHome />} />
-            <Route path="/platform/learning" element={<PlatformHome />} />
+            <Route path="/platform/learning" element={<PlatformLearning />} />
             <Route path="/platform/competition" element={<CompetitionPage />} />
             <Route path="/platform/competition/:id" element={<SingleCompetitionsPage />} />
+            <Route path="/platform/profile" element={<UserProfile />} />
+            <Route path="/platform/submissions" element={<SubmissionsHistory />} />
             <Route path="/platform/*" element={<div>Platform - To be implemented</div>} />
           </Route>
 

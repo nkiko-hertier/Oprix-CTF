@@ -3,11 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Timer, Globe, Folder } from "lucide-react";
+import { Loader2, Trophy, Timer, Globe, Folder, Download, Lock, Unlock, Lightbulb, AlertCircle } from "lucide-react";
 import { GradientCard } from "./HomeCards";
 import getApiClient from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/config/api.config";
 import { toast } from "sonner";
+import type { Hint, FileRecord } from "@/types";
 
 interface Challenge {
     id: string;
@@ -20,6 +21,7 @@ interface Challenge {
     timeLimit?: number;
     url?: string;
     files?: { id: string; name: string; url: string }[];
+    hints?: Hint[];
 }
 
 interface ChallengePopupProps {
@@ -34,6 +36,9 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
     const [challenge, setChallenge] = useState<Challenge | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [flag, setFlag] = useState("");
+    const [files, setFiles] = useState<FileRecord[]>([]);
+    const [loadingFiles, setLoadingFiles] = useState(false);
+    const [unlockingHint, setUnlockingHint] = useState<string | null>(null);
 
     // 🔥 Fetch real challenge from API
     const fetchChallenge = async () => {
@@ -47,6 +52,9 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
             );
 
             setChallenge(res.data);
+            
+            // Fetch files separately
+            fetchFiles();
         } catch (error: any) {
             toast.error("Failed to load challenge details");
             setChallenge(null);
@@ -55,9 +63,75 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
         }
     };
 
+    // Fetch challenge files
+    const fetchFiles = async () => {
+        if (!challengeId) return;
+
+        try {
+            setLoadingFiles(true);
+            const res = await getApiClient().get(
+                API_ENDPOINTS.FILES.GET_CHALLENGE(challengeId)
+            );
+            setFiles(res.data || []);
+        } catch (error: any) {
+            // Files might not exist, don't show error
+            console.error("Failed to load files:", error);
+        } finally {
+            setLoadingFiles(false);
+        }
+    };
+
+    // Download file handler
+    const handleDownloadFile = async (fileName: string, originalName: string) => {
+        try {
+            const apiClient = getApiClient();
+            const response = await apiClient.get(
+                API_ENDPOINTS.FILES.DOWNLOAD(fileName),
+                { responseType: 'blob' }
+            );
+
+            // Create blob and download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', originalName || fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            toast.success("File downloaded successfully");
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to download file");
+        }
+    };
+
+    // Unlock hint handler
+    const handleUnlockHint = async (hintId: string) => {
+        if (!challengeId) return;
+
+        try {
+            setUnlockingHint(hintId);
+            const res = await getApiClient().post(
+                API_ENDPOINTS.CHALLENGES.UNLOCK_HINT(competitionId, challengeId, hintId)
+            );
+
+            toast.success(res.data?.message || "Hint unlocked!");
+            
+            // Refresh challenge to get updated hints
+            await fetchChallenge();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to unlock hint");
+        } finally {
+            setUnlockingHint(null);
+        }
+    };
+
     useEffect(() => {
-        if (challengeId) fetchChallenge();
-    }, [challengeId]);
+        if (challengeId && open) {
+            fetchChallenge();
+        }
+    }, [challengeId, open]);
 
     // 🔥 Flag submission handler
     const submitFlag = async () => {
@@ -123,21 +197,107 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                             )}
 
                             {/* 📎 Attached Files */}
-                            {challenge.files && challenge.files.length > 0 && (
+                            {(files.length > 0 || loadingFiles) && (
                                 <div>
-                                    <p className="font-semibold mb-1">Attached Files:</p>
-                                    <ul className="text-sm space-y-1">
-                                        {challenge.files.map((file) => (
-                                            <li key={file.id}>
-                                                <a
-                                                    href={file.url}
-                                                    className="flex items-center gap-2 text-slate-300 hover:text-blue-400"
-                                                >
-                                                    <Folder size={14} /> {file.name}
-                                                </a>
-                                            </li>
+                                    <p className="font-semibold mb-2 flex items-center gap-2">
+                                        <Folder size={16} />
+                                        Attached Files:
+                                    </p>
+                                    {loadingFiles ? (
+                                        <div className="flex items-center gap-2 text-slate-400 text-sm">
+                                            <Loader2 className="size-4 animate-spin" />
+                                            Loading files...
+                                        </div>
+                                    ) : (
+                                        <ul className="text-sm space-y-2">
+                                            {files.map((file) => (
+                                                <li key={file.id}>
+                                                    <button
+                                                        onClick={() => handleDownloadFile(file.fileName, file.fileName)}
+                                                        className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors w-full text-left"
+                                                    >
+                                                        <Download size={14} />
+                                                        <span>{file.fileName}</span>
+                                                        {file.fileSize && (
+                                                            <span className="text-xs text-slate-500 ml-auto">
+                                                                {(file.fileSize / 1024).toFixed(2)} KB
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* 💡 Hints Section */}
+                            {challenge.hints && challenge.hints.length > 0 && (
+                                <div>
+                                    <p className="font-semibold mb-2 flex items-center gap-2">
+                                        <Lightbulb size={16} />
+                                        Hints:
+                                    </p>
+                                    <div className="space-y-2">
+                                        {challenge.hints.map((hint) => (
+                                            <div
+                                                key={hint.id}
+                                                className={`p-3 rounded-md border ${
+                                                    hint.isUnlocked
+                                                        ? "bg-green-500/10 border-green-500/50"
+                                                        : "bg-slate-800/50 border-slate-700"
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        {hint.isUnlocked ? (
+                                                            <Unlock className="size-4 text-green-400" />
+                                                        ) : (
+                                                            <Lock className="size-4 text-slate-400" />
+                                                        )}
+                                                        <span className="text-sm font-medium text-slate-300">
+                                                            Hint {hint.order}
+                                                        </span>
+                                                        {!hint.isUnlocked && hint.cost > 0 && (
+                                                            <span className="text-xs text-yellow-400">
+                                                                ({hint.cost} pts)
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {!hint.isUnlocked && (
+                                                        <button
+                                                            onClick={() => {
+                                                                if (window.confirm(
+                                                                    `Unlock this hint for ${hint.cost} points?`
+                                                                )) {
+                                                                    handleUnlockHint(hint.id);
+                                                                }
+                                                            }}
+                                                            disabled={unlockingHint === hint.id}
+                                                            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 rounded-md text-xs text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                                        >
+                                                            {unlockingHint === hint.id ? (
+                                                                <>
+                                                                    <Loader2 className="size-3 animate-spin" />
+                                                                    Unlocking...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Unlock className="size-3" />
+                                                                    Unlock
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                {hint.isUnlocked && (
+                                                    <p className="text-sm text-slate-300 mt-2 ml-6">
+                                                        {hint.content}
+                                                    </p>
+                                                )}
+                                            </div>
                                         ))}
-                                    </ul>
+                                    </div>
                                 </div>
                             )}
 

@@ -40,7 +40,7 @@ function HomePage() {
         }
     }
     return (
-        <div className='bg-[#100E19] h-screen relative overflow-y-auto text-white'>
+        <div className='bg-[#100E19] h-screen relative overflow-y-auto text-white font-[Poppins]'>
             <div className='-z-20'>
                 <div className='bg-[url(/img/pattern1.png)] opacity-30 absolute left-0 top-0 w-full bg-cover bg-center min-h-screen'></div>
                 {/* Gradient BG */}
@@ -91,11 +91,11 @@ function HomePage() {
             </div>
             <section id='home' className='my-20 text-center z-10 relative space-y-5 min-h-[50vh] flex flex-col justify-center items-center'>
                 <div className='size-10 w-[200px] bg-indigo-500 blur-3xl absolute top-15'></div>
-                <h1 className='text-4xl md:text-5xl font-semibold'>Your Digital Safety Net,<br /> On Autopilot</h1>
+                <h1 className='text-4xl md:text-5xl font-[limelight]'>Your Digital Safety Net,<br /> On Autopilot</h1>
                 <p className='text-sm'>Think Deeper. Build Better. Think Deeper. Build Better.</p>
 
                 <div className='mt-10 flex-col flex sm:flex-row gap-5'>
-                    <button className='sm:w-fit w-full bg-[#573BA8] p-3 px-7 rounded-full text-sm'>Try Now for free</button>
+                    <Link to={'/auth/sign-in'} className='sm:w-fit w-full bg-[#573BA8] p-3 px-7 rounded-full text-sm'>Try Now for free</Link>
                     <button className='sm:w-fit w-full bg-white p-3 px-7 rounded-full text-black text-sm'>Learn More</button>
                 </div>
             </section>

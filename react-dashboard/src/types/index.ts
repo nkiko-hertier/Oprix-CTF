@@ -1,11 +1,9 @@
 // User Types
 export type UserRole = "USER" | "ADMIN" | "SUPERADMIN"
 
-export interface User {
+export interface Profile {
   id: string
-  clerkId: string
-  username: string
-  email: string
+  userId: string
   firstName?: string
   lastName?: string
   bio?: string
@@ -15,10 +13,51 @@ export interface User {
   github?: string
   linkedin?: string
   skills?: string[]
-  role: UserRole
-  isActive: boolean
   createdAt: string
   updatedAt: string
+}
+
+export interface User {
+  id: string
+  clerkId: string
+  username: string
+  email: string
+  role: UserRole
+  isActive: boolean
+  lastLoginAt?: string
+  createdAt: string
+  updatedAt: string
+  profile?: Profile
+  teams?: Array<{
+    teamId: string
+    userId: string
+    role: string
+    joinedAt: string
+    isActive: boolean
+    team?: {
+      id: string
+      name: string
+      description?: string
+      competitionId: string
+      captainId: string
+      isActive: boolean
+      maxSize: number
+      inviteCode?: string
+      createdAt: string
+      updatedAt: string
+    }
+  }>
+  scores?: Array<{
+    id: string
+    userId: string
+    teamId?: string
+    challengeId: string
+    competitionId: string
+    submissionId: string
+    points: number
+    solvedAt: string
+    createdAt: string
+  }>
 }
 
 interface Admin {
@@ -29,11 +68,14 @@ interface Admin {
 
 export interface UserStats {
   totalPoints: number
-  challengesSolved: number
-  challengesAttempted: number
-  globalRank: number
-  winRate: number
-  averageTime: number
+  totalSubmissions: number
+  solvedChallenges: number
+  participatedCompetitions: number
+}
+
+export interface UserProfileResponse {
+  user: User
+  stats: UserStats
 }
 
 // Competition Types
@@ -137,13 +179,12 @@ export interface TeamStats {
 // Leaderboard Types
 export interface LeaderboardEntry {
   rank: number
-  userId?: string
-  teamId?: string
-  name: string
-  score: number
-  solvedChallenges: number
-  lastSubmission?: string
-  avatar?: string
+  userId: string
+  username: string
+  totalPoints: number
+  solvedCount: number
+  lastSolveTime?: string
+  avatarUrl?: string
 }
 
 export interface TeamLeaderboardEntry {

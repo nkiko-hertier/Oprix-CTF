@@ -3,7 +3,7 @@
 import React from "react"
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "../../../components/ui/sheet"
 import { Button } from "../../../components/ui/button"
-import { Menu } from "lucide-react"
+import { Link, Menu } from "lucide-react"
 
 interface MobileMenuProps {
     scrollToSection: (id: string) => void
@@ -69,9 +69,9 @@ export function MobileMenu({ scrollToSection, activeSection }: MobileMenuProps) 
                 </nav>
 
                 <div className="mt-10">
-                    <button className="bg-[#573BA8] px-6 py-3 rounded-full text-sm w-full">
+                <Link to={'/auth/sign-in'} className="bg-[#573BA8] px-6 py-3 rounded-full text-sm w-full">
                         Get Started
-                    </button>
+                    </Link>   
                 </div>
             </SheetContent>
         </Sheet>

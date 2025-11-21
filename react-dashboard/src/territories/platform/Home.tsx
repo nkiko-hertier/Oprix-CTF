@@ -1,4 +1,5 @@
 import { GradientCard } from '@/components/HomeCards'
+import UserStats from '@/components/UserStats';
 import { useUser } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom';
 
@@ -18,8 +19,9 @@ function PlatformHome() {
                         <img src="https://cdn.brain.fm/images/relax/relax_mental_state_bg_large_aura.webp" alt="Learning" width={400} height={400} />
                     </div>
 
-                    <div className='h-full flex items-end p-6 pl-10'>
-                        <h1 className='font-semibold text-2xl'>Learning</h1>
+                    <div className='h-full flex items-end p-6 pl-10 relative'>
+                        <h1 className='text-5xl anton-font'>Learning</h1>
+                        <p className='love-font text-5xl absolute text-yellow-500 top-[50px]'>with Ai</p>
                     </div>
                 </GradientCard>
                 </Link>
@@ -28,20 +30,16 @@ function PlatformHome() {
                     <div className='absolute right-[-60px] top-0 opacity-50 group-hover/card2:opacity-100 group-hover/card2:scale-110'>
                         <img src="https://cdn.brain.fm/images/focus/focus_mental_state_bg_large_aura.webp" alt="Learning" width={400} height={400} />
                     </div>
-                    <div className='h-full flex items-end p-6 pl-10'>
-                        <h1 className='font-semibold text-2xl'>Explore Competitions</h1>
+                    <div className='h-full flex items-end p-6 pl-10 relative'>
+                        <h1 className='text-5xl anton-font'>Explore Competitions</h1>
+                        <p className='love-font text-5xl absolute text-yellow-500 top-[50px]'>Open opprtunities</p>
                     </div>
                 </GradientCard>
                 </Link>
-                <GradientCard className='group/card3 cursor-pointer'>
-                    <div className='absolute right-[-60px] top-0 opacity-50 group-hover/card3:opacity-100 group-hover/card3:scale-110'>
-                        <img src="https://cdn.brain.fm/images/meditate/meditate_mental_state_bg_large_aura.webp" alt="Learning" width={400} height={400} />
-                    </div>
-                    <div className='h-full flex items-end p-6 pl-10'>
-                        <h1 className='font-semibold text-2xl'>Practical activities</h1>
-                    </div>
-                </GradientCard>
             </div>
+            <div className='mt-10'></div>
+            {/* ---- User Stats ---- */}
+            <UserStats />
         </div>
     )
 }

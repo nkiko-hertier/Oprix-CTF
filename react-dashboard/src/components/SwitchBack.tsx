@@ -7,22 +7,50 @@ function SwitchBack() {
     const location = useLocation();
     const pathname = location.pathname;
 
+
+    const links = [
+        { name: "Home", path: "/platform" },
+        { name: "Learning", path: "/platform/learning" },
+        { name: "Competition", path: "/platform/competition" },
+        { name: "Profile", path: "/platform/profile" },
+    ];
+
     if (!pathname) return null;
     return (
         <div>
             {
                 (pathname === '/platform') ?
-                    <div>
+                    <div className='flex gap-10'>
+
+                        <div className="logo">
+                            <img
+                                src="/img/logo_icon.png"
+                                alt="logo"
+                                width={30}
+                                height={30}
+                                className="left-[-35px]"
+                            />
+                        </div>
 
                         <span className='sm:blocks hidden p-3 bg-zinc-500/25 rounded-full'>
-                            {/* <PiSidebarSimpleLight size={24} /> */}
+
                         </span>
 
-                    <ul className='flex gap-5 items-center md:justify-end'>
-                            <li><a href="#" className='text-zinc-100'>Home</a></li>
-                            <li><a href="#" className='text-zinc-400'>Learning</a></li>
-                            <li><a href="#" className='text-zinc-400'>Competition</a></li>
-                            <li><a href="#" className='text-zinc-400'>Profile</a></li>
+                        <ul className='gap-5 items-center md:justify-end hidden md:flex'>
+                            {links.map((link) => {
+                                const isActive = pathname === link.path;
+
+                                return (
+                                    <li key={link.name}>
+                                        <Link
+                                            to={link.path}
+                                            className={`${isActive ? "text-zinc-100" : "text-zinc-400"} transition-colors`}
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
                     : <Link to={'/platform'} className='flex gap-1 items-center'>

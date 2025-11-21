@@ -7,6 +7,7 @@ import Overview from "./CompetitionsPages/Overview";
 import Challanges from "./CompetitionsPages/Challanges";
 import Members from "./CompetitionsPages/Members";
 import Teams from "./CompetitionsPages/Teams";
+import Leaderboard from "./CompetitionsPages/Leaderboard";
 import type { Competition } from "@/types";
 
 interface CompetitonsPagesProps {
@@ -19,10 +20,11 @@ function CompetitionsPages({ competition }: { competition: Competition }) {
 
   const Links = [
     { name: "Overview", tab: "Overview" },
+    { name: "Leaderboard", tab: "leaderboard" },
     // { name: "Announcements", tab: "announcements" },
     { name: "Challanges", tab: "challanges" },
-    { name: "Members", tab: "memebers" },
-    { name: "Teams", tab: "teams" },
+    // { name: "Members", tab: "memebers" },
+    // { name: "Teams", tab: "teams" },
   ];
 
   // ✅ Detect and apply hash-based tab
@@ -90,6 +92,10 @@ function CompetitionsPages({ competition }: { competition: Competition }) {
 
         <MainTab tab="teams" activeTab={activeTab}>
           <Teams id={id} />
+        </MainTab>
+
+        <MainTab tab="leaderboard" activeTab={activeTab}>
+          <Leaderboard competitionId={id} isTeamBased={competition.isTeamBased} />
         </MainTab>
       </div>
     </div>

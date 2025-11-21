@@ -1,3 +1,92 @@
+# CTF Platform - Frontend
+
+React + TypeScript + Vite frontend for the CTF Platform.
+
+## Environment Setup
+
+### Required Environment Variables
+
+Create a `.env` file in the `frontend` directory with the following variables:
+
+```env
+# API Configuration
+VITE_API_BASE_URL=https://oprix-api.up.railway.app/api/v1/
+
+# Clerk Authentication
+VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
+
+# Environment
+NODE_ENV=development
+```
+
+### Environment Variables Explained
+
+- **VITE_API_BASE_URL**: Base URL for the backend API. Defaults to Railway deployment if not set.
+- **VITE_CLERK_PUBLISHABLE_KEY**: Clerk publishable key for authentication. Required for the app to function.
+- **NODE_ENV**: Environment mode (`development` or `production`).
+
+> **Note:** All Vite environment variables must be prefixed with `VITE_` to be accessible in the browser.
+
+## Getting Started
+
+### Installation
+
+```bash
+npm install
+# or
+pnpm install
+```
+
+### Development
+
+```bash
+npm run dev
+# or
+pnpm dev
+```
+
+The app will be available at `http://localhost:5173`
+
+### Build
+
+```bash
+npm run build
+# or
+pnpm build
+```
+
+### Preview Production Build
+
+```bash
+npm run preview
+# or
+pnpm preview
+```
+
+## Project Structure
+
+```
+frontend/
+├── src/
+│   ├── components/      # Reusable UI components
+│   ├── territories/     # Page components
+│   ├── lib/            # Utilities and API client
+│   ├── config/         # Configuration files
+│   └── types/          # TypeScript type definitions
+├── public/             # Static assets
+└── .env.example        # Example environment variables
+```
+
+## Features
+
+- ✅ Error boundary for graceful error handling
+- ✅ Standardized loading states
+- ✅ API client with automatic retry and error handling
+- ✅ Clerk authentication integration
+- ✅ Responsive design with Tailwind CSS
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
