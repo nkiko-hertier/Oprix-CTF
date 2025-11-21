@@ -7,6 +7,7 @@ import { TfiYoutube } from 'react-icons/tfi'
 import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
 import { ArrowRight, Home } from 'lucide-react'
 import { MobileMenu } from './competitions/MobileMenu'
+import { triggerSideCannons } from '@/lib/confetti'
 // import SvgFixer from './competitions/SVgFixer'
 
 function HomePage() {
@@ -96,7 +97,9 @@ function HomePage() {
 
                 <div className='mt-10 flex-col flex sm:flex-row gap-5'>
                     <Link to={'/auth/sign-in'} className='sm:w-fit w-full bg-[#573BA8] p-3 px-7 rounded-full text-sm'>Try Now for free</Link>
-                    <button className='sm:w-fit w-full bg-white p-3 px-7 rounded-full text-black text-sm'>Learn More</button>
+                    <button onClick={() => {
+        triggerSideCannons()
+      }} className='sm:w-fit w-full bg-white p-3 px-7 rounded-full text-black text-sm'>Learn More</button>
                 </div>
             </section>
 

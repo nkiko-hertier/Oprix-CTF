@@ -7,10 +7,13 @@ import { useEffect, useState } from 'react';
 import getApiClient from '@/lib/api-client';
 import { API_ENDPOINTS } from '@/config/api.config';
 import CompetionsPageSkeleton from '@/components/CompetionsPageSkeleton';
+import { CompetitionStatusModal } from '@/components/Models/ComplationMedel';
 
 
 
 function SingleCompetitionsPage() {
+
+    const [open, setOpen] = useState(true);
     
     const params = useParams();
     const competitionId: string = params.id || '';
@@ -27,6 +30,11 @@ function SingleCompetitionsPage() {
 
     return (
         <div>
+            <CompetitionStatusModal
+        competitionId={competitionId}
+        open={open}
+        onClose={() => setOpen(false)}
+      />
             <div className='h-[300px] relative mb-2'>
                 <button className='absolute top-6 right-6 bg-white/10 px-3 py-1 rounded-full text-sm hover:bg-white/20 flex gap-2 items-center'><BsStars /> Beginner</button>
                 <div className='bg-linear-to-t from-black rounded-md absolute size-full p-4 flex flex-col justify-end'>
