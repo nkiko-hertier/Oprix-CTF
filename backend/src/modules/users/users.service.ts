@@ -18,7 +18,7 @@ import { UpdateUserDto, UpdateUserRoleDto, ListUsersQueryDto } from './dto/updat
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   /**
    * Create a new user (SuperAdmin only)
@@ -319,6 +319,68 @@ export class UsersService {
         participatedCompetitions: competitions,
       },
     };
+  }
+
+  /**
+   * Fetch full profile + stats for a user
+   * @param userId - User ID
+   */
+  async getUserProfileAndStats(userId: string) {
+    // Step 1: Fetch User + Profile
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        profile: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    try {
+      // Step 2: Fetch stats in parallel
+      const [scoreAgg, submissions, solved, competitions] = await Promise.all([
+        this.prisma.score.aggregate({
+          where: { userId },
+          _sum: { points: true },
+          _count: true,
+        }),
+
+        this.prisma.submission.count({
+          where: { userId },
+        }),
+
+        this.prisma.submission.count({
+          where: { userId, isCorrect: true },
+        }),
+
+        this.prisma.registration.count({
+          where: { userId, status: 'APPROVED' },
+        }),
+      ]);
+
+      // Step 3: Prepare stats object
+      const stats = {
+        totalPoints: scoreAgg._sum.points || 0,
+        totalScoresRecorded: scoreAgg._count,
+        totalSubmissions: submissions,
+        solvedChallenges: solved,
+        participatedCompetitions: competitions,
+      };
+
+      // Step 4: Return clean result
+      const { passwordHash, ...cleanUser } = user;
+
+      return {
+        success: true,
+        user: cleanUser,
+        stats,
+      };
+    } catch (error) {
+      this.logger.error('Failed to fetch user dashboard data', error);
+      throw new BadRequestException('Failed to load user dashboard');
+    }
   }
 
   /**

@@ -34,6 +34,12 @@ import { Roles } from '../../common/decorators/roles.decorator';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+
+  @Get(':id/profile')
+  async getDashboard(@Param('id') userId: string) {
+    return this.usersService.getUserProfileAndStats(userId);
+  }
+
   /**
    * Create a new user (SuperAdmin only)
    */
