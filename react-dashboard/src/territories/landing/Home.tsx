@@ -92,7 +92,7 @@ function HomePage() {
             </div>
             <section id='home' className='my-20 text-center z-10 relative space-y-5 min-h-[50vh] flex flex-col justify-center items-center'>
                 <div className='size-10 w-[200px] bg-indigo-500 blur-3xl absolute top-15'></div>
-                <h1 className='text-4xl md:text-5xl font-[limelight]'>Your Digital Safety Net,<br /> On Autopilot</h1>
+                <h1 className='text-4xl md:text-5xl font-[limelight]'>Your Frist online Place,<br /> To Learn🧠</h1>
                 <p className='text-sm'>Think Deeper. Build Better. Think Deeper. Build Better.</p>
 
                 <div className='mt-10 flex-col flex sm:flex-row gap-5'>
