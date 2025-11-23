@@ -3,7 +3,9 @@ import React from 'react'
 
 function SignInPage() {
   return (
-    <SignIn />
+    <div className='mx-auto w-fit'>
+      <SignIn />
+    </div>
   )
 }
 

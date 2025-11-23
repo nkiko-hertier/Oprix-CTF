@@ -48,24 +48,7 @@ function AuthLayout() {
               <ArrowLeft size={20} />
               <Link to={'/'}>Back Home</Link>
             </div>
-            <div className="links">
-              <ul className='gap-10 items-center h-full hidden md:flexk'>
-                {[
-                  { id: "home", label: "Home" },
-                  { id: "howitworks", label: "How it works" },
-                  { id: "faq", label: "FAQ" },
-                  { id: "contact", label: "Contact us" },
-                ].map((link) => (
-                  <li
-                    key={link.id}
-                    onClick={() => scrollToSection(link.id)}
-                    className={`cursor-pointer transition-colors duration-300 ${activeSection === link.id ? 'text-white' : 'text-gray-400 hover:text-white'}`}
-                  >
-                    {link.label}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            
             <div className='hidden md:block'>
               <SignedOut>
                 <SignInButton>
@@ -81,7 +64,7 @@ function AuthLayout() {
             </div>
           </nav>
         </div>
-        <div className="mx-auto w-fit min-h-[500px] mt-15">
+        <div className="mx-auto min-h-[500px]">
           <Outlet />
         </div>
         {/* <BgSvg className="fixed opacity-80 right-0 -z-10 -top-2" />

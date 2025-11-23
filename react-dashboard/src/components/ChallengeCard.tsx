@@ -58,7 +58,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           onClick={onStart}
           className="flex items-center gap-1"
         >
-          Start <ArrowRight size={16} /> {isSolved ? "(Solved)" : ""}
+          <ArrowRight size={16} /> {isSolved ? "(Solved)" : "Solve"}
         </Button>
       </div>
     </GradientCard>

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Timer, Globe, Folder, Download, Lock, Unlock, Lightbulb, AlertCircle } from "lucide-react";
+import { Loader2, Trophy, Timer, Globe, Folder, Download, Lock, Unlock, Lightbulb } from "lucide-react";
 import { GradientCard } from "./HomeCards";
 import getApiClient from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/config/api.config";
@@ -40,7 +40,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
     const [loadingFiles, setLoadingFiles] = useState(false);
     const [unlockingHint, setUnlockingHint] = useState<string | null>(null);
 
-    // 🔥 Fetch real challenge from API
+    // ✅ Fetch challenge details
     const fetchChallenge = async () => {
         if (!challengeId) return;
 
@@ -52,10 +52,8 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
             );
 
             setChallenge(res.data);
-            
-            // Fetch files separately
             fetchFiles();
-        } catch (error: any) {
+        } catch {
             toast.error("Failed to load challenge details");
             setChallenge(null);
         } finally {
@@ -63,67 +61,111 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
         }
     };
 
-    // Fetch challenge files
+    // ✅ Fetch challenge files
     const fetchFiles = async () => {
         if (!challengeId) return;
 
         try {
             setLoadingFiles(true);
+
             const res = await getApiClient().get(
                 API_ENDPOINTS.FILES.GET_CHALLENGE(challengeId)
             );
+
             setFiles(res.data || []);
-        } catch (error: any) {
-            // Files might not exist, don't show error
-            console.error("Failed to load files:", error);
+        } catch {
+            console.error("Failed to load files");
         } finally {
             setLoadingFiles(false);
         }
     };
 
-    // Download file handler
+    // ✅ Download file
     const handleDownloadFile = async (fileName: string, originalName: string) => {
         try {
             const apiClient = getApiClient();
             const response = await apiClient.get(
                 API_ENDPOINTS.FILES.DOWNLOAD(fileName),
-                { responseType: 'blob' }
+                { responseType: "blob" }
             );
 
-            // Create blob and download
             const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = url;
-            link.setAttribute('download', originalName || fileName);
+            link.setAttribute("download", originalName || fileName);
             document.body.appendChild(link);
             link.click();
             link.remove();
             window.URL.revokeObjectURL(url);
 
             toast.success("File downloaded successfully");
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to download file");
+        } catch {
+            toast.error("Failed to download file");
         }
     };
 
-    // Unlock hint handler
+    // ✅ Unlock hint
     const handleUnlockHint = async (hintId: string) => {
         if (!challengeId) return;
 
         try {
             setUnlockingHint(hintId);
+
             const res = await getApiClient().post(
                 API_ENDPOINTS.CHALLENGES.UNLOCK_HINT(competitionId, challengeId, hintId)
             );
 
             toast.success(res.data?.message || "Hint unlocked!");
-            
-            // Refresh challenge to get updated hints
-            await fetchChallenge();
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to unlock hint");
+            fetchChallenge();
+        } catch {
+            toast.error("Failed to unlock hint");
         } finally {
             setUnlockingHint(null);
+        }
+    };
+
+    // ✅ ✅ NEW: Check competition progress
+    const checkProgress = async () => {
+        try {
+            const res = await getApiClient().get(
+                API_ENDPOINTS.COMPETITIONS.PROGRESS(competitionId)
+            );
+
+            const progress = res.data?.progress;
+
+            if (progress === 100) {
+                toast.success("🎉 Congratulations! You've completed this competition!");
+
+                // ✅ Auto-close popup after 1.5 seconds
+                setTimeout(() => onClose(), 1500);
+            }
+        } catch {
+            console.error("Failed to fetch progress");
+        }
+    };
+
+    // ✅ Submit flag
+    const submitFlag = async () => {
+        if (!flag.trim()) return toast.warning("Flag cannot be empty.");
+
+        try {
+            setSubmitting(true);
+
+            const res = await getApiClient().post(
+                API_ENDPOINTS.SUBMISSIONS.CREATE,
+                { challengeId, flag }
+            );
+
+            toast.success(res.data?.message || "Flag submitted!");
+            setFlag("");
+
+            // ✅ NEW: Check progress immediately
+            await checkProgress();
+
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Invalid flag");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -133,37 +175,12 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
         }
     }, [challengeId, open]);
 
-    // 🔥 Flag submission handler
-    const submitFlag = async () => {
-        if (!flag.trim()) return toast.warning("Flag cannot be empty.");
-
-        try {
-            setSubmitting(true);
-
-            const res = await getApiClient().post(
-                API_ENDPOINTS.SUBMISSIONS.CREATE,
-                { 
-                    challengeId,
-                    flag
-                    // teamId: optional teamId if needed
-                }
-            );
-
-            toast.success(res.data?.message || "Flag submitted!");
-            setFlag("");
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Invalid flag");
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
     const difficultyColor =
         challenge?.difficulty === "EASY"
             ? "text-green-400"
             : challenge?.difficulty === "MEDIUM"
-                ? "text-yellow-400"
-                : "text-red-400";
+            ? "text-yellow-400"
+            : "text-red-400";
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
@@ -184,7 +201,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
 
                             <p className="text-slate-300">{challenge.description}</p>
 
-                            {/* 🔗 Challenge URL */}
+                            {/* 🌐 Challenge URL */}
                             {challenge.url && (
                                 <a
                                     href={challenge.url}
@@ -196,7 +213,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                 </a>
                             )}
 
-                            {/* 📎 Attached Files */}
+                            {/* 📁 Files */}
                             {(files.length > 0 || loadingFiles) && (
                                 <div>
                                     <p className="font-semibold mb-2 flex items-center gap-2">
@@ -218,11 +235,6 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                                     >
                                                         <Download size={14} />
                                                         <span>{file.fileName}</span>
-                                                        {file.fileSize && (
-                                                            <span className="text-xs text-slate-500 ml-auto">
-                                                                {(file.fileSize / 1024).toFixed(2)} KB
-                                                            </span>
-                                                        )}
                                                     </button>
                                                 </li>
                                             ))}
@@ -231,13 +243,14 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                 </div>
                             )}
 
-                            {/* 💡 Hints Section */}
+                            {/* 💡 Hints */}
                             {challenge.hints && challenge.hints.length > 0 && (
                                 <div>
                                     <p className="font-semibold mb-2 flex items-center gap-2">
                                         <Lightbulb size={16} />
                                         Hints:
                                     </p>
+
                                     <div className="space-y-2">
                                         {challenge.hints.map((hint) => (
                                             <div
@@ -264,6 +277,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                                             </span>
                                                         )}
                                                     </div>
+
                                                     {!hint.isUnlocked && (
                                                         <button
                                                             onClick={() => {
@@ -290,6 +304,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                                         </button>
                                                     )}
                                                 </div>
+
                                                 {hint.isUnlocked && (
                                                     <p className="text-sm text-slate-300 mt-2 ml-6">
                                                         {hint.content}
@@ -301,6 +316,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                 </div>
                             )}
 
+                            {/* 🏷 Meta */}
                             <div className="flex items-center justify-between border-t border-dashed border-slate-700 pt-3 text-sm">
                                 <div className="flex flex-wrap items-center gap-4 text-slate-400">
                                     <span className={`font-semibold ${difficultyColor}`}>
@@ -323,7 +339,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                             </div>
 
                             {/* 🏁 Flag submission */}
-                            <div>
+                            <div className="mt-3">
                                 <div className="flex bg-slate-300/10 p-2 rounded-md">
                                     <input
                                         type="text"

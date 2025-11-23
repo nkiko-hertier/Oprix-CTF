@@ -2,7 +2,9 @@ import { SignUp } from '@clerk/clerk-react'
 
 function SignUpPage() {
   return (
-    <SignUp />
+    <div className='mx-auto w-fit'>
+      <SignUp />
+    </div>
   )
 }
 

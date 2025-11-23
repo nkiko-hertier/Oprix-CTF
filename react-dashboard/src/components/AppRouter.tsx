@@ -18,6 +18,7 @@ import ChallengeManagement from '@/territories/admin/ChallengeManagement';
 import PlayerManagement from '@/territories/admin/PlayerManagement';
 import SubmissionReview from '@/territories/admin/SubmissionReview';
 import PlatformLearning from '@/territories/platform/LearningPage';
+import Profile from '@/territories/landing/Profile';
 
 function AppRouter() {
   return (
@@ -31,6 +32,7 @@ function AppRouter() {
         {/* auth Pages */}
         <Route element={<AuthLayout />}>
           <Route path='/auth/sign-in' element={<SignInPage />} />
+        <Route path="/profile/:id" element={<Profile />} />
           <Route path='/auth/sign-up' element={<SignUpPage />} />
         </Route>
 

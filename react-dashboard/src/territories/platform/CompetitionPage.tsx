@@ -177,7 +177,7 @@ function CompetitionPage() {
                             <div className='skeleton min-h-[130px]'></div>)
 
                             }
-                            {competitions.map((competition) => {
+                            {(competitions.sort((a, b) => a.name.localeCompare(b.name))).map((competition) => {
                                 if(competition.status == "DRAFT") return
                                 const status = (competition.status == "REGISTRATION_OPEN") ? "OPEN" : competition.status;
                                 return (
