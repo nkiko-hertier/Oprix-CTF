@@ -120,6 +120,7 @@ export const JoinCompetition = ({ competition, isReged = false }: JoinCompetitio
             );
 
             toast.success(res.data.message[0]);
+            location.href = `/platform/competition/${competition.id}#challanges`;
             setLoading(false);
         } catch (error: any) {
             if (error.response?.status === 409) {
