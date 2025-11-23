@@ -3,6 +3,7 @@ import { Trophy, Timer, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GradientCard } from "./HomeCards";
 import type { ChallengeDifficulty } from "@/types";
+import { IoCheckmarkCircleSharp } from "react-icons/io5";
 
 interface ChallengeCardProps {
   title: string;
@@ -52,14 +53,24 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           )}
         </div>
 
+        {!isSolved ?
         <Button
           variant="secondary"
           size="sm"
           onClick={onStart}
           className="flex items-center gap-1"
         >
-          <ArrowRight size={16} /> {isSolved ? "(Solved)" : "Solve"}
-        </Button>
+          <ArrowRight size={16} /> Solve
+        </Button> :
+        
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onStart}
+          className="flex items-center gap-1 bg-[#42842B]"
+        >
+          <IoCheckmarkCircleSharp size={16} /> Solved
+        </Button>}
       </div>
     </GradientCard>
   );
