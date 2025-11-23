@@ -7,6 +7,7 @@ import { API_ENDPOINTS } from '@/config/api.config';
 import getApiClient from '@/lib/api-client';
 import { toast } from 'sonner';
 import type { Challenge } from '@/types';
+import { triggerSideCannons } from '@/lib/confetti';
 
 interface ChallangesProps {
   competitionId: string;
@@ -17,11 +18,18 @@ const Challanges = ({ competitionId }: ChallangesProps) => {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [correctIds, setCorrectIds] = useState<string[]>([])
 
   const handleOpen = (id: string) => {
     setSelected(id);
     setOpen(true);
   };
+
+  const handleAddCorrect = (id: string | null) => {
+    if(id)
+      setCorrectIds(prev => [...prev, id]);
+      triggerSideCannons()
+  }
 
   const fetchChallenges = async () => {
     setLoading(true);
@@ -65,7 +73,7 @@ const Challanges = ({ competitionId }: ChallangesProps) => {
             points={challenge.points}
             timeLimit={challenge.timeLimit}
             onStart={() => handleOpen(challenge.id)}
-            isSolved={challenge.isSolved}
+            isSolved={correctIds.includes(challenge.id) || challenge.isSolved}
           />
         ))}
       </div>
@@ -74,6 +82,7 @@ const Challanges = ({ competitionId }: ChallangesProps) => {
         challengeId={selected}
         competitionId={competitionId}
         open={open}
+        onCorrect={() => handleAddCorrect(selected)}
         onClose={() => setOpen(false)}
       />
     </div>

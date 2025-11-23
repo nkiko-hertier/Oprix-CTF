@@ -9,6 +9,7 @@ import getApiClient from "@/lib/api-client";
 import { API_ENDPOINTS } from "@/config/api.config";
 import { toast } from "sonner";
 import type { Hint, FileRecord } from "@/types";
+import { triggerSideCannons } from "@/lib/confetti";
 
 interface Challenge {
     id: string;
@@ -29,9 +30,10 @@ interface ChallengePopupProps {
     competitionId: string;
     open: boolean;
     onClose: () => void;
+    onCorrect: () => void;
 }
 
-const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onClose, competitionId }) => {
+const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onClose, onCorrect, competitionId }) => {
     const [loading, setLoading] = useState(true);
     const [challenge, setChallenge] = useState<Challenge | null>(null);
     const [submitting, setSubmitting] = useState(false);
@@ -135,6 +137,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
 
             if (progress === 100) {
                 toast.success("🎉 Congratulations! You've completed this competition!");
+                triggerSideCannons(5000)
 
                 // ✅ Auto-close popup after 1.5 seconds
                 setTimeout(() => onClose(), 1500);
@@ -158,6 +161,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
 
             toast.success(res.data?.message || "Flag submitted!");
             setFlag("");
+            onCorrect();
 
             // ✅ NEW: Check progress immediately
             await checkProgress();
