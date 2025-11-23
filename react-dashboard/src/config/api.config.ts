@@ -31,6 +31,7 @@ export const API_ENDPOINTS = {
     LIST: "/competitions",
     CREATE: "/competitions",
     MY: "/competitions/my",
+    PROGRESS: (id: string) => `competitions/${id}/progress`,
     GET: (id: string) => `/competitions/${id}`,
     UPDATE: (id: string) => `/competitions/${id}`,
     DELETE: (id: string) => `/competitions/${id}`,
