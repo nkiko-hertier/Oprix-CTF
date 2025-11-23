@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Label } from '../ui/label';
 import { FaRegCalendarTimes, FaBusinessTime } from 'react-icons/fa';
 import { BsFillTrophyFill } from 'react-icons/bs';
 import { PiUsersThreeFill } from 'react-icons/pi';
@@ -21,8 +20,6 @@ import { API_ENDPOINTS } from '@/config/api.config';
 import getApiClient from '@/lib/api-client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
-import { set } from 'zod';
-import { is } from 'zod/v4/locales';
 import { CompButtonText } from '@/lib/utils';
 
 interface JoinCompetitionProps {
