@@ -2,10 +2,12 @@ import { UserButton, useUser } from "@clerk/clerk-react";
 import { GradientCard } from "../../components/HomeCards";
 import { RiHomeSmile2Fill, RiVipCrown2Fill } from "react-icons/ri";
 import { FaGraduationCap } from "react-icons/fa";
-import { PiSidebarSimpleFill } from "react-icons/pi";
+import { PiSidebarSimpleFill, PiUser } from "react-icons/pi";
 import SwitchBack from "../SwitchBack";
 import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 import { isClerkAuthed } from "@/lib/utils";
+import { Users } from "lucide-react";
+import { HiUserGroup } from "react-icons/hi2";
 
 function PlatformLayout() {
     const { user, isLoaded, isSignedIn } = useUser();
@@ -57,8 +59,8 @@ function PlatformLayout() {
                         <h1 className="text-sm">Competitions</h1>
                     </Link>
                     <Link to={'/platform/profile'} className="text-center flex flex-col items-center justify-center p-2">
-                        <PiSidebarSimpleFill size={26} />
-                        <h1 className="text-sm">More</h1>
+                        <HiUserGroup size={26} />
+                        <h1 className="text-sm">Profile</h1>
                     </Link>
                 </div>
 }
