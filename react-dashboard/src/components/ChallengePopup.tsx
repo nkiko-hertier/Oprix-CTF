@@ -87,9 +87,13 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
         try {
             const apiClient = getApiClient();
             const response = await apiClient.get(
-                API_ENDPOINTS.FILES.DOWNLOAD(fileName),
+                'https://www.hostinger.com/robots.txt',
                 { responseType: "blob" }
             );
+            // const response = await apiClient.get(
+            //     API_ENDPOINTS.FILES.DOWNLOAD(fileName),
+            //     { responseType: "blob" }
+            // );
 
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement("a");
