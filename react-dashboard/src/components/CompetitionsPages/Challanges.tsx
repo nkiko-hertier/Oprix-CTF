@@ -22,7 +22,7 @@ const Challanges = ({ competitionId }: ChallangesProps) => {
 
   const handleOpen = (id: string) => {
     setSelected(id);
-    setOpen(false);
+    setOpen(true);
   };
 
   const handleAddCorrect = (id: string | null) => {
