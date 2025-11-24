@@ -140,34 +140,46 @@ function HomePage() {
                 <h1 className='text-3xl font-semibold text-center'>How it Works</h1>
 
                 <div className='mt-10 md:mt-30 flex flex-col gap-10'>
-                    <div className='flex gap-5 md:gap-10 md:w-1/2 md:flex-row-reverse'>
-                        <p className='text-8xl text-indigo-700/25'>1</p>
-                        <div className='md:text-right'>
-                            <h2 className='text-2xl'>Create an Account</h2>
-                            <p className='mt-4'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem placeat delectus odit, quaerat a dolor officiis ipsum non asperiores velit dolorem eligendi rem laboriosam. Odit, omnis? Dolore facilis a dolor?</p>
-                        </div>
-                    </div>
-                    <div className='flex gap-5 md:gap-10 md:w-1/2 ml-auto'>
-                        <p className='text-8xl text-indigo-700/25'>2</p>
-                        <div className=''>
-                            <h2 className='text-2xl'>Create an Account</h2>
-                            <p className='mt-4'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem placeat delectus odit, quaerat a dolor officiis ipsum non asperiores velit dolorem eligendi rem laboriosam. Odit, omnis? Dolore facilis a dolor?</p>
-                        </div>
-                    </div>
-                    <div className='flex gap-5 md:gap-10 md:w-1/2 md:flex-row-reverse'>
-                        <p className='text-8xl text-indigo-700/25'>3</p>
-                        <div className='md:text-right'>
-                            <h2 className='text-2xl'>Create an Account</h2>
-                            <p className='mt-4'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem placeat delectus odit, quaerat a dolor officiis ipsum non asperiores velit dolorem eligendi rem laboriosam. Odit, omnis? Dolore facilis a dolor?</p>
-                        </div>
-                    </div>
-                    <div className='flex gap-5 md:gap-10 md:w-1/2 ml-auto'>
-                        <p className='text-8xl text-indigo-700/25'>4</p>
-                        <div className=''>
-                            <h2 className='text-2xl'>Create an Account</h2>
-                            <p className='mt-4'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Exercitationem placeat delectus odit, quaerat a dolor officiis ipsum non asperiores velit dolorem eligendi rem laboriosam. Odit, omnis? Dolore facilis a dolor?</p>
-                        </div>
-                    </div>
+                <div className='flex gap-5 md:gap-10 md:w-1/2 md:flex-row-reverse'>
+    <p className='text-8xl text-indigo-700/25'>1</p>
+    <div className='md:text-right'>
+        <h2 className='text-2xl'>Create an Account</h2>
+        <p className='mt-4'>
+            Sign up using your email or social media account to get started quickly.
+        </p>
+    </div>
+</div>
+
+<div className='flex gap-5 md:gap-10 md:w-1/2 ml-auto'>
+    <p className='text-8xl text-indigo-700/25'>2</p>
+    <div>
+        <h2 className='text-2xl'>Verify Your Email</h2>
+        <p className='mt-4'>
+            Check your inbox and click the verification link to secure your account.
+        </p>
+    </div>
+</div>
+
+<div className='flex gap-5 md:gap-10 md:w-1/2 md:flex-row-reverse'>
+    <p className='text-8xl text-indigo-700/25'>3</p>
+    <div className='md:text-right'>
+        <h2 className='text-2xl'>Set Up Your Profile</h2>
+        <p className='mt-4'>
+            Add your personal details, profile picture, and preferences for a personalized experience.
+        </p>
+    </div>
+</div>
+
+<div className='flex gap-5 md:gap-10 md:w-1/2 ml-auto'>
+    <p className='text-8xl text-indigo-700/25'>4</p>
+    <div>
+        <h2 className='text-2xl'>Start Using the Platform</h2>
+        <p className='mt-4'>
+            Explore features, connect with others, and enjoy everything our platform has to offer.
+        </p>
+    </div>
+</div>
+
 
                 </div>
             </section>
