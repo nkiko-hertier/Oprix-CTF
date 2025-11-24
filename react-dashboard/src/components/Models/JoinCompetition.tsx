@@ -123,6 +123,7 @@ export const JoinCompetition = ({ competition, isReged = false }: JoinCompetitio
             location.href = `/platform/competition/${competition.id}#challanges`;
             setLoading(false);
         } catch (error: any) {
+            console.error(error)
             if (error.response?.status === 409) {
                 toast.warning("You or your team is already registered for this competition.");
                 setLoading(false);
