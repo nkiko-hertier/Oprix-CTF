@@ -87,7 +87,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
         try {
             const apiClient = getApiClient();
             const response = await apiClient.get(
-                'https://www.hostinger.com/robots.txt',
+                'https://norvig.com/ngrams/words4.txt',
                 { responseType: "blob" }
             );
             // const response = await apiClient.get(
