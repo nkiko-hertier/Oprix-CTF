@@ -28,6 +28,7 @@ const Challanges = ({ competitionId }: ChallangesProps) => {
   const handleAddCorrect = (id: string | null) => {
     if(id)
       setCorrectIds(prev => [...prev, id]);
+      setOpen(false);
       triggerSideCannons()
   }
 
