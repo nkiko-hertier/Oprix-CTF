@@ -128,6 +128,8 @@ export const JoinCompetition = ({ competition, isReged = false }: JoinCompetitio
                 setLoading(false);
             } else {
                 toast.error(error.response?.data?.message || "Something went wrong.");
+                
+            location.href = `/platform/competition/${competition.id}#challanges`;
                 setLoading(false);
             }
         }
