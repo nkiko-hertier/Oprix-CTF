@@ -127,9 +127,8 @@ export const JoinCompetition = ({ competition, isReged = false }: JoinCompetitio
                 toast.warning("You or your team is already registered for this competition.");
                 setLoading(false);
             } else {
+                location.href = `/platform/competition/${competition.id}#challanges`;
                 toast.error(error.response?.data?.message || "Something went wrong.");
-                
-            location.href = `/platform/competition/${competition.id}#challanges`;
                 setLoading(false);
             }
         }
