@@ -66,7 +66,6 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
         <Button
           variant="secondary"
           size="sm"
-          onClick={onStart}
           className="flex items-center gap-1 bg-[#42842B]"
         >
           <IoCheckmarkCircleSharp size={16} /> Solved
