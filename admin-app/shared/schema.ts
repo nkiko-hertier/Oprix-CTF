@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, boolean, timestamp, integer, uuid, json, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean,jsonb, timestamp, integer, uuid, json, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -43,6 +43,19 @@ export const profiles = pgTable("profiles", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const competitionTypeEnum = pgEnum("competition_type", [
+  "JEOPARDY",
+  "ATTACK_DEFENSE",
+]);
+
+export const categoryEnum = pgEnum("category", [
+  "WEB",
+  "CRYPTO",
+  "PWN",
+  "FORENSICS",
+  "REVERSE",
+]);
+
 // Competitions table
 export const competitions = pgTable("competitions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -55,6 +68,12 @@ export const competitions = pgTable("competitions", {
   status: competitionStatusEnum("status").default("DRAFT").notNull(),
   isPublic: boolean("is_public").default(true).notNull(),
   isTeamBased: boolean("is_team_based").default(false).notNull(),
+  requireApproval: boolean("require_approval").default(false),
+  maxTeamSize: integer("max_team_size").default(4),
+  allowedCategories: categoryEnum("allowed_categories").array().default([]),
+  maxParticipants: integer("max_participants").default(100),
+  metadata: jsonb("metadata").default({}),
+  type: competitionTypeEnum("type").default("JEOPARDY").notNull(),
   maxTeams: integer("max_teams"),
   maxUsers: integer("max_users"),
   registrationDeadline: timestamp("registration_deadline"),

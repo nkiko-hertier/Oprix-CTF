@@ -35,13 +35,34 @@ import { useToast } from "@/hooks/use-toast";
 import type { CompetitionWithDetails } from "@shared/schema";
 
 const competitionSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters"),
+  name: z.string().min(3, "Name must be at least 3 characters"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  startTime: z.string().datetime("Invalid start date"),
-  endTime: z.string().datetime("Invalid end date"),
-  status: z.enum(["DRAFT", "REGISTRATION_OPEN", "ACTIVE", "COMPLETED"]),
-  isTeamBased: z.boolean().default(false),
+
+  // Local datetime format from the browser: "2025-07-01T00:00"
+  startTime: z.string().refine((v) => !isNaN(Date.parse(v)), {
+    message: "Invalid start date",
+  }),
+  endTime: z.string().refine((v) => !isNaN(Date.parse(v)), {
+    message: "Invalid end date",
+  }),
+
+  type: z.enum(["JEOPARDY", "ATTACK_DEFENSE"]),
+  isTeamBased: z.boolean(),
+  maxTeamSize: z.number().min(1),
+  maxParticipants: z.number().min(1),
+  requireApproval: z.boolean(),
+  isPublic: z.boolean(),
+
+  allowedCategories: z.array(
+    z.enum(["WEB", "CRYPTO", "PWN", "FORENSICS", "REVERSE"])
+  ),
+
+  metadata: z.object({
+    difficulty: z.string().min(3),
+    prizes: z.string().min(3),
+  }),
 });
+
 
 type CompetitionFormData = z.infer<typeof competitionSchema>;
 
@@ -51,11 +72,7 @@ interface CompetitionDialogProps {
   competition?: CompetitionWithDetails;
 }
 
-export function CompetitionDialog({
-  open,
-  onOpenChange,
-  competition,
-}: CompetitionDialogProps) {
+export function CompetitionDialog({ open, onOpenChange, competition }: CompetitionDialogProps) {
   const { toast } = useToast();
   const isEdit = !!competition;
 
@@ -63,96 +80,94 @@ export function CompetitionDialog({
     resolver: zodResolver(competitionSchema),
     defaultValues: competition
       ? {
-          title: competition.title,
-          description: competition.description,
-          startTime: new Date(competition.startTime).toISOString(),
-          endTime: new Date(competition.endTime).toISOString(),
-          status: competition.status as any,
-          isTeamBased: competition.isTeamBased,
-        }
-      : {
-          title: "",
-          description: "",
-          startTime: new Date().toISOString(),
-          endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          status: "DRAFT",
-          isTeamBased: false,
+        name: competition.name,
+        description: competition.description,
+
+        // Convert ISO → local datetime for browser input
+        startTime: new Date(competition.startTime).toISOString().slice(0, 16),
+        endTime: new Date(competition.endTime).toISOString().slice(0, 16),
+
+        type: competition.type,
+        isTeamBased: competition.isTeamBased ?? false,
+        maxTeamSize: competition.maxTeamSize ?? 4,            // 👈 FIX
+        maxParticipants: competition.maxParticipants ?? 100,  // 👈 FIX
+        requireApproval: competition.requireApproval ?? false, // 👈 FIX
+        isPublic: competition.isPublic ?? true,
+
+        allowedCategories: competition.allowedCategories ?? [], // 👈 FIX
+        metadata: {
         },
+      }
+      : {
+        name: "",
+        description: "",
+        startTime: new Date().toISOString().slice(0, 16),
+        endTime: new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 16),
+
+        type: "JEOPARDY",
+        isTeamBased: false,
+        maxTeamSize: 4,
+        maxParticipants: 100,
+        requireApproval: false,
+        isPublic: true,
+        allowedCategories: [],
+        metadata: { difficulty: "", prizes: "" },
+      },
   });
 
-  const createMutation = useMutation({
-    mutationFn: async (data: CompetitionFormData) => {
-      return apiRequest("POST", "/api/v1/competitions", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/v1/competitions"] });
-      toast({ title: "Competition created successfully" });
-      form.reset();
-      onOpenChange(false);
-    },
-    onError: () => {
-      toast({ title: "Failed to create competition", variant: "destructive" });
-    },
-  });
+  const mutationFn = (data: CompetitionFormData) => {
+    const payload = {
+      ...data,
+      // Convert local datetime → ISO before sending to API
+      startTime: new Date(data.startTime).toISOString(),
+      endTime: new Date(data.endTime).toISOString(),
+    };
 
-  const updateMutation = useMutation({
-    mutationFn: async (data: CompetitionFormData) => {
-      return apiRequest("PUT", `/api/v1/competitions/${competition!.id}`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/v1/competitions"] });
-      toast({ title: "Competition updated successfully" });
-      onOpenChange(false);
-    },
-    onError: () => {
-      toast({ title: "Failed to update competition", variant: "destructive" });
-    },
-  });
-
-  const onSubmit = async (data: CompetitionFormData) => {
-    if (isEdit) {
-      updateMutation.mutate(data);
-    } else {
-      createMutation.mutate(data);
-    }
+    return isEdit
+      ? apiRequest("PUT", `/api/v1/competitions/${competition!.id}`, payload)
+      : apiRequest("POST", "/api/v1/competitions", payload);
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const mutation = useMutation({
+    mutationFn,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/competitions"] });
+      toast({
+        title: isEdit ? "Competition updated successfully" : "Competition created successfully",
+      });
+      onOpenChange(false);
+    },
+    onError: () => {
+      toast({
+        title: "Failed to save competition",
+        variant: "destructive",
+      });
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" data-testid="dialog-competition">
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit ? "Edit Competition" : "Create Competition"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEdit
-              ? "Update competition details"
-              : "Create a new CTF competition"}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-xl">
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(mutation.mutate)} className="space-y-4">
+
+            {/* NAME */}
             <FormField
               control={form.control}
-              name="title"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Competition title"
-                      {...field}
-                      data-testid="input-competition-title"
-                    />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* DESCRIPTION */}
             <FormField
               control={form.control}
               name="description"
@@ -160,99 +175,208 @@ export function CompetitionDialog({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Competition description"
-                      {...field}
-                      data-testid="textarea-competition-description"
-                    />
+                    <Textarea rows={4} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* TYPE */}
             <FormField
               control={form.control}
-              name="status"
+              name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>Competition Type</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
-                      <SelectTrigger data-testid="select-competition-status">
+                      <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="DRAFT">Draft</SelectItem>
-                      <SelectItem value="REGISTRATION_OPEN">
-                        Registration Open
-                      </SelectItem>
-                      <SelectItem value="ACTIVE">Active</SelectItem>
-                      <SelectItem value="COMPLETED">Completed</SelectItem>
+                      <SelectItem value="JEOPARDY">Jeopardy</SelectItem>
+                      <SelectItem value="ATTACK_DEFENSE">Attack-Defense</SelectItem>
                     </SelectContent>
                   </Select>
-                  <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* START TIME */}
             <FormField
               control={form.control}
               name="startTime"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Start Date</FormLabel>
+                  <FormLabel>Start Time</FormLabel>
                   <FormControl>
-                    <Input
-                      type="datetime-local"
-                      {...field}
-                      data-testid="input-start-time"
-                    />
+                    <Input type="datetime-local" {...field} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* END TIME */}
+            <FormField
+              control={form.control}
+              name="endTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>End Time</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* TEAM SETTINGS */}
+            <FormField
+              control={form.control}
+              name="isTeamBased"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Team Based?</FormLabel>
+                  <Select
+                    value={String(field.value)}
+                    onValueChange={(v) => field.onChange(v === "true")}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+
+            {/* MAX TEAM SIZE */}
+            <FormField
+              control={form.control}
+              name="maxTeamSize"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Max Team Size</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* MAX PARTICIPANTS */}
+            <FormField
+              control={form.control}
+              name="maxParticipants"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Max Participants</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* IS PUBLIC */}
+            <FormField
+              control={form.control}
+              name="isPublic"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Public Competition?</FormLabel>
+                  <Select
+                    value={String(field.value)}
+                    onValueChange={(v) => field.onChange(v === "true")}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+
+            {/* ALLOWED CATEGORIES */}
+            <FormField
+              control={form.control}
+              name="allowedCategories"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Allowed Categories</FormLabel>
+                  <FormControl>
+                    <Select value={"WEB"} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-category">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                         {["WEB", "CRYPTO", "PWN", "FORENSICS", "REVERSE"].map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                        
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* METADATA */}
+            <FormField
+              control={form.control}
+              name="metadata.difficulty"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Difficulty</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
                 </FormItem>
               )}
             />
 
             <FormField
               control={form.control}
-              name="endTime"
+              name="metadata.prizes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>End Date</FormLabel>
+                  <FormLabel>Prizes</FormLabel>
                   <FormControl>
-                    <Input
-                      type="datetime-local"
-                      {...field}
-                      data-testid="input-end-time"
-                    />
+                    <Input {...field} />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                data-testid="button-cancel"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isPending}
-                data-testid="button-submit"
-              >
-                {isPending ? "Saving..." : isEdit ? "Update" : "Create"}
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? "Saving..." : isEdit ? "Update" : "Create"}
               </Button>
             </DialogFooter>
           </form>
         </Form>
+
       </DialogContent>
     </Dialog>
   );
 }
+

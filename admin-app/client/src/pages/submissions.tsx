@@ -33,10 +33,17 @@ export default function Submissions() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const { data: submissions, isLoading } = useQuery<SubmissionWithDetails[]>({
+  const submissionQueryOptions: Record<string, any>  = {
+    ...((statusFilter == 'correct') && {correctOnly: true}),
+    ...((statusFilter == 'incorrect') && {incorrectOnly: true})
+  }
+
+  const { data: submission, isLoading } = useQuery<any>({
     // queryKey: ["/api/v1/submissions", { search, status: statusFilter }],
-    queryKey: ["/api/v1/submissions/admin"],
+    queryKey: ["/api/v1/submissions/admin",  submissionQueryOptions],
   });
+
+  const submissions: SubmissionWithDetails[] = submission?.data ?? [];
 
   return (
     <div className="space-y-6">

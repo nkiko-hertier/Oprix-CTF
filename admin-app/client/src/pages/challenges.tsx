@@ -50,9 +50,21 @@ export default function Challenges() {
     ? competitionsData
     : competitionsData?.data || [];
 
+  const challengeQueryOptions: Record<string, any> = {
+    ...((categoryFilter && categoryFilter !== 'all' ) && { category: categoryFilter }),
+    ...((difficultyFilter && difficultyFilter !== 'all' ) && { difficulty: difficultyFilter }),
+    ...(search && { search }),
+  };
+
+  const queryKey = [
+    `/api/v1/competitions/${competitionFilter}/challenges`,
+    challengeQueryOptions,
+  ];
+
   const { data: challenges, isLoading } = useQuery<ChallengeWithDetails[]>({
-    queryKey: ["/api/v1/challenges", { search, category: categoryFilter, difficulty: difficultyFilter, competition: competitionFilter }],
+    queryKey,
   });
+
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -149,11 +161,11 @@ export default function Challenges() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Difficulty</SelectItem>
-                <SelectItem value="TRIVIAL">Trivial</SelectItem>
+                <SelectItem value="BEGINNER">Beginner</SelectItem>
                 <SelectItem value="EASY">Easy</SelectItem>
                 <SelectItem value="MEDIUM">Medium</SelectItem>
                 <SelectItem value="HARD">Hard</SelectItem>
-                <SelectItem value="INSANE">Insane</SelectItem>
+                <SelectItem value="EXPERT">Expert</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -247,7 +259,7 @@ export default function Challenges() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                      No challenges found
+                      {'No challenges found'}
                     </TableCell>
                   </TableRow>
                 )}

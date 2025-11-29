@@ -286,3 +286,48 @@
     inset: -1px;
   }
 }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE & Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+
+/* Custom Scrollbar (shadcn-compatible) */
+::-webkit-scrollbar {
+  width: 8px;              /* Vertical scrollbar width */
+  height: 8px;             /* Horizontal scrollbar height */
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted)); 
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--background));
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Hover/active states */
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground) / 0.4);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: hsl(var(--foreground) / 0.6);
+}
+
+/* Firefox support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--background)) hsl(var(--muted));
+}
+
