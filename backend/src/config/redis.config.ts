@@ -22,6 +22,8 @@ export default registerAs('redis', () => {
       return delay;
     },
   };
-    
+  
+  console.log('[Redis Config] Using:', { host: config.host, port: config.port, hasPassword: !!config.password });
+  
   return config;
 });

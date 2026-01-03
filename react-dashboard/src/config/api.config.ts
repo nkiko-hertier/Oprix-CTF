@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://oprix-api.up.railway.app/api/v1/",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1/",
   timeout: 30000,
   retryAttempts: 3,
   retryDelay: 1000,
@@ -39,11 +39,15 @@ export const API_ENDPOINTS = {
     REGISTER: (id: string) => `/competitions/${id}/register`,
     UNREGISTER: (id: string) => `/competitions/${id}/register`,
   },
+  // Learning
+  LEARNING : {
+    LIST: '/learning-materials',
+  },  
   // Challenges
   CHALLENGES: {
     LIST: (compId: string) => `/competitions/${compId}/challenges`,
     CREATE: (compId: string) => `/competitions/${compId}/challenges`,
-    GET: (compId: string, chalId: string) => `/competitions/${compId}/challenges/${chalId}`,
+    GET: (chalId: string) => `/challenges/${chalId}`,
     UPDATE: (compId: string, chalId: string) => `/competitions/${compId}/challenges/${chalId}`,
     DELETE: (compId: string, chalId: string) => `/competitions/${compId}/challenges/${chalId}`,
     CREATE_HINT: (compId: string, chalId: string) => `/competitions/${compId}/challenges/${chalId}/hints`,
@@ -53,6 +57,7 @@ export const API_ENDPOINTS = {
   // Submissions
   SUBMISSIONS: {
     CREATE: "/submissions",
+    CREATE_PUBLIC: "/submissions/public",
     GET_MY: "/submissions/my",
     GET_ADMIN: "/submissions/admin",
     GET_ONE: (id: string) => `/submissions/${id}`,

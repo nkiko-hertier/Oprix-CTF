@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { AlertCircle, AlertTriangle, Info, Bell } from "lucide-react";
 import { GradientCard } from "../HomeCards";
 import getApiClient from "@/lib/api-client";
-import { API_ENDPOINTS } from "@/config/api.config";
 import { toast } from "sonner";
 import NoContent from "../NoContent";
 import LoadingSpinner from "../ui/loading-spinner";
@@ -21,84 +20,92 @@ interface Announcement {
   updatedAt: string;
 }
 
+// Priority mappings
+const PRIORITY_CONFIG: Record<
+  AnnouncementPriority,
+  { icon: JSX.Element; borderColor: string; badgeColor: string }
+> = {
+  URGENT: {
+    icon: <AlertCircle className="size-5 text-red-400" />,
+    borderColor: "border-red-500",
+    badgeColor: "bg-red-500/20 text-red-400 border-red-500/50",
+  },
+  HIGH: {
+    icon: <AlertTriangle className="size-5 text-orange-400" />,
+    borderColor: "border-orange-500",
+    badgeColor: "bg-orange-500/20 text-orange-400 border-orange-500/50",
+  },
+  NORMAL: {
+    icon: <Info className="size-5 text-blue-400" />,
+    borderColor: "border-blue-500",
+    badgeColor: "bg-blue-500/20 text-blue-400 border-blue-500/50",
+  },
+  LOW: {
+    icon: <Bell className="size-5 text-slate-400" />,
+    borderColor: "border-slate-500",
+    badgeColor: "bg-slate-500/20 text-slate-400 border-slate-500/50",
+  },
+};
+
 function Announcements({ id }: { id: string }) {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAnnouncements();
-  }, [id]);
+    let isMounted = true; // prevent state update if component unmounts
+    const fetchAnnouncements = async () => {
+      try {
+        setLoading(true);
+        const res = await getApiClient().get<{
+          data: Announcement[];
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        }>(`/announcements?competitionId=${id}`);
 
-  const fetchAnnouncements = async () => {
-    try {
-      setLoading(true);
-      // Fetch competition which should include announcements
-      const res = await getApiClient().get(
-        API_ENDPOINTS.COMPETITIONS.GET(id)
-      );
-      
-      // Check if announcements are included in the response
-      // If not, we'll need to add a separate endpoint or modify the backend
-      const competitionData = res.data;
-      
-      if (competitionData.announcements) {
+        // Filter visible announcements
+        const visibleAnnouncements = res.data.data.filter(a => a.isVisible);
+
         // Sort by priority and date
-        const sorted = [...competitionData.announcements].sort((a: Announcement, b: Announcement) => {
+        const sorted = visibleAnnouncements.sort((a, b) => {
           const priorityOrder = { URGENT: 0, HIGH: 1, NORMAL: 2, LOW: 3 };
           const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
           if (priorityDiff !== 0) return priorityDiff;
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
+
         setAnnouncements(sorted);
-      } else {
-        // If announcements aren't included, set empty array
-        // In production, you'd want a dedicated endpoint like:
-        // GET /competitions/:id/announcements
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load announcements");
         setAnnouncements([]);
+      } finally {
+        setLoading(false);
       }
-    } catch (error: any) {
-      toast.error("Failed to load announcements");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const getPriorityIcon = (priority: AnnouncementPriority) => {
-    switch (priority) {
-      case "URGENT":
-        return <AlertCircle className="size-5 text-red-400" />;
-      case "HIGH":
-        return <AlertTriangle className="size-5 text-orange-400" />;
-      case "NORMAL":
-        return <Info className="size-5 text-blue-400" />;
-      case "LOW":
-        return <Bell className="size-5 text-slate-400" />;
-      default:
-        return <Bell className="size-5 text-slate-400" />;
-    }
-  };
 
-  const getPriorityBadgeColor = (priority: AnnouncementPriority) => {
-    switch (priority) {
-      case "URGENT":
-        return "bg-red-500/20 text-red-400 border-red-500/50";
-      case "HIGH":
-        return "bg-orange-500/20 text-orange-400 border-orange-500/50";
-      case "NORMAL":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/50";
-      case "LOW":
-        return "bg-slate-500/20 text-slate-400 border-slate-500/50";
-      default:
-        return "bg-slate-500/20 text-slate-400 border-slate-500/50";
-    }
-  };
+    fetchAnnouncements();
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
         <LoadingSpinner />
       </div>
+    );
+  }
+
+  if (!announcements.length) {
+    return (
+      <NoContent
+        title="No announcements yet"
+        description="Check back later for updates and important information"
+      />
     );
   }
 
@@ -109,37 +116,24 @@ function Announcements({ id }: { id: string }) {
         Announcements
       </h2>
 
-      {announcements.length === 0 ? (
-        <NoContent
-          title="No announcements yet"
-          description="Check back later for updates and important information"
-        />
-      ) : (
-        <div className="space-y-3">
-          {announcements.map((announcement) => (
-            <GradientCard
+      <div className="space-y-3">
+        {announcements.map((announcement) => {
+          const { icon, borderColor, badgeColor } = PRIORITY_CONFIG[announcement.priority];
+
+          return (
+            <div
               key={announcement.id}
-              className={`p-5 border-l-4 ${
-                announcement.priority === "URGENT"
-                  ? "border-red-500"
-                  : announcement.priority === "HIGH"
-                  ? "border-orange-500"
-                  : announcement.priority === "NORMAL"
-                  ? "border-blue-500"
-                  : "border-slate-500"
-              }`}
+              className={`p-5 border-l-4 rounded-md bg-[#1a2435] ${borderColor}`}
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  {getPriorityIcon(announcement.priority)}
+                  {icon}
                   <h3 className="font-semibold text-white text-lg">
                     {announcement.title}
                   </h3>
                 </div>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium border ${getPriorityBadgeColor(
-                    announcement.priority
-                  )}`}
+                  className={`px-3 py-1 rounded-full text-xs font-medium border ${badgeColor}`}
                 >
                   {announcement.priority}
                 </span>
@@ -154,10 +148,10 @@ function Announcements({ id }: { id: string }) {
                   {formatTimeAgoOrRemaining(announcement.createdAt)}
                 </p>
               </div>
-            </GradientCard>
-          ))}
-        </div>
-      )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

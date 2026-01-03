@@ -81,7 +81,6 @@ const Challanges = ({ competitionId }: ChallangesProps) => {
 
       <ChallengePopup
         challengeId={selected}
-        competitionId={competitionId}
         open={open}
         onCorrect={() => handleAddCorrect(selected)}
         onClose={() => setOpen(false)}

@@ -63,6 +63,34 @@ export class SubmissionsController {
   }
 
   /**
+   * Submit a flag (Rate limited: 5/min, timeout after 3 fails)
+   */
+  @Post('/public')
+  @RateLimit({ limit: 5, ttl: 60 }) // 5 submissions per minute
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Submit flag (Rate limited: 5/min, timeout after 3 fails)' })
+  @ApiResponse({ status: 200, description: 'Flag submitted successfully' })
+  @ApiResponse({ status: 400, description: 'Rate limit exceeded, timeout, or invalid submission' })
+  @ApiResponse({ status: 403, description: 'Not registered for competition or challenge not visible' })
+  @ApiResponse({ status: 409, description: 'Challenge already solved' })
+  submitPublic(
+    @Body() createSubmissionDto: CreateSubmissionDto,
+    @CurrentUser() user: any,
+    @Req() req: Request,
+  ) {
+    // SECURITY: Extract IP and user agent for audit trail
+    const ipAddress = req.ip || req.socket.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    
+    return this.submissionsService.submitPublic(
+      createSubmissionDto, 
+      user.id,
+      ipAddress,
+      userAgent,
+    );
+  }
+
+  /**
    * Get my submissions
    */
   @Get('my')
@@ -79,7 +107,8 @@ export class SubmissionsController {
    * Get all submissions (Admin only)
    */
   @Get('admin')
-  @UseGuards(AdminGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get all submissions (Admin only)' })
   @ApiResponse({ status: 200, description: 'All submissions retrieved successfully' })
   @ApiResponse({ status: 403, description: 'Admin access required' })

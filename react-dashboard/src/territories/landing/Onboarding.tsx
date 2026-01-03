@@ -11,8 +11,9 @@ function Onboarding() {
     if (!isLoaded || !isSignedIn) return;
 
     const userRole = (user.publicMetadata.role as string) || 'USER';
-    const redirectPath = RoleBelongs[userRole] || '/'; // fallback
-    navigate(redirectPath);
+    // const redirectPath = RoleBelongs['USER'] || '/'; // fallback
+    // navigate(redirectPath);
+    navigate('/platform');
   }, [isLoaded, isSignedIn, user, navigate]);
 
   // Show loading while user data is being fetched

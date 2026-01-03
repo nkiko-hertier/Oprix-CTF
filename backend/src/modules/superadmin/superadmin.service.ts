@@ -3,10 +3,7 @@ import { PrismaService } from '../../common/database/prisma.service';
 import { CryptoService } from '../../common/services/crypto.service';
 
 /**
- * SuperAdmin Service (SaaS Platform Owner)
- * 
- * ROLE: Platform administrator - does NOT interact with players
- * RESPONSIBILITIES:
+ * SuperAdmin Service
  * - Create/manage Admin accounts (CTF organizers)
  * - Monitor platform-wide health and statistics
  * - View system audit logs
@@ -56,7 +53,7 @@ export class SuperadminService {
         passwordHash,
         role: 'ADMIN',
         isActive: true,
-        clerkId: `admin_${Date.now()}`, // Placeholder for non-Clerk admins
+        clerkId: `admin_${Date.now()}`,
       },
     });
 
@@ -366,56 +363,6 @@ export class SuperadminService {
     }
 
     return superAdmin;
-  }
-
-  /**
-   * Initialize SuperAdmin for production handover
-   * This creates a one-time setup token for the real SuperAdmin
-   */
-  async createHandoverToken(superadminId: string) {
-    const superAdmin = await this.prisma.user.findUnique({
-      where: { id: superadminId, role: 'SUPERADMIN' },
-    });
-
-    if (!superAdmin) {
-      throw new NotFoundException('SuperAdmin not found');
-    }
-
-    // Generate one-time setup token (valid for 24 hours)
-    const setupToken = this.cryptoService.generateSecureToken();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    // Store setup token in database (you might want to create a separate table for this)
-    await this.prisma.user.update({
-      where: { id: superadminId },
-      data: {
-        // Store token in a custom field or create a separate tokens table
-        clerkId: `setup_${setupToken}_${expiresAt.getTime()}`,
-      },
-    });
-
-    // Create audit log
-    await this.prisma.auditLog.create({
-      data: {
-        userId: superadminId,
-        action: 'HANDOVER_TOKEN_CREATED',
-        entityType: 'User',
-        entityId: superadminId,
-        details: {
-          message: 'One-time setup token created for production handover',
-          expiresAt: expiresAt.toISOString(),
-        },
-      },
-    });
-
-    this.logger.warn(`Handover token created for SuperAdmin ${superadminId}`);
-
-    return {
-      setupToken,
-      expiresAt,
-      setupUrl: `/setup?token=${setupToken}`,
-      message: 'Share this token with the production SuperAdmin. It expires in 24 hours.',
-    };
   }
 
   /**

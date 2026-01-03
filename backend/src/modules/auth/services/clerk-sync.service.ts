@@ -30,6 +30,23 @@ export class ClerkSyncService {
 
 
   /**
+   * Update user metadata in Clerk
+   * Used to sync role and other metadata to Clerk's public metadata
+   * @param clerkId - Clerk user ID
+   * @param metadata - Metadata to update
+   */
+  async updateUserMetadata(clerkId: string, metadata: Record<string, any>) {
+    try {
+      await this.clerk.users.updateUser(clerkId, {
+        publicMetadata: metadata,
+      });
+      this.logger.log(`Updated Clerk metadata for user ${clerkId}`);
+    } catch (error) {
+      this.logger.error(`Failed to update Clerk metadata for ${clerkId}`, error);
+    }
+  }
+
+  /**
    * Get or create user from Clerk
    * Syncs Clerk user data with local database
    * @param clerkId - Clerk user ID
@@ -130,7 +147,6 @@ export class ClerkSyncService {
       }
 
       // Verify webhook using Clerk's method
-      // Note: Install @clerk/clerk-sdk-node if not already installed
       const crypto = require('crypto');
       const signedContent = `${svix_id}.${svix_timestamp}.${payload}`;
       const secret = webhookSecret.split('_')[1]; // Remove 'whsec_' prefix

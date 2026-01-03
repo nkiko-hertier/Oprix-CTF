@@ -73,7 +73,7 @@ export class TeamsController {
     @Body() joinTeamDto: JoinTeamDto,
     @CurrentUser() user: any,
   ) {
-    return this.teamsService.joinTeam(joinTeamDto, user.id);
+    return this.teamsService.joinWithInviteCode(joinTeamDto.inviteCode, user.id);
   }
 
   /**

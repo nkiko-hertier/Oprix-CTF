@@ -21,7 +21,7 @@ import {
   RegisterCompetitionDto,
 } from './dto/update-competition.dto';
 import { CompetitionQueryDto } from './dto/competition-query.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard, OptionalAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser } from '../../common/decorators/auth.decorator';
 
@@ -32,7 +32,7 @@ import { CurrentUser } from '../../common/decorators/auth.decorator';
 @ApiTags('competitions')
 @Controller('competitions')
 export class CompetitionsController {
-  constructor(private readonly competitionsService: CompetitionsService) {}
+  constructor(private readonly competitionsService: CompetitionsService) { }
 
   /**
    * Create a new competition (Admin only)
@@ -48,25 +48,57 @@ export class CompetitionsController {
   }
 
   /**
-   * Get all competitions with filters
+   * Get all public competitions with filters
    */
   @Get()
-  @ApiOperation({ summary: 'Get all competitions' })
+  @UseGuards(OptionalAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get all public competitions' })
   @ApiResponse({ status: 200, description: 'Competitions retrieved successfully' })
-  findAll(@Query() query: CompetitionQueryDto, @CurrentUser() user?: any) {
-    return this.competitionsService.findAll(query, user?.id);
+  findAll(@Query() query: Omit<CompetitionQueryDto, 'myCompetitions'>, @CurrentUser() user?: any) {
+    return this.competitionsService.findAll(query, user?.id, user);
+  }
+
+  /**
+   * Get user's registered competitions
+   */
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get my registered competitions' })
+  @ApiResponse({ status: 200, description: 'User competitions retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Authentication required' })
+  findMyCompetitions(@Query() query: Omit<CompetitionQueryDto, 'myCompetitions'>, @CurrentUser() user: any) {
+    return this.competitionsService.findAll({ ...query, myCompetitions: true }, user.id, user);
   }
 
   /**
    * Get a specific competition by ID
    */
   @Get(':id')
+  @UseGuards(OptionalAuthGuard)
+  // @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get competition by ID' })
   @ApiResponse({ status: 200, description: 'Competition retrieved successfully' })
   @ApiResponse({ status: 404, description: 'Competition not found' })
   findOne(@Param('id') id: string, @CurrentUser() user?: any) {
     return this.competitionsService.findOne(id, user?.id);
   }
+
+ /**
+   * Get a specific competition by ID users progress
+   */
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get my registered competitions progres by id' })
+  @Get(':id/progress')
+  async getProgress(@Param('id') competitionId: string, @CurrentUser() user?: any) {
+    return this.competitionsService.getUserProgress(
+      competitionId,
+      user?.id,
+    );
+  }
+
 
   /**
    * Update competition details (Admin/Owner only)

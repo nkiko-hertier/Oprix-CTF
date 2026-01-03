@@ -52,9 +52,11 @@ export class NotificationsQueue {
    * Queue competition announcement
    */
   async sendCompetitionAnnouncement(data: {
+    announcementId: string;
     competitionId: string;
     title: string;
     content: string;
+    priority: string;
   }) {
     await this.notificationsQueue.add('competition-announcement', data, {
       attempts: 3,

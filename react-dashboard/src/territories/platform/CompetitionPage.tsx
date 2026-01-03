@@ -104,10 +104,10 @@ function CompetitionPage() {
                                 <div className='skeleton min-h-[130px]'></div>)
                         }
                         {myCompetitions.map((competition) => {
-                            if (competition.status == "DRAFT") return
+                            // if (competition.status == "DRAFTs") return
                             const status = (competition.status == "REGISTRATION_OPEN") ? "OPEN" : competition.status;
                             return (
-                                <div hidden={Floading} className={`bg-white/10 p-4 relative max-md:flex gap-3 rounded-lg hover:bg-white/20 cursor-pointer`} key={competition.id}>
+                                <div hidden={Floading} className={`bg-[#17202f] hover:bg-slate-800 p-4 relative max-md:flex gap-3 rounded-lg cursor-pointer`} key={competition.id}>
                                     <div className='h-[100px] md:h-[150px] mb-2 hiddens'>
                                         <img src="https://cdn.pixabay.com/collection/thumbnail/2025/06/05/island-2722471_1280.jpg" className='rounded-md size-full object-cover' alt="" />
                                     </div>
@@ -139,7 +139,7 @@ function CompetitionPage() {
                         <div className='flex flex-col sm:flex-row justify-between gap-4 mb-5'>
                             <h2 className='text-xl'>Other Competitions</h2>
                             <div className='flex flex-col sm:flex-row gap-3'>
-                                <div className='flex items-center bg-white/10 px-3 gap-2 rounded-md border border-white/20'>
+                                <div className='flex items-center bg-[#17202f]  px-3 gap-2 rounded-md '>
                                     <RiSearch2Line className='text-gray-400' />
                                     <input
                                         type="text"
@@ -152,7 +152,7 @@ function CompetitionPage() {
                                 <select
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
-                                    className='px-3 py-2 text-sm rounded-md bg-white/10 border border-white/20 text-white outline-none'
+                                    className='px-3 py-2 text-sm rounded-md bg-[#17202f]  text-white outline-none'
                                 >
                                     <option value="all">All Status</option>
                                     <option value="REGISTRATION_OPEN">Registration Open</option>
@@ -162,7 +162,7 @@ function CompetitionPage() {
                                 <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
-                                    className='px-3 py-2 text-sm rounded-md bg-white/10 border border-white/20 text-white outline-none'
+                                    className='px-3 py-2 text-sm rounded-md bg-[#17202f] text-white outline-none'
                                 >
                                     <option value="date">Sort by Date</option>
                                     <option value="name">Sort by Name</option>
@@ -179,17 +179,19 @@ function CompetitionPage() {
 
                             }
                             {(competitions.sort((a, b) => a.name.localeCompare(b.name))).map((competition) => {
-                                if (competition.status == "DRAFT") return
+                                // if (competition.status == "DRAFT") return
                                 const status = (competition.status == "REGISTRATION_OPEN") ? "OPEN" : competition.status;
                                 return (
-                                    <div hidden={Floading} className={`bg-white/10 p-4 relative max-md:flex gap-3 rounded-lg hover:bg-white/20 cursor-pointer`} key={competition.id}>
-                                        <div className='h-[100px] md:h-[150px] mb-2 hiddens'>
-                                            <img src="https://cdn.pixabay.com/collection/thumbnail/2025/06/05/island-2722471_1280.jpg" className='rounded-md size-full object-cover' alt="" />
+                                    <div hidden={Floading} className={` p-4 relative max-md:flex gap-3 rounded-lg bg-[#17202f] hover:bg-slate-800 cursor-pointer`} key={competition.id}>
+                                        <div>
+                                            <div className='h-full md:h-[150px] max-md:w-[150px] mb-2 hiddens'>
+                                                <img src="https://cdn.pixabay.com/collection/thumbnail/2025/06/05/island-2722471_1280.jpg" className='rounded-md size-full object-cover' alt="" />
+                                            </div>
                                         </div>
 
                                         <div>
                                             <h3 className='text-lg font-semibold mb-2'>{competition.name}</h3>
-                                            <p className='text-sm text-gray-300'>{competition.description}</p>
+                                            <p className='text-sm text-gray-300 line-clamp-2'>{competition.description}</p>
                                             <div>
                                                 <button className='absolute top-6 right-6 bg-white/10 px-3 text-sm py-1 rounded-full hover:bg-white/20 flex gap-2 items-center'><BsStars /> {(status).toLowerCase()}</button>
                                             </div>

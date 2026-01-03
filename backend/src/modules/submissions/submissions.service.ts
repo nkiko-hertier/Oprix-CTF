@@ -32,7 +32,7 @@ export class SubmissionsService {
     private cryptoService: CryptoService,
     private leaderboardService: LeaderboardService,
     private eventsService: EventsService,
-  ) {}
+  ) { }
 
   /**
    * Submit a flag (Rate limited: 5/min, timeout after 3 fails)
@@ -43,9 +43,9 @@ export class SubmissionsService {
    * @param userAgent - User's user agent for audit trail
    */
   async submit(
-    createSubmissionDto: CreateSubmissionDto, 
-    userId: string, 
-    ipAddress?: string, 
+    createSubmissionDto: CreateSubmissionDto,
+    userId: string,
+    ipAddress?: string,
     userAgent?: string
   ) {
     const { challengeId, flag, teamId } = createSubmissionDto;
@@ -56,8 +56,11 @@ export class SubmissionsService {
     // Get challenge with validation
     const challenge = await this.getValidChallenge(challengeId, userId);
 
-    // Check if user is registered for the competition
-    await this.verifyRegistration(challenge.competitionId, userId, teamId);
+    // Check if user is registered for the competition (when linked)
+    const competitionId = challenge.competitionId;
+    if (competitionId !== null && competitionId !== undefined) {
+      await this.verifyRegistration(competitionId, userId, teamId);
+    }
 
     // Check if already solved by user/team
     await this.checkAlreadySolved(challengeId, userId, teamId);
@@ -73,6 +76,7 @@ export class SubmissionsService {
       challengeData.flagSalt, 
       challengeData.caseSensitive || false
     );
+
 
     try {
       // Create submission record (NEVER stores actual flag)
@@ -104,11 +108,11 @@ export class SubmissionsService {
           },
           team: teamId
             ? {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              }
+              select: {
+                id: true,
+                name: true,
+              },
+            }
             : undefined,
         },
       });
@@ -116,10 +120,13 @@ export class SubmissionsService {
       // If correct submission, award points and create solve record
       if (isCorrect) {
         await this.handleCorrectSubmission(submission);
-        
+
         // Invalidate leaderboard cache for real-time updates
-        await this.leaderboardService.invalidateCache(challenge.competitionId);
-        
+        const competitionId = challenge.competitionId;
+        if (competitionId !== null && competitionId !== undefined) {
+          await this.leaderboardService.invalidateCache(competitionId);
+        }
+
         // Broadcast leaderboard update via WebSocket
         await this.eventsService.notifySubmissionResult(submission);
       }
@@ -145,8 +152,8 @@ export class SubmissionsService {
         user: (submission as any).user,
         team: (submission as any).team,
         // SECURITY: Never return flag or any sensitive data
-        message: isCorrect 
-          ? 'Correct flag! Points awarded.' 
+        message: isCorrect
+          ? 'Correct flag! Points awarded.'
           : 'Incorrect flag. Try again.',
         pointsAwarded: isCorrect ? challenge.points : 0,
       };
@@ -155,6 +162,96 @@ export class SubmissionsService {
       throw new BadRequestException('Failed to submit flag');
     }
   }
+
+
+  /**
+   * Submit a flag (Rate limited: 5/min, timeout after 3 fails)
+   * SECURITY: Uses secure flag validation, never stores actual flags
+   * @param createSubmissionDto - Submission data
+   * @param userId - User submitting the flag
+   * @param ipAddress - User's IP address for audit trail
+   * @param userAgent - User's user agent for audit trail
+   */
+  async submitPublic(
+    createSubmissionDto: CreateSubmissionDto,
+    userId: string,
+    ipAddress?: string,
+    userAgent?: string
+  ) {
+    const { challengeId, flag, teamId } = createSubmissionDto;
+  
+    // Get challenge (basic validation only)
+    const challenge = await this.getValidChallenge(challengeId, userId);
+  
+    // Validate flag using secure hash comparison
+    const challengeData = challenge as any;
+    const isCorrect = this.cryptoService.verifyFlag(
+      flag,
+      challengeData.flagHash,
+      challengeData.flagSalt,
+      challengeData.caseSensitive || false
+    );
+  
+    try {
+      // Create submission record (no rate limit, no scoring, no checks)
+      const submission = await this.prisma.submission.create({
+        data: {
+          challengeId,
+          userId,
+          teamId,
+          competitionId: challenge.competitionId ?? null,
+          isCorrect,
+          ipAddress,
+          userAgent,
+          submittedAt: new Date(),
+        },
+        include: {
+          challenge: {
+            select: {
+              id: true,
+              title: true,
+              category: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              username: true,
+            },
+          },
+          team: teamId
+            ? {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              }
+            : undefined,
+        },
+      });
+  
+      this.logger.log(
+        `Submission ${isCorrect ? 'CORRECT' : 'INCORRECT'}: ${challenge.title} by ${userId}`,
+      );
+  
+      return {
+        id: submission.id,
+        challengeId: submission.challengeId,
+        isCorrect: submission.isCorrect,
+        submittedAt: submission.submittedAt,
+        challenge: submission.challenge,
+        user: submission.user,
+        team: submission.team,
+        message: isCorrect
+          ? 'Correct flag!'
+          : 'Incorrect flag. Try again.',
+      };
+    } catch (error) {
+      this.logger.error('Failed to create submission', error);
+      throw new BadRequestException('Failed to submit flag');
+    }
+  }
+  
 
   /**
    * Get user's submissions
@@ -295,6 +392,15 @@ export class SubmissionsService {
     if (correctOnly) where.isCorrect = true;
     if (incorrectOnly) where.isCorrect = false;
 
+
+
+    // Only show certificates for competitions administered by this admin
+    where.challenge = {
+      competition: {
+        adminId: adminId,
+      }
+    }
+
     const [submissions, total] = await Promise.all([
       this.prisma.submission.findMany({
         where,
@@ -372,13 +478,16 @@ export class SubmissionsService {
     }
 
     // Check if competition is active
-    if ((challenge as any).competition.status !== 'ACTIVE') {
-      throw new BadRequestException('Competition is not active');
-    }
+    // if ((challenge as any).competition.status !== 'ACTIVE') {
+    //   throw new BadRequestException('Competition is not active');
+    // }
 
     // Check if competition has ended
-    if (new Date() > challenge.competition.endTime) {
-      throw new BadRequestException('Competition has ended');
+    const OurDate = challenge.competition?.endTime ?? '';
+    if(challenge.competitionId){
+      if (new Date() > new Date(OurDate)) {
+        throw new BadRequestException('Competition has ended sir!');
+      }
     }
 
     return challenge;

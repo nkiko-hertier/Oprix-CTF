@@ -25,7 +25,7 @@ import { randomBytes } from 'crypto';
 export class TeamsService {
   private readonly logger = new Logger(TeamsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   /**
    * Create a new team
@@ -86,6 +86,18 @@ export class TeamsService {
             joinedAt: new Date(),
           },
         });
+
+        // Auto-register team for the competition
+        if (createTeamDto.competitionId) {
+          await tx.registration.create({
+            data: {
+              competitionId: createTeamDto.competitionId,
+              userId: captainId,
+              teamId: newTeam.id,
+              status: 'APPROVED', // Auto-approve team registrations
+            },
+          });
+        }
 
         return newTeam;
       });
@@ -170,7 +182,7 @@ export class TeamsService {
         memberCount: teamWithCount._count.members,
         availableSlots: team.maxSize - teamWithCount._count.members,
         competitionCount: teamWithCount._count.registrations,
-        inviteCode: undefined, // Don't expose invite codes in public listings
+        inviteCode: undefined,
       };
     });
 
@@ -373,14 +385,11 @@ export class TeamsService {
   }
 
   /**
-   * Join team with invite code
-   * @param joinTeamDto - Join team data
+   * Join team via invite code
+   * @param inviteCode - Team invite code
    * @param userId - User joining the team
    */
-  async joinTeam(joinTeamDto: JoinTeamDto, userId: string) {
-    const { inviteCode } = joinTeamDto;
-
-    // Find team by invite code
+  async joinWithInviteCode(inviteCode: string, userId: string) {
     const team = await this.prisma.team.findUnique({
       where: { inviteCode },
       include: {
@@ -429,27 +438,54 @@ export class TeamsService {
     }
 
     try {
-      const teamMember = await this.prisma.teamMember.create({
-        data: {
-          teamId: team.id,
-          userId,
-          role: 'MEMBER',
-          joinedAt: new Date(),
-        },
-        include: {
-          team: {
-            select: {
-              id: true,
-              name: true,
+      const teamMember = await this.prisma.$transaction(async (tx) => {
+        // Add user as team member
+        const createdMember = await tx.teamMember.create({
+          data: {
+            teamId: team.id,
+            userId,
+            role: 'MEMBER',
+            joinedAt: new Date(),
+          },
+          include: {
+            team: {
+              select: {
+                id: true,
+                name: true,
+                competitionId: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                username: true,
+              },
             },
           },
-          user: {
-            select: {
-              id: true,
-              username: true,
+        });
+
+        // Auto-register new member for team's competition (if team is registered)
+        if (team.competitionId) {
+          const existingTeamRegistration = await tx.registration.findFirst({
+            where: {
+              competitionId: team.competitionId,
+              teamId: team.id,
             },
-          },
-        },
+          });
+
+          if (existingTeamRegistration) {
+            await tx.registration.create({
+              data: {
+                competitionId: team.competitionId,
+                userId,
+                teamId: team.id,
+                status: existingTeamRegistration.status,
+              },
+            });
+          }
+        }
+
+        return createdMember;
       });
 
       this.logger.log(`User ${userId} joined team ${team.name}`);

@@ -1,183 +1,199 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton-loader';
-import { toast } from 'sonner';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/atom-one-dark.css'; // Dark theme for code blocks
-import { useUser } from '@clerk/clerk-react';
+import { useEffect, useState } from 'react'
+import { RiSearch2Line } from 'react-icons/ri'
+import { ArrowRight, ExternalLink } from 'lucide-react'
 
-interface Message {
-  role: 'user' | 'assistant' | 'system'
-  content: string
-}
+import getApiClient from '@/lib/api-client'
+import { API_ENDPOINTS } from '@/config/api.config'
 
-export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const typingRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
-  const { user } = useUser()
+import NoContent from '@/components/NoContent'
+import PublicChallanges from '@/components/CompetitionsPages/NewChallanges'
 
-  const systemMessage: Message = {
-    role: 'user',
-    content: `Hiii, my names are ${user?.fullName}`
-  };
-  
+import type { PaginatedResponse, LearningMaterial } from '@/types'
+
+// shadcn tabs
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs'
+
+function LearningPage() {
+  const [materials, setMaterials] = useState<LearningMaterial[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
+  const limit = 9
 
   useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [messages, loading]);
+    fetchLearningMaterials()
+  }, [page])
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1)
+      fetchLearningMaterials()
+    }, 300)
 
-    const userMessage: Message = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setLoading(true);
+    return () => clearTimeout(timer)
+  }, [searchTerm])
 
+  const fetchLearningMaterials = async () => {
     try {
-      const res = await fetch('https://oprix-ai-backend.vercel.app/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [systemMessage, ...messages, userMessage] }),
-      });
+      setLoading(true)
 
-      if (!res.ok) throw new Error(`Server error: ${res.status}`);
-      const data = await res.json();
-      const fullText = data.reply || 'Sorry, no response from the AI.';
-      typeMessage(fullText);
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to get response from AI');
-      setLoading(false);
-    }
-  };
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      })
 
-  const typeMessage = (text: string) => {
-    let index = 0;
-    const newMessage: Message = { role: 'assistant', content: '' };
-    setMessages((prev) => [...prev, newMessage]);
-
-    typingRef.current = setInterval(() => {
-      index++;
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1].content = text.slice(0, index);
-        return updated;
-      });
-
-      if (index >= text.length && typingRef.current) {
-        clearInterval(typingRef.current);
-        typingRef.current = null;
-        setLoading(false);
+      if (searchTerm) {
+        params.append('search', searchTerm)
       }
-    }, 1);
-  };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !loading) sendMessage();
-  };
+      const response = await getApiClient().get<
+        PaginatedResponse<LearningMaterial>
+      >(`${API_ENDPOINTS.LEARNING.LIST}?${params.toString()}`)
+
+      setMaterials(response.data.data || [])
+      setTotalPages(response.data.totalPages || 1)
+    } catch (error) {
+      console.error('Failed to fetch learning materials:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="w-full md:p-6 space-y-6">
-      {/* <h1 className="text-2xl font-bold text-white">Learning Chatbot</h1> */}
+    <div>
+      <h1 className="text-2xl mt-5 sm:text-3xl text-center sm:text-left">
+        Learn 📚 <br /> Strengthen your fundamentals
+      </h1>
 
-      <div
-        ref={chatContainerRef}
-        className="bg-white/1s0 rounded-lg p-4 flex flex-col gap-4 max-h-[67vh] overflow-y-auto scrollbar-hide"
-      >
-        {messages.length === 0 && !loading && (
-          <div className='flex flex-col justify-center'>
-            <img src="/icons/ai1.png" className='w-[200px] mx-auto mb-2' alt="Ai icons" />
-            <h1 className='mx-auto text-xl'>Oprix GPT ai</h1>
-            <p className="text-gray-400 text-center">Start chatting with your tutor...</p>
+      {/* Tabs */}
+      <Tabs defaultValue="learning" className="mt-8">
+        <TabsList className="bg-[#17202f]">
+          <TabsTrigger value="learning">Learning</TabsTrigger>
+          {/* <TabsTrigger value="challenges">Challenges</TabsTrigger> */}
+        </TabsList>
+
+        {/* ================= LEARNING TAB ================= */}
+        <TabsContent value="learning" className="mt-6">
+          {/* Search */}
+          <div className="flex justify-end mt-6 mb-5">
+            <div className="flex items-center bg-[#17202f] px-3 gap-2 rounded-md w-full sm:w-[300px]">
+              <RiSearch2Line className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search learning materials..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="px-2 py-2 text-sm bg-transparent outline-none text-white placeholder-gray-400 w-full"
+              />
+            </div>
           </div>
-        )}
 
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`p-1  rounded-lg max-full break-words ${
-              msg.role === 'user'
-                ? 'bg-blue-500/30 px-4 rounded-full! self-end text-white'
-                : 'bg-gray-800/80 p-3 self-start text-gray-200 md:p-6 w-full!'
-            }`}
-          >
-            {msg.role === 'assistant' ? (
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight]}
-                components={{
-                  code({ node, inline, className, children, ...props }: any) {
-                    const language = className?.replace('language-', '') || '';
-                    return (!inline && language) ? (
-                      <div className="relative group my-5">
-                        <pre className="bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto">
-                          <code className={className} {...props}>
-                            {children}
-                          </code>
-                        </pre>
-                        <button
-                          onClick={() => navigator.clipboard.writeText(String(children))}
-                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 bg-gray-700 px-2 py-1 text-xs rounded text-white"
-                        >
-                          Copy
-                        </button>
-                      </div>
-                    ) : (
-                      <code className="bg-gray-700 px-2 text-sm rounded">{children}</code>
-                    );
-                  },
-                  table({ children }) {
-                    return (
-                      <table className="border border-gray-600 rounded overflow-hidden my-2">
-                        {children}
-                      </table>
-                    );
-                  },
-                  th({ children }) {
-                    return <th className="border border-gray-600 bg-gray-700 px-2 py-1">{children}</th>;
-                  },
-                  td({ children }) {
-                    return <td className="border border-gray-600 px-2 py-1">{children}</td>;
-                  },
-                }}
+          {/* Empty state */}
+          {!loading && materials.length === 0 && (
+            <NoContent
+              title="No learning materials found"
+              description="Try a different keyword or check back later."
+            />
+          )}
+
+          {/* Learning cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[300px]">
+            {loading &&
+              [1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="skeleton min-h-[160px]" />
+              ))}
+
+            {materials.map((item) => (
+              <div
+                key={item.id}
+                className="bg-[#17202f] hover:bg-slate-800 p-4 rounded-lg cursor-pointer"
               >
-                {msg.content}
-              </ReactMarkdown>
-            ) : (
-              msg.content
-            )}
-          </div>
-        ))}
+                <div className="h-[150px] mb-3">
+                  <img
+                    src={item.thumbnailUrl}
+                    alt={item.title}
+                    className="rounded-md size-full object-cover"
+                  />
+                </div>
 
-        {loading && (
-          <div className="">
-            <img src="/icons/loader.svg" className='size-[30px]' alt="Thinking..." />
-          </div>
-        )}
-      </div>
+                <h3 className="text-lg font-semibold mb-1">{item.title}</h3>
+                <p className="text-sm text-gray-300 line-clamp-2">
+                  {item.description}
+                </p>
 
-      <div className="flex gap-2 fixed bottom-[20px] bg-white/10 p-3 rounded-md w-[90%] md:w-[70%]">
-        <input
-          placeholder="Type your question..."
-          className='bg-transparent! border-none! outline-none! focus:ring-none! w-full'
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyPress}
-          disabled={loading}
-        />
-        <Button onClick={sendMessage} disabled={loading || !input.trim()}>
-          {loading ? '...' : 'Send'}
-        </Button>
-      </div>
+                {/* Resources */}
+                {item.resources?.length > 0 && (
+                  <div className="mt-3 space-y-1">
+                    {item.resources.map((res, idx) => (
+                      <a
+                        key={idx}
+                        href={res.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-gray-400 flex items-center gap-1 hover:text-white"
+                      >
+                        <ExternalLink size={12} />
+                        {res.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                {/* CTA */}
+                <a
+                  href={item.linkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 flex items-center gap-1 mt-4"
+                >
+                  Start learning <ArrowRight size={15} />
+                </a>
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 mt-10">
+              <button
+                disabled={page === 1}
+                onClick={() => setPage((p) => p - 1)}
+                className="px-3 py-1 text-sm rounded-md bg-[#17202f] disabled:opacity-50"
+              >
+                Previous
+              </button>
+
+              <span className="px-3 py-1 text-sm text-gray-400">
+                Page {page} of {totalPages}
+              </span>
+
+              <button
+                disabled={page === totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="px-3 py-1 text-sm rounded-md bg-[#17202f] disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </TabsContent>
+
+        {/* ================= CHALLENGES TAB ================= */}
+        <TabsContent value="challenges" className="mt-6">
+          <PublicChallanges />
+        </TabsContent>
+      </Tabs>
     </div>
-  );
+  )
 }
+
+export default LearningPage

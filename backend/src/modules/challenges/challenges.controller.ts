@@ -21,34 +21,89 @@ import {
 } from './dto/update-challenge.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
+import { ContentManagerGuard } from '../auth/guards/content-manager.guard';
 import { CurrentUser } from '../../common/decorators/auth.decorator';
 
+
+@ApiTags('challenges')
+@Controller('challenges')
+export class PublicChallengesController {
+  constructor(private readonly challengesService: ChallengesService) { }
+
+  /**
+   * Get all challenges in a competition
+   */
+  @Get('/public')
+  // @UseGuards(JwtAuthGuard)
+  // @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get challenges that are public' })
+  @ApiResponse({ status: 200, description: 'Challenges retrieved successfully' })
+  @ApiResponse({ status: 403, description: 'Must be registered for this competition' })
+  findAll(
+    @Query() query: ChallengeQueryDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.challengesService.findAllPublic(query);
+  }
+  /**
+   * Get a specific challenge by ID
+   */
+  @Get(':challengeId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get challenge details' })
+  @ApiResponse({ status: 200, description: 'Challenge retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Challenge not found' })
+  @ApiResponse({ status: 403, description: 'Challenge not visible or not registered' })
+  findOne(
+    @Param('challengeId') challengeId: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.challengesService.findOne(challengeId, user.id);
+  }
+
+  /**
+   * Create a new challenge (Admin/Competition Owner only)
+   */
+  @Post('/create')
+  @UseGuards(JwtAuthGuard, ContentManagerGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Create a new challenge (Admin/Owner/Creator only)' })
+  @ApiResponse({ status: 201, description: 'Challenge created successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid data or competition is active' })
+  @ApiResponse({ status: 403, description: 'Only competition owner, admins, or approved creators can create challenges' })
+  create(
+    @Body() createChallengeDto: CreateChallengeDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.challengesService.create(createChallengeDto, user.id);
+  }
+}
 /**
  * Challenges Controller
  * Handles challenge management with nested routes under competitions
- * Routes: /competitions/:competitionId/challenges/*
  */
-@ApiTags('challenges')
+@ApiTags('Competition challenges')
 @Controller('competitions/:competitionId/challenges')
 export class ChallengesController {
-  constructor(private readonly challengesService: ChallengesService) {}
+  constructor(private readonly challengesService: ChallengesService) { }
 
   /**
    * Create a new challenge (Admin/Competition Owner only)
    */
   @Post()
-  @UseGuards(JwtAuthGuard, AdminGuard)
+  @UseGuards(JwtAuthGuard, ContentManagerGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Create a new challenge (Admin/Owner only)' })
+  @ApiOperation({ summary: 'Create a new challenge (Admin/Owner/Creator only)' })
   @ApiResponse({ status: 201, description: 'Challenge created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid data or competition is active' })
-  @ApiResponse({ status: 403, description: 'Only competition owner or admins can create challenges' })
+  @ApiResponse({ status: 403, description: 'Only competition owner, admins, or approved creators can create challenges' })
   create(
     @Param('competitionId') competitionId: string,
     @Body() createChallengeDto: CreateChallengeDto,
     @CurrentUser() user: any,
   ) {
-    return this.challengesService.create(competitionId, createChallengeDto, user.id);
+    return this.challengesService.create(createChallengeDto, user.id, competitionId);
   }
 
   /**
@@ -65,8 +120,9 @@ export class ChallengesController {
     @Query() query: ChallengeQueryDto,
     @CurrentUser() user: any,
   ) {
-    return this.challengesService.findAll(competitionId, query, user.id);
+    return this.challengesService.findAll(competitionId, query, user.id, user.role);
   }
+  
 
   /**
    * Get a specific challenge by ID
@@ -83,19 +139,19 @@ export class ChallengesController {
     @Param('challengeId') challengeId: string,
     @CurrentUser() user: any,
   ) {
-    return this.challengesService.findOne(competitionId, challengeId, user.id);
+    return this.challengesService.findOne(challengeId, user.id);
   }
 
   /**
    * Update challenge details (Admin/Owner only)
    */
   @Put(':challengeId')
-  @UseGuards(JwtAuthGuard, AdminGuard)
+  @UseGuards(JwtAuthGuard, ContentManagerGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Update challenge (Admin/Owner only)' })
+  @ApiOperation({ summary: 'Update challenge (Admin/Owner/Creator only)' })
   @ApiResponse({ status: 200, description: 'Challenge updated successfully' })
   @ApiResponse({ status: 400, description: 'Cannot edit challenges in active competition' })
-  @ApiResponse({ status: 403, description: 'Only competition owner or admins can update challenges' })
+  @ApiResponse({ status: 403, description: 'Only competition owner, admins, or approved creators can update challenges' })
   update(
     @Param('competitionId') competitionId: string,
     @Param('challengeId') challengeId: string,
@@ -109,13 +165,13 @@ export class ChallengesController {
    * Delete challenge (Admin/Owner only)
    */
   @Delete(':challengeId')
-  @UseGuards(JwtAuthGuard, AdminGuard)
+  @UseGuards(JwtAuthGuard, ContentManagerGuard)
   @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Delete challenge (Admin/Owner only)' })
+  @ApiOperation({ summary: 'Delete challenge (Admin/Owner/Creator only)' })
   @ApiResponse({ status: 200, description: 'Challenge deleted successfully' })
   @ApiResponse({ status: 400, description: 'Cannot delete challenges from active competition' })
-  @ApiResponse({ status: 403, description: 'Only competition owner or admins can delete challenges' })
+  @ApiResponse({ status: 403, description: 'Only competition owner, admins, or approved creators can delete challenges' })
   remove(
     @Param('competitionId') competitionId: string,
     @Param('challengeId') challengeId: string,
@@ -128,11 +184,11 @@ export class ChallengesController {
    * Create hint for challenge (Admin/Owner only)
    */
   @Post(':challengeId/hints')
-  @UseGuards(JwtAuthGuard, AdminGuard)
+  @UseGuards(JwtAuthGuard, ContentManagerGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Create hint for challenge (Admin/Owner only)' })
+  @ApiOperation({ summary: 'Create hint for challenge (Admin/Owner/Creator only)' })
   @ApiResponse({ status: 201, description: 'Hint created successfully' })
-  @ApiResponse({ status: 403, description: 'Only competition owner or admins can create hints' })
+  @ApiResponse({ status: 403, description: 'Only competition owner, admins, or approved creators can create hints' })
   createHint(
     @Param('competitionId') competitionId: string,
     @Param('challengeId') challengeId: string,

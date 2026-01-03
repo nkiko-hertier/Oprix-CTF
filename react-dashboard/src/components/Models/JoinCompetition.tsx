@@ -129,8 +129,9 @@ export const JoinCompetition = ({ competition, isReged = false }: JoinCompetitio
                 setLoading(false);
             } else {
                 location.href = `/platform/competition/${competition.id}#challanges`;
-                toast.error(error.response?.data?.message || "Something went wrong.");
-                setLoading(false);
+                // toast.error(error.response?.data?.message || "Something went wrong.");
+                setLoading(false); 
+                
             }
         }
     };
@@ -146,7 +147,7 @@ export const JoinCompetition = ({ competition, isReged = false }: JoinCompetitio
                 <DialogTrigger asChild>
                     <Button>View Competition</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-lg bg-[#1b1d21] border-none">
+                <DialogContent className="sm:max-w-lg bg-[#17202f] border-none">
                     <DialogHeader>
                         <DialogTitle>{competition.name}</DialogTitle>
                         <DialogDescription>

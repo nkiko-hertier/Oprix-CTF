@@ -75,15 +75,15 @@ export class FilesController {
   /**
    * Get all files (with access control)
    */
-  @Get()
-  @ApiOperation({ summary: 'Get all accessible files (paginated)' })
-  @ApiResponse({ status: 200, description: 'Files retrieved successfully' })
-  findAll(
-    @Query() query: FileQueryDto,
-    @CurrentUser() user: any,
-  ) {
-    return this.filesService.findAll(query, user.id);
-  }
+  // @Get()
+  // @ApiOperation({ summary: 'Get all accessible files (paginated)' })
+  // @ApiResponse({ status: 200, description: 'Files retrieved successfully' })
+  // findAll(
+  //   @Query() query: FileQueryDto,
+  //   @CurrentUser() user: any,
+  // ) {
+  //   return this.filesService.findAll(query, user.id);
+  // }
 
   /**
    * Get files for specific challenge

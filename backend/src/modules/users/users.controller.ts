@@ -22,6 +22,7 @@ import { SuperAdminGuard } from '../auth/guards/superadmin.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser } from '../../common/decorators/auth.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { InviteUserDto } from './dto/invite-user.dto';
 
 /**
  * Users Controller
@@ -29,8 +30,6 @@ import { Roles } from '../../common/decorators/roles.decorator';
  */
 @ApiTags('users')
 @Controller('users')
-@UseGuards(JwtAuthGuard)
-@ApiBearerAuth('JWT-auth')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -44,7 +43,9 @@ export class UsersController {
    * Create a new user (SuperAdmin only)
    */
   @Post()
-  @UseGuards(SuperAdminGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  // @UseGuards(SuperAdminGuard)
   @Roles('SUPERADMIN')
   @ApiOperation({ summary: 'Create a new user (SuperAdmin only)' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
@@ -53,11 +54,43 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  
+  /**
+   * Toggle User Role (SuperAdmin only)
+   */
+  @Patch(':id/toggle-status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @Roles('SUPERADMIN')
+  @ApiOperation({ summary: 'Toggle User Role (SuperAdmin only)' })
+  @ApiResponse({ status: 201, description: 'User invited successfully' })
+  @ApiResponse({ status: 409, description: 'User email already exists' })
+  toggle(@Param('id') id: string) {
+    return this.usersService.toggleUserStatus(id);
+  }
+
+  /**
+   * Create a new user (SuperAdmin only)
+   */
+  @Post('invite')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  // @UseGuards(SuperAdminGuard)
+  @Roles('SUPERADMIN')
+  @ApiOperation({ summary: 'Create a new user (SuperAdmin only)' })
+  @ApiResponse({ status: 201, description: 'User invited successfully' })
+  @ApiResponse({ status: 409, description: 'User email already exists' })
+  inviteUser(@Body() createUserDto: InviteUserDto) {
+    return this.usersService.inviteUser(createUserDto);
+  }
+
   /**
    * Get all users with pagination and filters (Admin only)
    */
   @Get()
-  @UseGuards(AdminGuard)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  // @UseGuards(AdminGuard)
   @Roles('ADMIN', 'SUPERADMIN')
   @ApiOperation({ summary: 'Get all users (Admin only)' })
   @ApiResponse({ status: 200, description: 'Users retrieved successfully' })
@@ -69,6 +102,8 @@ export class UsersController {
    * Get current authenticated user's profile
    */
   @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Profile retrieved successfully' })
   getMyProfile(@CurrentUser() user: any) {
@@ -79,6 +114,8 @@ export class UsersController {
    * Get current user's statistics
    */
   @Get('me/stats')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get current user statistics' })
   @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
   getMyStats(@CurrentUser() user: any) {
@@ -89,6 +126,8 @@ export class UsersController {
    * Update current user's profile
    */
   @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
   updateMyProfile(
@@ -102,6 +141,8 @@ export class UsersController {
    * Get a specific user by ID
    */
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'User retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -113,6 +154,8 @@ export class UsersController {
    * Get user statistics by ID
    */
   @Get(':id/stats')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get user statistics by ID' })
   @ApiResponse({ status: 200, description: 'Statistics retrieved successfully' })
   @ApiResponse({ status: 404, description: 'User not found' })
@@ -124,6 +167,8 @@ export class UsersController {
    * Update user details (Admin only)
    */
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(AdminGuard)
   @Roles('ADMIN', 'SUPERADMIN')
   @ApiOperation({ summary: 'Update user details (Admin only)' })
@@ -137,6 +182,8 @@ export class UsersController {
    * Update user role (SuperAdmin only)
    */
   @Patch(':id/role')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(SuperAdminGuard)
   @Roles('SUPERADMIN')
   @ApiOperation({ summary: 'Update user role (SuperAdmin only)' })
@@ -154,6 +201,8 @@ export class UsersController {
    * Deactivate user (Admin only)
    */
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(AdminGuard)
   @Roles('ADMIN', 'SUPERADMIN')
   @HttpCode(HttpStatus.OK)

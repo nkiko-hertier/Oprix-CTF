@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { ClerkSyncService } from './services/clerk-sync.service';
+import { ClerkJwtService } from './services/clerk-jwt.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { AdminGuard } from './guards/admin.guard';
@@ -34,6 +35,7 @@ import { SuperAdminGuard } from './guards/superadmin.guard';
     AuthService,
     JwtStrategy,
     ClerkSyncService,
+    ClerkJwtService,
     JwtAuthGuard,
     RolesGuard,
     AdminGuard,
@@ -41,6 +43,7 @@ import { SuperAdminGuard } from './guards/superadmin.guard';
   ],
   exports: [
     AuthService,
+    ClerkJwtService,
     JwtAuthGuard,
     RolesGuard,
     AdminGuard,

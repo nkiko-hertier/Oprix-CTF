@@ -15,7 +15,7 @@ export class NotificationProcessor {
   constructor(
     private prisma: PrismaService,
     private eventsService: EventsService,
-  ) {}
+  ) { }
 
   /**
    * Process individual notification
@@ -59,7 +59,7 @@ export class NotificationProcessor {
 
       // Send via WebSocket to all users
       await Promise.all(
-        userIds.map((userId: string) => 
+        userIds.map((userId: string) =>
           this.eventsService.notifyUser(userId, { type, title, content })
         ),
       );
@@ -74,16 +74,16 @@ export class NotificationProcessor {
 
   /**
    * Process competition announcement
-   * Sends to all registered participants
+   * Creates user notifications and broadcasts via WebSocket
    */
   @Process('competition-announcement')
   async handleCompetitionAnnouncement(job: Job) {
-    const { competitionId, title, message } = job.data;
+    const { announcementId, competitionId, title, content, priority } = job.data;
 
     try {
-      // Get all registered users for the competition
+      // Get registered users
       const registrations = await this.prisma.registration.findMany({
-        where: { competitionId },
+        where: { competitionId, status: 'APPROVED' },
         select: { userId: true },
       });
 
@@ -94,22 +94,24 @@ export class NotificationProcessor {
         return { success: true, count: 0 };
       }
 
-      // Create notifications
+      // Create notifications for each user
       await this.prisma.notification.createMany({
         data: userIds.map(userId => ({
           userId,
+          competitionId,
           type: 'COMPETITION_ANNOUNCEMENT',
           title,
-          content: message,
+          content,
           isRead: false,
         })) as any,
       });
 
-      // Broadcast via WebSocket
       await this.eventsService.notifyCompetitionAnnouncement(competitionId, {
+        id: announcementId,
         title,
-        message,
-        timestamp: new Date(),
+        content,
+        priority,
+        createdAt: new Date(),
       });
 
       this.logger.log(`Competition announcement sent to ${userIds.length} users`);

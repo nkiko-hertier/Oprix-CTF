@@ -30,8 +30,16 @@ model User {
   notifications Notification[]  // Notifications sent to user
   scores       Score[]     // Individual scores
   captainedTeams Team[]    @relation("TeamCaptain")  // Teams where user is captain
+  certificates Certificate[] @relation("UserCertificates")  // Certificates earned by user
+  approvedCertificates Certificate[] @relation("CertificateApprover")  // Certificates approved by admin
+  revokedCertificates Certificate[] @relation("CertificateRevoker")  // Certificates revoked by admin
   // DISABLED: First blood feature
   // firstBloods  Challenge[] @relation("FirstBlood")   // Challenges where user got first blood
+  
+  // Creator-related relations
+  creatorAssignments CompetitionCreator[] @relation("CreatorUser")
+  creatorInvitesSent CreatorInvite[]      @relation("InviteSender")
+  learningMaterials  LearningMaterial[]   // Learning materials created by this user
 
   @@index([role])
   @@index([email])
@@ -61,6 +69,7 @@ model Profile {
 enum Role {
   SUPERADMIN
   ADMIN
+  CREATOR
   USER
 }
 
@@ -92,6 +101,9 @@ model Competition {
   announcements Announcement[]  // Competition announcements
   scores       Score[]     // Derived scores for leaderboards
   notifications Notification[]  // Notifications related to competition
+  certificates Certificate[]   // Certificates issued for this competition
+  creators      CompetitionCreator[] // Creators assigned to this competition
+  creatorInvites CreatorInvite[]     // Pending creator invitations
 
   @@index([status])
   @@index([startDate])
@@ -117,9 +129,10 @@ model Challenge {
   category      String?     // String-based category (Web, Crypto, etc.)
   points        Int
   flagHash      String      // Secure hash of the flag - NEVER store actual flags
+  flagSalt      String      @default("h3xsalt")
   caseSensitive Boolean     @default(false) // Whether flag comparison is case sensitive
   normalizeFlag Boolean     @default(true)  // Whether to normalize whitespace
-  competitionId String
+  competitionId String?
   difficulty    Difficulty  @default(MEDIUM)
   solveCount    Int         @default(0) // Track popularity/difficulty
   maxAttempts   Int?        // Optional attempt limit per user
@@ -133,7 +146,7 @@ model Challenge {
   // firstBloodAt  DateTime?   // When first blood occurred
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  competition   Competition? @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   // firstBlood    User?       @relation("FirstBlood", fields: [firstBloodUserId], references: [id])
   hints         Hint[]
   files         File[]      // Attached files for the challenge
@@ -195,7 +208,7 @@ model Submission {
   userId      String
   challengeId String
   teamId      String?   // If team-based submission
-  competitionId String  // Added for easier queries
+  competitionId String?  // Added for easier queries
   isCorrect   Boolean  // Result of flag validation - NEVER store actual submitted flags
   points      Int       @default(0) // Points awarded (0 if incorrect)
   attemptNumber Int     @default(1) // Which attempt this was
@@ -232,7 +245,7 @@ model Score {
   user          User?       @relation(fields: [userId], references: [id])
   team          Team?       @relation(fields: [teamId], references: [id])
   challenge     Challenge   @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  competition   Competition? @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   submission    Submission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 
   @@index([competitionId])
@@ -260,6 +273,7 @@ model Team {
   scores        Score[]
   submissions   Submission[]
   registrations Registration[]
+  certificates  Certificate[]  // Certificates earned by team
 
   @@index([competitionId])
   @@index([captainId])
@@ -311,6 +325,73 @@ enum RegistrationStatus {
   APPROVED
   REJECTED
   WAITLISTED
+}
+
+// Certificate model for competition completion certificates
+model Certificate {
+  id                String              @id @default(uuid())
+  certificateNumber String              @unique // e.g., "OPRIX-CTF-2024-001234"
+  userId            String?             // For individual certificates
+  teamId            String?             // For team certificates
+  competitionId     String
+  
+  // Performance Metrics
+  finalRank         Int?                // User/Team's final rank
+  totalScore        Int                 // Total points earned
+  challengesSolved  Int                 // Number of challenges solved
+  totalChallenges   Int                 // Total challenges in competition
+  completionRate    Float               // Percentage of challenges solved
+  participantCount  Int?                // Total participants for context
+  
+  // Certificate Status & Workflow
+  status            CertificateStatus   @default(ISSUED)
+  issuedAt          DateTime            @default(now())
+  requestedAt       DateTime            @default(now())
+  
+  // Optional Admin Approval (if competition requires it)
+  requiresApproval  Boolean             @default(false)
+  approvedBy        String?             // Admin who approved
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  rejectionReason   String?
+  
+  // Verification System
+  verificationCode  String              @unique // Public verification code (e.g., "VRF-ABC123XYZ")
+  isRevoked         Boolean             @default(false)
+  revokedAt         DateTime?
+  revokedBy         String?             // Admin who revoked
+  revokedReason     String?
+  
+  // Additional Data
+  metadata          Json?               // Custom data (achievements, special mentions, etc.)
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  // Relations
+  user              User?               @relation("UserCertificates", fields: [userId], references: [id], onDelete: Cascade)
+  team              Team?               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  competition       Competition         @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  approver          User?               @relation("CertificateApprover", fields: [approvedBy], references: [id])
+  revoker           User?               @relation("CertificateRevoker", fields: [revokedBy], references: [id])
+  
+  @@index([userId])
+  @@index([teamId])
+  @@index([competitionId])
+  @@index([status])
+  @@index([verificationCode])
+  @@index([certificateNumber])
+  @@index([issuedAt])
+  @@unique([userId, competitionId]) // One certificate per user per competition
+  @@unique([teamId, competitionId]) // One certificate per team per competition
+}
+
+enum CertificateStatus {
+  PENDING        // Requested, awaiting approval
+  ISSUED         // Successfully issued
+  APPROVED       // Admin approved (if approval required)
+  REJECTED       // Admin rejected
+  REVOKED        // Certificate revoked
 }
 
 // Announcements for competitions
@@ -408,4 +489,70 @@ model SystemSetting {
 
   @@index([key])
   @@index([isPublic])
+}
+
+// Competition Creator - per-competition assignment for challenge creators
+model CompetitionCreator {
+  id            String        @id @default(uuid())
+  competitionId String
+  creatorId     String
+  status        CreatorStatus @default(PENDING)
+  invitedAt     DateTime      @default(now())
+  approvedAt    DateTime?
+  revokedAt     DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  competition   Competition   @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  creator       User          @relation("CreatorUser", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@unique([competitionId, creatorId])
+  @@index([competitionId])
+  @@index([creatorId])
+  @@index([status])
+}
+
+enum CreatorStatus {
+  PENDING   // Accepted invite, waiting for admin approval
+  APPROVED  // Can create/edit challenges
+  REJECTED  // Admin rejected
+  REVOKED   // Access revoked by admin
+}
+
+// Creator Invite - invitation tokens for creators
+model CreatorInvite {
+  id              String      @id @default(uuid())
+  competitionId   String
+  email           String      // Email of the invited person
+  tokenHash       String      @unique // Hashed invite token
+  expiresAt       DateTime    // Invite expires after 24 hours
+  usedAt          DateTime?   // When the invite was used
+  acceptedByUserId String?    // User who accepted (set after acceptance)
+  createdByAdminId String     // Admin who created the invite
+  createdAt       DateTime    @default(now())
+  competition     Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  createdByAdmin  User        @relation("InviteSender", fields: [createdByAdminId], references: [id])
+
+  @@index([competitionId])
+  @@index([email])
+  @@index([tokenHash])
+  @@index([expiresAt])
+}
+
+// Learning Material
+model LearningMaterial {
+  id            String   @id @default(uuid())
+  title         String
+  description   String?
+  thumbnailUrl  String?  // Thumbnail/wallpaper image URL
+  linkUrl       String   // Primary material link
+  resources     Json?    // Additional resources: [{ label: string, url: string }]
+  createdByUserId String
+  isVisible     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     User     @relation(fields: [createdByUserId], references: [id])
+
+  @@index([createdByUserId])
+  @@index([isVisible])
+  @@index([createdAt])
 }

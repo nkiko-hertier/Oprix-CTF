@@ -10,6 +10,8 @@ import { API_ENDPOINTS } from "@/config/api.config";
 import { toast } from "sonner";
 import type { Hint, FileRecord } from "@/types";
 import { triggerSideCannons } from "@/lib/confetti";
+import { useSubmissionCountdown } from "@/lib/objects";
+import { set } from "zod";
 
 interface Challenge {
     id: string;
@@ -27,20 +29,38 @@ interface Challenge {
 
 interface ChallengePopupProps {
     challengeId: string | null;
-    competitionId: string;
     open: boolean;
     onClose: () => void;
     onCorrect: () => void;
 }
 
-const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onClose, onCorrect, competitionId }) => {
+interface HintsProps {
+    id: string;
+    content: string;
+}
+
+const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onClose, onCorrect }) => {
     const [loading, setLoading] = useState(true);
     const [challenge, setChallenge] = useState<Challenge | null>(null);
+    const [hints, setHints] = useState<HintsProps[]>([]);
     const [submitting, setSubmitting] = useState(false);
     const [flag, setFlag] = useState("");
     const [files, setFiles] = useState<FileRecord[]>([]);
     const [loadingFiles, setLoadingFiles] = useState(false);
     const [unlockingHint, setUnlockingHint] = useState<string | null>(null);
+
+    const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
+
+    const countdown = useSubmissionCountdown(errorMessage);
+
+    const competitionId = ''
+
+
+    const updateHints = (HintId: string, content: string) => {
+        setHints(prevHints => [
+            ...prevHints, { id: HintId, content }
+        ]);
+    }
 
     // ✅ Fetch challenge details
     const fetchChallenge = async () => {
@@ -50,7 +70,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
             setLoading(true);
 
             const res = await getApiClient().get(
-                API_ENDPOINTS.CHALLENGES.GET(competitionId, challengeId)
+                API_ENDPOINTS.CHALLENGES.GET(challengeId)
             );
 
             setChallenge(res.data);
@@ -121,8 +141,10 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                 API_ENDPOINTS.CHALLENGES.UNLOCK_HINT(competitionId, challengeId, hintId)
             );
 
+            updateHints(hintId, res.data.hint.content || "N/A");
+            console.log(hints, res);
+
             toast.success(res.data?.message || "Hint unlocked!");
-            fetchChallenge();
         } catch {
             toast.error("Failed to unlock hint");
         } finally {
@@ -158,24 +180,36 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
         try {
             setSubmitting(true);
 
-            const res = await getApiClient().post(
+            const res: any = await getApiClient().post(
                 API_ENDPOINTS.SUBMISSIONS.CREATE,
                 { challengeId, flag }
             );
 
-            toast.success(res.data?.message || "Flag submitted!");
-            setFlag("");
-            onCorrect();
 
-            // ✅ NEW: Check progress immediately
-            await checkProgress();
+            if (!res.data.isCorrect) {
+                toast.error("Invalid flag plz try again.");
+                return;
+            } else {
+                toast.success(res.message || "Flag submitted!");
+                setFlag("");
+                onCorrect();
+                // ✅ NEW: Check progress immediately
+                await checkProgress();
+            }
 
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Invalid flag");
+            toast.error(error.response?.data?.errors[0] || "Invalid flag");
+            setErrorMessage(error.response?.data?.errors[0]);
         } finally {
             setSubmitting(false);
         }
     };
+
+    useEffect(() => {
+        if (countdown === null) {
+            setErrorMessage(undefined);
+        }
+    }, [countdown])
 
     useEffect(() => {
         if (challengeId && open) {
@@ -260,7 +294,9 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                     </p>
 
                                     <div className="space-y-2">
-                                        {challenge.hints.map((hint) => (
+                                        {challenge.hints.map((hint) => {
+                                            const isUnlocked = hints.some(h => h.id === hint.id && h.content);
+                                            return (
                                             <div
                                                 key={hint.id}
                                                 className={`p-3 rounded-md border ${
@@ -271,22 +307,31 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                             >
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
-                                                        {hint.isUnlocked ? (
+                                                        {isUnlocked ? (
                                                             <Unlock className="size-4 text-green-400" />
                                                         ) : (
                                                             <Lock className="size-4 text-slate-400" />
                                                         )}
                                                         <span className="text-sm font-medium text-slate-300">
-                                                            Hint {hint.order}
+                                                            {
+                                                                isUnlocked ?
+                                                                <div>
+                                                                    Content: 
+                                                                    <span className="bg-slate-800 ml-2 p-1 px-2 rounded-md font-normal">
+                                                                    {hints.find(h => h.id === hint.id)?.content}
+                                                                    </span>
+                                                                </div>
+                                                                :  `Hint ${hint.order}`
+                                                            }
                                                         </span>
-                                                        {!hint.isUnlocked && hint.cost > 0 && (
+                                                        {!isUnlocked && hint.cost > 0 && (
                                                             <span className="text-xs text-yellow-400">
                                                                 ({hint.cost} pts)
                                                             </span>
                                                         )}
                                                     </div>
 
-                                                    {!hint.isUnlocked && (
+                                                    {!isUnlocked ? (
                                                         <button
                                                             onClick={() => {
                                                                 if (window.confirm(
@@ -306,11 +351,16 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                                             ) : (
                                                                 <>
                                                                     <Unlock className="size-3" />
-                                                                    Unlock
+                                                                    Unlock <span className="p-1 bg-white/10 rounded-full px-2 shadow-md ml-1">Free</span>
                                                                 </>
                                                             )}
                                                         </button>
-                                                    )}
+                                                    ) : 
+                                                    <button className="px-3 py-1 bg-linear-to-l from-blue-500 to-purple-500 rounded-md text-xs text-white flex items-center gap-1">
+                                                        <Unlock className="size-3" />
+                                                        Open
+                                                    </button>
+                                                    }
                                                 </div>
 
                                                 {hint.isUnlocked && (
@@ -319,7 +369,8 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                                     </p>
                                                 )}
                                             </div>
-                                        ))}
+                                        )}
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -341,8 +392,8 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                     {challenge.category && <span>🏷 {challenge.category}</span>}
                                 </div>
 
-                                <Button size="sm" variant="secondary">
-                                    Start Challenge
+                                <Button  size="sm" className="hidden" variant="secondary">
+                                    Start Challenge in {countdown}
                                 </Button>
                             </div>
 
@@ -357,11 +408,14 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                         placeholder="Oprix-{myFlagHere}"
                                     />
                                     <button
-                                        className="bg-blue-500 p-2 rounded-md text-sm px-5"
+                                        className={`${countdown ? 'bg-red-500' :'bg-blue-500'} p-2 rounded-md text-sm px-5`}
                                         onClick={submitFlag}
-                                        disabled={submitting}
+                                        disabled={submitting || countdown !== null}
                                     >
-                                        {submitting ? "Submitting..." : "Submit"}
+                                        {countdown == null && submitting ? "Submitting..." : "Submit"}
+                                        {countdown && <div>
+                                            Wait {countdown} to resubmit
+                                        </div>}
                                     </button>
                                 </div>
                             </div>

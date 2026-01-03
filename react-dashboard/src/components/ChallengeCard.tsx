@@ -32,7 +32,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
     //   : "text-red-400";
 
   return (
-    <GradientCard className="min-h-fit p-4 flex flex-col justify-between space-y-3">
+    <div className="min-h-fit bg-slate-800 rounded-md p-4 flex flex-col justify-between space-y-3">
       <div>
         <h3 className="text-xl font-semibold mb-1">{title}</h3>
         <p className="text-slate-300 text-sm">{description}</p>
@@ -55,10 +55,9 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
 
         {!isSolved ?
         <Button
-          variant="secondary"
           size="sm"
           onClick={onStart}
-          className="flex items-center gap-1"
+          className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white"
         >
           <ArrowRight size={16} /> Solve
         </Button> :
@@ -71,7 +70,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
           <IoCheckmarkCircleSharp size={16} /> Solved
         </Button>}
       </div>
-    </GradientCard>
+    </div>
   );
 };
 

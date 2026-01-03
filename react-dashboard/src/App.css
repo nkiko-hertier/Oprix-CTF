@@ -1,42 +1,43 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE & Edge */
+  scrollbar-width: none;     /* Firefox */
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+
+/* Custom Scrollbar (shadcn-compatible) */
+::-webkit-scrollbar {
+  width: 8px;              /* Vertical scrollbar width */
+  height: 8px;             /* Horizontal scrollbar height */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted)); 
+  border-radius: 9999px;
 }
 
-.card {
-  padding: 2em;
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--background));
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
-.read-the-docs {
-  color: #888;
+/* Hover/active states */
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground) / 0.4);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: hsl(var(--foreground) / 0.6);
+}
+
+/* Firefox support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--background)) hsl(var(--muted));
 }

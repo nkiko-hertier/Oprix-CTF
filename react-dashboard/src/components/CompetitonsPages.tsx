@@ -9,6 +9,7 @@ import Members from "./CompetitionsPages/Members";
 import Teams from "./CompetitionsPages/Teams";
 import Leaderboard from "./CompetitionsPages/Leaderboard";
 import type { Competition } from "@/types";
+import CertificatesPage from "./CompetitionsPages/Certificates";
 
 interface CompetitonsPagesProps {
   id: any;
@@ -19,10 +20,11 @@ function CompetitionsPages({ competition }: { competition: Competition }) {
   const [activeTab, setActiveTab] = useState("Overview");
 
   const Links = [
+    { name: "Announcements", tab: "announcements" },
     { name: "Overview", tab: "Overview" },
     { name: "Leaderboard", tab: "leaderboard" },
-    // { name: "Announcements", tab: "announcements" },
     { name: "Challanges", tab: "challanges" },
+    { name: "Certificate", tab: "certificate" },
     // { name: "Members", tab: "memebers" },
     // { name: "Teams", tab: "teams" },
   ];
@@ -92,6 +94,10 @@ function CompetitionsPages({ competition }: { competition: Competition }) {
 
         <MainTab tab="teams" activeTab={activeTab}>
           <Teams id={id} />
+        </MainTab>
+
+        <MainTab tab="certificate" activeTab={activeTab}>
+          <CertificatesPage competitionId={id} />
         </MainTab>
 
         <MainTab tab="leaderboard" activeTab={activeTab}>

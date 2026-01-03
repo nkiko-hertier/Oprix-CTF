@@ -5,6 +5,7 @@ import { CommonModule } from './common/common.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { SuperadminModule } from './modules/superadmin/superadmin.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { CompetitionsModule } from './modules/competitions/competitions.module';
 import { ChallengesModule } from './modules/challenges/challenges.module';
 import { UsersModule } from './modules/users/users.module';
@@ -15,12 +16,16 @@ import { FilesModule } from './modules/files/files.module';
 import { WebsocketsModule } from './modules/websockets/events.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { MonitoringModule } from './modules/monitoring/monitoring.module';
+import { CertificatesModule } from './modules/certificates/certificates.module';
+import { AnnouncementsModule } from './modules/announcements/announcements.module';
+import { LearningMaterialsModule } from './modules/learning-materials/learning-materials.module';
 
 @Module({
   imports: [
-    CommonModule, // Must be first - provides global config, database, etc.
+    CommonModule,
     AuthModule,
     UsersModule,
+    DashboardModule,
     CompetitionsModule,
     ChallengesModule,
     SubmissionsModule,
@@ -32,8 +37,11 @@ import { MonitoringModule } from './modules/monitoring/monitoring.module';
     AdminModule,
     SuperadminModule,
     MonitoringModule,
+    CertificatesModule,
+    AnnouncementsModule,
+    LearningMaterialsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

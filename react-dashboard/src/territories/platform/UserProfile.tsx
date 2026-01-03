@@ -29,6 +29,7 @@ import {
 
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { CopyIcon } from 'lucide-react';
+import CertificatesPage from '@/components/CompetitionsPages/Certificates';
 
 export default function UserProfile() {
   const [user, setUser] = useState<User | null>(null);
@@ -166,7 +167,7 @@ export default function UserProfile() {
     <div className="space-y-6">
 
       {/* ---- Profile Header ---- */}
-      <div className="bg-white/10 backdrop-blur-md rounded-lg border-none py-10 border-white/20 p-6">
+      <div className="bg-[#17202f] backdrop-blur-md rounded-lg border-none py-10 border-white/20 p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4">
             {user.profile?.avatarUrl ? (
@@ -414,6 +415,9 @@ export default function UserProfile() {
 
       {/* ---- User Stats ---- */}
       <UserStats />
+
+      {/* ----- Certificates ----- */}
+      <CertificatesPage />
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../common/database/prisma.service';
 import { ClerkSyncService } from './services/clerk-sync.service';
-import * as bcrypt from 'bcrypt';
 
 /**
  * Auth Service
@@ -26,7 +25,7 @@ export class AuthService {
   async authenticateWithClerk(clerkId: string) {
     try {
       const user = await this.clerkSyncService.getOrCreateUser(clerkId);
-      
+
       if (!user.isActive) {
         throw new UnauthorizedException('Account is inactive');
       }
@@ -112,12 +111,20 @@ export class AuthService {
       primaryEmail.email_address.split('@')[0] ||
       `user_${clerkUser.id.substring(0, 8)}`;
 
+    // Sync role to Clerk's public metadata (non-blocking)
+    if(!clerkUser.public_metadata.role) {
+    await this.clerkSyncService.updateUserMetadata(clerkUser.id, {
+      ...clerkUser.public_metadata,
+      role: 'USER',
+    });
+  }
+
     await this.prisma.user.create({
       data: {
         clerkId: clerkUser.id,
         email: primaryEmail.email_address,
         username,
-        role: 'USER',
+        role: clerkUser.public_metadata.role || 'USER',
         isActive: true,
         profile: {
           create: {
@@ -154,6 +161,7 @@ export class AuthService {
       await this.prisma.user.update({
         where: { id: user.id },
         data: {
+          isActive: clerkUser.locked,
           email: primaryEmail.email_address,
           profile: {
             update: {
@@ -165,7 +173,9 @@ export class AuthService {
         },
       });
 
-      this.logger.log(`User updated via webhook: ${primaryEmail.email_address}`);
+      this.logger.log(
+        `User updated via webhook: ${primaryEmail.email_address}`,
+      );
     }
   }
 
@@ -179,12 +189,11 @@ export class AuthService {
     });
 
     if (user) {
-      await this.prisma.user.update({
+      await this.prisma.user.delete({
         where: { id: user.id },
-        data: { isActive: false },
       });
 
-      this.logger.log(`User deactivated via webhook: ${user.email}`);
+      this.logger.log(`User deletion via webhook: ${user.email}`);
     }
   }
 

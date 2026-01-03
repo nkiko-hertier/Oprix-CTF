@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ChallengesService } from './challenges.service';
-import { ChallengesController } from './challenges.controller';
+import { ChallengesController, PublicChallengesController } from './challenges.controller';
 import { AuthModule } from '../auth/auth.module';
 
 /**
@@ -10,7 +10,7 @@ import { AuthModule } from '../auth/auth.module';
  */
 @Module({
   imports: [AuthModule],
-  controllers: [ChallengesController],
+  controllers: [ChallengesController, PublicChallengesController],
   providers: [ChallengesService],
   exports: [ChallengesService],
 })

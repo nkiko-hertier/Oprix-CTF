@@ -14,6 +14,8 @@ import {
   RegisterCompetitionDto,
 } from './dto/update-competition.dto';
 import { CompetitionQueryDto } from './dto/competition-query.dto';
+import { CertificatesService } from '../certificates/certificates.service';
+import { Inject, forwardRef } from '@nestjs/common';
 
 /**
  * Competitions Service
@@ -23,7 +25,11 @@ import { CompetitionQueryDto } from './dto/competition-query.dto';
 export class CompetitionsService {
   private readonly logger = new Logger(CompetitionsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    @Inject(forwardRef(() => CertificatesService))
+    private certificatesService: CertificatesService,
+  ) { }
 
   /**
    * Create a new competition (Admin only)
@@ -82,7 +88,7 @@ export class CompetitionsService {
    * @param query - Query parameters
    * @param userId - Optional user ID for filtering user's competitions
    */
-  async findAll(query: CompetitionQueryDto, userId?: string) {
+  async findAll(query: CompetitionQueryDto, userId?: string, user: any = null) {
     const { page = 1, limit = 20, status, type, isPublic, search, myCompetitions } = query;
     const skip = (page - 1) * limit;
 
@@ -91,7 +97,7 @@ export class CompetitionsService {
     if (status) where.status = status;
     if (type) where.type = type;
     if (isPublic !== undefined) where.isPublic = isPublic;
-    
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -104,6 +110,13 @@ export class CompetitionsService {
       where.registrations = {
         some: { userId },
       };
+    }
+
+    console.log('Filtering competitions with userId:', userId, 'and role:', user ?? 'N/A');
+    if(user.id && user.role && user.role == 'ADMIN') {
+      where.adminId = user.id;
+    } else {
+      console.log('No userId or userRole provided, skipping adminId filter');
     }
 
     const [competitions, total] = await Promise.all([
@@ -179,21 +192,48 @@ export class CompetitionsService {
       throw new NotFoundException(`Competition with ID ${id} not found`);
     }
 
-    // Check if user is registered
+    // Check if user is registered (individually or through team)
     let userRegistration: any = null;
+    let isRegistered = false;
+    let registrationStatus: string | null = null;
+
     if (userId) {
       userRegistration = await this.prisma.registration.findFirst({
         where: {
           competitionId: id,
           userId,
+          status: { in: ['PENDING', 'APPROVED', 'WAITLISTED'] },
         },
       });
+
+      if (userRegistration) {
+        isRegistered = true;
+        registrationStatus = userRegistration.status;
+      } else {
+        // Check if user is registered through a team
+        const teamRegistration = await this.prisma.registration.findFirst({
+          where: {
+            competitionId: id,
+            team: {
+              members: {
+                some: { userId },
+              },
+            },
+          },
+        });
+
+        if (teamRegistration) {
+          isRegistered = true;
+          registrationStatus = teamRegistration.status;
+          userRegistration = teamRegistration;
+        }
+      }
     }
 
     return {
       ...(competition as any),
-      isRegistered: !!userRegistration,
-      registrationStatus: userRegistration?.status ?? null,
+      isRegistered,
+      registrationStatus,
     };
   }
 
@@ -221,7 +261,7 @@ export class CompetitionsService {
 
     // Validate dates if provided
     if (updateCompetitionDto.startTime || updateCompetitionDto.endTime) {
-      const startTime = updateCompetitionDto.startTime 
+      const startTime = updateCompetitionDto.startTime
         ? new Date(updateCompetitionDto.startTime)
         : competition.startDate;
       const endTime = updateCompetitionDto.endTime
@@ -287,6 +327,24 @@ export class CompetitionsService {
       });
 
       this.logger.log(`Competition status changed: ${updated.title} -> ${statusDto.status}`);
+
+      // Auto-generate certificates when competition completes
+      if (statusDto.status === 'COMPLETED') {
+        this.logger.log(`Triggering certificate auto-generation for competition ${id}`);
+
+        setImmediate(async () => {
+          try {
+            const result = await this.certificatesService.autoGenerateCertificates(id);
+            this.logger.log(
+              `Certificate generation complete for competition ${id}: ` +
+              `${result.generated} generated, ${result.skipped} skipped`
+            );
+          } catch (error) {
+            this.logger.error(`Failed to auto-generate certificates for competition ${id}`, error);
+          }
+        });
+      }
+
       return updated;
     } catch (error) {
       this.logger.error('Failed to update competition status', error);
@@ -308,16 +366,26 @@ export class CompetitionsService {
       throw new BadRequestException('Competition is not open for registration');
     }
 
-    // Check if already registered
+    // Check if already registered (individual or through team)
     const existingRegistration = await this.prisma.registration.findFirst({
       where: {
         competitionId: id,
         userId,
+        status: { in: ['PENDING', 'APPROVED'] },
       },
     });
 
     if (existingRegistration) {
-      throw new ConflictException('Already registered for this competition');
+      if (existingRegistration.status === 'PENDING') {
+        throw new ConflictException('You already have a pending registration for this competition');
+      } else {
+        throw new ConflictException('You are already registered for this competition');
+      }
+    }
+
+    // Teams are auto-registered
+    if (competition.isTeamBased) {
+      throw new BadRequestException('Teams are automatically registered when created. Use team creation/joining instead.');
     }
 
     // Check max participants
@@ -334,18 +402,13 @@ export class CompetitionsService {
       }
     }
 
-    // Team-based validation
-    if (competition.isTeamBased && !registerDto.teamId) {
-      throw new BadRequestException('Team ID is required for team-based competitions');
-    }
-
     try {
       const registration = await this.prisma.registration.create({
         data: {
           competitionId: id,
           userId,
           teamId: registerDto.teamId,
-          status: competition.requireApproval ? 'PENDING' : 'APPROVED',
+          status: (!competition.isPublic || competition.maxUsers) ? 'PENDING' : 'APPROVED',
         },
         include: {
           user: {
@@ -464,4 +527,70 @@ export class CompetitionsService {
       );
     }
   }
+
+  async getUserProgress(competitionId: string, userId: string) {
+    // 1. Ensure competition exists
+    const competition = await this.prisma.competition.findUnique({
+      where: { id: competitionId },
+      include: {
+        challenges: { select: { id: true } },
+      },
+    });
+
+    if (!competition) {
+      throw new NotFoundException('Competition not found');
+    }
+
+    const totalChallenges = competition.challenges.length;
+
+    // If no challenges in this competition
+    if (totalChallenges === 0) {
+      return {
+        competitionId,
+        totalChallenges: 0,
+        solved: 0,
+        progress: 0,
+        latestSubmission: null,
+      };
+    }
+
+    // 2. Count solved challenges
+    const solvedCount = await this.prisma.submission.count({
+      where: {
+        userId,
+        isCorrect: true,
+        challenge: { competitionId },
+      },
+    });
+
+    // 3. Fetch last submission
+    const latestSubmission = await this.prisma.submission.findFirst({
+      where: {
+        userId,
+        challenge: { competitionId },
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        challengeId: true,
+        isCorrect: true,
+        points: true,
+        submittedAt: true,
+        // code: false, // change to true if you want to include code
+        // output: true,
+      },
+    });
+
+    // 4. Compute progress
+    const progress = Math.round((solvedCount / totalChallenges) * 100);
+
+    return {
+      competitionId,
+      totalChallenges,
+      solved: solvedCount,
+      progress,
+      latestSubmission,
+    };
+  }
+
 }

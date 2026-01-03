@@ -12,13 +12,13 @@ import SingleCompetitionsPage from '@/territories/platform/SingleCompetitionsPag
 import UserProfile from '@/territories/platform/UserProfile';
 import SubmissionsHistory from '@/territories/platform/SubmissionsHistory';
 import NotFound from '@/territories/landing/NotFound';
-import Dashboard from '@/territories/admin/Dashboard';
-import CompetitionManagement from '@/territories/admin/CompetitionManagement';
-import ChallengeManagement from '@/territories/admin/ChallengeManagement';
-import PlayerManagement from '@/territories/admin/PlayerManagement';
-import SubmissionReview from '@/territories/admin/SubmissionReview';
 import PlatformLearning from '@/territories/platform/LearningPage';
+import PlatformPublicChallenges from '@/territories/platform/PlatformPublicChallenges.tsx';
 import Profile from '@/territories/landing/Profile';
+import Home2 from '@/territories/landing/Home2';
+import CompetitionsPage from '@/territories/landing/CompetitionsPage';
+import HomeLayout from './layouts/HomeLayout';
+import CompetitionById from '@/territories/landing/CompetitionById';
 
 function AppRouter() {
   return (
@@ -26,7 +26,11 @@ function AppRouter() {
       <Routes>
 
         {/* Landing Pages */}
-        <Route path="/" element={<HomePage />} />
+        <Route element={<HomeLayout />} >
+          <Route path="/" element={<Home2 />} />
+          <Route path="/competitions" element={<CompetitionsPage />} />
+          <Route path="/competitions/:id" element={<CompetitionById />} />
+        </Route>
         <Route path="/onboard" element={<Onboarding />} />
 
         {/* auth Pages */}
@@ -36,20 +40,11 @@ function AppRouter() {
           <Route path='/auth/sign-up' element={<SignUpPage />} />
         </Route>
 
-          {/* Admin Routes */}
-          <Route element={<AdminLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/competitions" element={<CompetitionManagement />} />
-            <Route path="/dashboard/challenges/:competitionId" element={<ChallengeManagement />} />
-            <Route path="/dashboard/users" element={<PlayerManagement />} />
-            <Route path="/dashboard/submissions" element={<SubmissionReview />} />
-            <Route path="/dashboard/*" element={<Dashboard />} />
-          </Route>
-
           {/* Platform Routes */}
           <Route element={<PlatformLayout />}>
             <Route path="/platform/" element={<PlatformHome />} />
             <Route path="/platform/learning" element={<PlatformLearning />} />
+            <Route path="/platform/Challanges" element={<PlatformPublicChallenges />} />
             <Route path="/platform/competition" element={<CompetitionPage />} />
             <Route path="/platform/competition/:id" element={<SingleCompetitionsPage />} />
             <Route path="/platform/profile" element={<UserProfile />} />

@@ -142,7 +142,7 @@ export default function Leaderboard({ competitionId, isTeamBased = false }: Lead
 
       {/* My Rank */}
       {!isTeamBased && myRank && (
-        <div className="p-4 bg-white/5 rounded-lg border border-blue-500/40">
+        <div className="p-4 bg-slate-800 rounded-md">
           <p className="text-slate-400 text-sm">Your Rank</p>
           <p className="text-2xl font-bold text-white">#{myRank.rank}</p>
 
@@ -164,7 +164,7 @@ export default function Leaderboard({ competitionId, isTeamBased = false }: Lead
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="bg-white/10 text-slate-300 text-sm">
+                  <tr className="bg-slate-800 text-slate-300 text-sm">
                     <th className="p-3">Rank</th>
                     <th className="p-3">Name</th>
                     <th className="p-3">Score</th>

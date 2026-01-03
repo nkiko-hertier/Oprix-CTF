@@ -109,6 +109,25 @@ export interface Competition {
 
 }
 
+// Learning Types
+export interface LearningResource {
+  label: string
+  url: string
+}
+
+export interface LearningMaterial {
+  id: string
+  title: string
+  description: string
+  thumbnailUrl: string
+  linkUrl: string
+  resources: LearningResource[]
+  isVisible: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+
 // Challenge Types
 export type ChallengeDifficulty = "TRIVIAL" | "EASY" | "MEDIUM" | "HARD" | "INSANE"
 

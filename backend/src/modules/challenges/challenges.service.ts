@@ -3,7 +3,6 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
-  ConflictException,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../common/database/prisma.service';
@@ -13,7 +12,6 @@ import {
   UpdateChallengeDto,
   UpdateChallengeVisibilityDto,
   CreateHintDto,
-  UnlockHintDto,
   ChallengeQueryDto,
 } from './dto/update-challenge.dto';
 
@@ -32,35 +30,43 @@ export class ChallengesService {
 
   /**
    * Create a new challenge (Admin/Competition Owner only)
-   * @param competitionId - Competition ID
-   * @param createChallengeDto - Challenge data
-   * @param userId - User creating the challenge
    */
-  async create(competitionId: string, createChallengeDto: CreateChallengeDto, userId: string) {
-    // Verify competition exists and user has permission
-    const competition = await this.verifyCompetitionOwnership(competitionId, userId);
-
-    // Prevent adding challenges to active/completed competitions
-    if (competition.status === 'ACTIVE' || competition.status === 'COMPLETED') {
-      throw new BadRequestException('Cannot add challenges to active or completed competition');
+  async create(
+    createChallengeDto: CreateChallengeDto,
+    userId: string,
+    competitionId?: string,
+  ) {
+    if(competitionId){
+      const competition = await this.verifyCompetitionOwnership(
+        competitionId,
+        userId,
+      );
+      
+      if (
+      competition.status === 'ACTIVE' ||
+      competition.status === 'COMPLETED'
+    ) {
+      throw new BadRequestException(
+        'Cannot add challenges to active or completed competition',
+      );
     }
+  }
 
     try {
-      // SECURITY: Hash the flag securely - never store actual flag
-      const { hash: flagHash, salt: flagSalt } = this.cryptoService.hashFlag(createChallengeDto.flag);
-      
+      const { hash: flagHash, salt: flagSalt } =
+        this.cryptoService.hashFlag(createChallengeDto.flag);
+
       const challenge = await this.prisma.challenge.create({
         data: {
           title: createChallengeDto.title,
           description: createChallengeDto.description,
           difficulty: createChallengeDto.difficulty,
           points: createChallengeDto.points,
-          flagHash,          // SECURITY: Only store hash
-          flagSalt,          // SECURITY: Only store salt  
+          flagHash,
+          flagSalt,
           caseSensitive: createChallengeDto.caseSensitive || false,
           normalizeFlag: createChallengeDto.normalizeFlag ?? true,
-          competitionId,
-          // Create hints if provided
+          competitionId: competitionId || null,
           hints: createChallengeDto.hints
             ? {
                 create: createChallengeDto.hints.map((hint, index) => ({
@@ -71,20 +77,16 @@ export class ChallengesService {
                 })),
               }
             : undefined,
-        } as any, // Type assertion for schema migration in progress
+        } as any,
         include: {
-          hints: {
-            orderBy: { order: 'asc' },
-          },
-          _count: {
-            select: {
-              submissions: true,
-            },
-          },
+          hints: { orderBy: { order: 'asc' } },
+          _count: { select: { submissions: true } },
         },
       });
 
-      this.logger.log(`Challenge created: ${challenge.title} in competition ${competitionId}`);
+      this.logger.log(
+        `Challenge created: ${challenge.title} in competition ${competitionId}`,
+      );
       return challenge;
     } catch (error) {
       this.logger.error('Failed to create challenge', error);
@@ -94,11 +96,13 @@ export class ChallengesService {
 
   /**
    * Get all challenges in a competition
-   * @param competitionId - Competition ID
-   * @param query - Query filters
-   * @param userId - User requesting challenges (for solve status)
    */
-  async findAll(competitionId: string, query: ChallengeQueryDto, userId?: string) {
+  async findAll(
+    competitionId: string,
+    query: ChallengeQueryDto,
+    userId?: string,
+    role?: string,
+  ) {
     // Verify competition exists
     const competition = await this.prisma.competition.findUnique({
       where: { id: competitionId },
@@ -108,32 +112,52 @@ export class ChallengesService {
       throw new NotFoundException('Competition not found');
     }
 
-    // Check if user is registered for the competition (if userId provided)
+    const where: any = { competitionId };
+
+    // Check user permissions and registration
     if (userId) {
-      const registration = await this.prisma.registration.findFirst({
-        where: {
-          competitionId,
-          userId,
-          status: 'APPROVED',
-        },
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
       });
 
-      if (!registration) {
-        throw new ForbiddenException('You must be registered for this competition to view challenges');
-      }
-    }
+      const isAdmin =
+        user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
+      const isOwner = competition.adminId === userId;
+      let isApprovedCreator = false;
 
-    // Build where clause
-    const where: any = { competitionId };
-    
-    // Non-admin users can only see visible challenges
-    if (userId) {
-      const user = await this.prisma.user.findUnique({ where: { id: userId } });
-      if (user?.role !== 'ADMIN' && user?.role !== 'SUPERADMIN' && competition.adminId !== userId) {
+      if (user?.role === 'CREATOR') {
+        const creatorAssignment =
+          await this.prisma.competitionCreator.findUnique({
+            where: {
+              competitionId_creatorId: {
+                competitionId,
+                creatorId: userId,
+              },
+            },
+          });
+        isApprovedCreator =
+          creatorAssignment?.status === 'APPROVED';
+      }
+
+      if (!isAdmin && !isOwner && !isApprovedCreator) {
+        const registration =
+          await this.prisma.registration.findFirst({
+            where: {
+              competitionId,
+              userId,
+              status: 'APPROVED',
+            },
+          });
+
+        if (!registration) {
+          throw new ForbiddenException(
+            'You must be registered for this competition to view challenges',
+          );
+        }
         where.isVisible = true;
       }
     } else {
-      where.isVisible = true; // Public view only shows visible challenges
+      where.isVisible = true;
     }
 
     if (query.category) where.category = query.category;
@@ -141,28 +165,23 @@ export class ChallengesService {
     if (query.search) {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
-        { description: { contains: query.search, mode: 'insensitive' } },
+        {
+          description: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
       ];
     }
 
     const challenges = await this.prisma.challenge.findMany({
       where,
       include: {
-        hints: {
-          orderBy: { order: 'asc' },
-        },
-        _count: {
-          select: {
-            submissions: true,
-          },
-        },
-        // Include correct submissions for current user
+        hints: { orderBy: { order: 'asc' } },
+        _count: { select: { submissions: true } },
         submissions: userId
           ? {
-              where: { 
-                userId,
-                isCorrect: true 
-              },
+              where: { userId, isCorrect: true },
               select: { id: true, createdAt: true },
             }
           : false,
@@ -170,27 +189,82 @@ export class ChallengesService {
       orderBy: [{ points: 'asc' }, { createdAt: 'asc' }],
     });
 
-    // Transform challenges to include solve status
     return challenges.map((challenge: any) => ({
       ...challenge,
-      isSolved: userId ? challenge.submissions?.length > 0 : false,
-      firstSolveAt: userId && challenge.submissions?.length > 0 ? challenge.submissions[0].createdAt : null,
-      submissions: undefined, // Remove submission details from response
+      isSolved: userId
+        ? challenge.submissions?.length > 0
+        : false,
+      firstSolveAt:
+        userId && challenge.submissions?.length > 0
+          ? challenge.submissions[0].createdAt
+          : null,
+      submissions: undefined,
     }));
   }
 
   /**
-   * Get a single challenge by ID
-   * @param competitionId - Competition ID
-   * @param challengeId - Challenge ID
-   * @param userId - User requesting the challenge
+   * Get all public challenges across public, active competitions
    */
-  async findOne(competitionId: string, challengeId: string, userId?: string) {
-    const challenge = await this.prisma.challenge.findFirst({
-      where: {
-        id: challengeId,
-        competitionId,
+  async findAllPublic(
+    query: ChallengeQueryDto,
+    userId?: string,
+  ) {
+    const where: any = {
+      isVisible: true,
+      competitionId: null
+    };
+
+    if (query.category) where.category = query.category;
+    if (query.difficulty) where.difficulty = query.difficulty;
+    if (query.search) {
+      where.OR = [
+        { title: { contains: query.search, mode: 'insensitive' } },
+        {
+          description: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
+
+    const challenges = await this.prisma.challenge.findMany({
+      where,
+      include: {
+        hints: { orderBy: { order: 'asc' } },
+        _count: { select: { submissions: true } },
+        submissions: userId
+          ? {
+              where: { userId, isCorrect: true },
+              select: { id: true, createdAt: true },
+            }
+          : false,
       },
+      orderBy: [{ points: 'asc' }, { createdAt: 'asc' }],
+    });
+
+    return challenges.map((challenge: any) => ({
+      ...challenge,
+      isSolved: userId
+        ? challenge.submissions?.length > 0
+        : false,
+      firstSolveAt:
+        userId && challenge.submissions?.length > 0
+          ? challenge.submissions[0].createdAt
+          : null,
+      submissions: undefined,
+    }));
+  }
+
+  /**
+   * Get a single challenge
+   */
+  async findOne(
+    challengeId: string,
+    userId?: string,
+  ) {
+    const challenge = await this.prisma.challenge.findFirst({
+      where: { id: challengeId},
       include: {
         competition: {
           select: {
@@ -200,9 +274,7 @@ export class ChallengesService {
             adminId: true,
           },
         },
-        hints: {
-          orderBy: { order: 'asc' },
-        },
+        hints: { orderBy: { order: 'asc' } },
         files: {
           select: {
             id: true,
@@ -211,17 +283,10 @@ export class ChallengesService {
             fileType: true,
           },
         },
-        _count: {
-          select: {
-            submissions: true,
-          },
-        },
+        _count: { select: { submissions: true } },
         submissions: userId
           ? {
-              where: { 
-                userId,
-                isCorrect: true 
-              },
+              where: { userId, isCorrect: true },
               select: { id: true, createdAt: true },
             }
           : false,
@@ -232,68 +297,57 @@ export class ChallengesService {
       throw new NotFoundException('Challenge not found');
     }
 
-    // Get competition info for ownership check
-    const competition = await this.prisma.competition.findUnique({
-      where: { id: competitionId },
-      select: { adminId: true }
-    });
+    if (!challenge.competition) {
+      throw new NotFoundException('Competition not found');
+    }
 
-    // Check if user can view this challenge
     if (userId) {
-      const user = await this.prisma.user.findUnique({ where: { id: userId } });
-      const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
-      const isOwner = competition?.adminId === userId;
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
 
-      if (!isAdmin && !isOwner && !(challenge as any).isVisible) {
-        throw new ForbiddenException('Challenge is not visible');
+      const isAdmin =
+        user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
+      const isOwner =
+        challenge.competition.adminId === userId;
+
+      if (!isAdmin && !isOwner && !challenge.isVisible) {
+        throw new ForbiddenException(
+          'Challenge is not visible',
+        );
       }
-
-      // Check registration for non-admins
-      if (!isAdmin && !isOwner) {
-        const registration = await this.prisma.registration.findFirst({
-          where: {
-            competitionId,
-            userId,
-            status: 'APPROVED',
-          },
-        });
-
-        if (!registration) {
-          throw new ForbiddenException('You must be registered for this competition');
-        }
-      }
-    } else if (!(challenge as any).isVisible) {
+    } else if (!challenge.isVisible) {
       throw new ForbiddenException('Challenge is not visible');
     }
 
-    // For now, skip hint unlocking (can be implemented later)
-    const challengeWithIncludes = challenge as any;
+    const challengeAny = challenge as any;
 
     return {
       ...challenge,
-      isSolved: userId ? challengeWithIncludes.submissions?.length > 0 : false,
-      firstSolveAt: userId && challengeWithIncludes.submissions?.length > 0 ? challengeWithIncludes.submissions[0].createdAt : null,
-      hints: challengeWithIncludes.hints?.map((hint: any) => ({
-        id: hint.id,
-        cost: hint.cost,
-        order: hint.order,
-        isUnlocked: false, // All hints locked by default for now
-        content: undefined, // Don't show content for locked hints
-      })) || [],
-      submissions: undefined, // Remove submission details
-      // SECURITY: Never expose flag data
+      isSolved: userId
+        ? challengeAny.submissions?.length > 0
+        : false,
+      firstSolveAt:
+        userId && challengeAny.submissions?.length > 0
+          ? challengeAny.submissions[0].createdAt
+          : null,
+      hints:
+        challengeAny.hints?.map((hint: any) => ({
+          id: hint.id,
+          cost: hint.cost,
+          order: hint.order,
+          isUnlocked: false,
+          content: undefined,
+        })) || [],
+      submissions: undefined,
       flag: undefined,
       flagHash: undefined,
-      flagSalt: undefined
+      flagSalt: undefined,
     };
   }
 
   /**
-   * Update challenge (Admin/Owner only)
-   * @param competitionId - Competition ID
-   * @param challengeId - Challenge ID
-   * @param updateChallengeDto - Update data
-   * @param userId - User making the update
+   * Update challenge
    */
   async update(
     competitionId: string,
@@ -302,7 +356,7 @@ export class ChallengesService {
     userId: string,
   ) {
     await this.verifyCompetitionOwnership(competitionId, userId);
-    
+
     const challenge = await this.prisma.challenge.findFirst({
       where: { id: challengeId, competitionId },
       include: { competition: true },
@@ -312,27 +366,42 @@ export class ChallengesService {
       throw new NotFoundException('Challenge not found');
     }
 
-    // Prevent editing if competition is active
-    if (challenge.competition.status === 'ACTIVE' || challenge.competition.status === 'COMPLETED') {
-      throw new BadRequestException('Cannot edit challenges in active or completed competition');
+    if (!challenge.competition) {
+      throw new NotFoundException('Competition not found');
+    }
+
+    // Prevent editing if competition is active or completed
+    if (
+      challenge.competition.status === 'ACTIVE' ||
+      challenge.competition.status === 'COMPLETED'
+    ) {
+      throw new BadRequestException(
+        'Cannot edit challenges in active or completed competition',
+      );
     }
 
     try {
       // Extract hints from DTO to handle separately
       const { hints, ...updateData } = updateChallengeDto;
-      
+
+      // If flag is being updated, hash it and store hash/salt instead
+      if (
+        (updateData as any).flag &&
+        (updateData as any).flag.trim() !== ''
+      ) {
+        const { hash: flagHash, salt: flagSalt } =
+          this.cryptoService.hashFlag((updateData as any).flag || 'none');
+        Object.assign(updateData as any, { flagHash, flagSalt });
+      }
+      // Never persist plain flag
+      delete (updateData as any).flag;
+
       const updated = await this.prisma.challenge.update({
         where: { id: challengeId },
         data: updateData as any,
         include: {
-          hints: {
-            orderBy: { order: 'asc' },
-          },
-          _count: {
-            select: {
-              submissions: true,
-            },
-          },
+          hints: { orderBy: { order: 'asc' } },
+          _count: { select: { submissions: true } },
         },
       });
 
@@ -345,14 +414,18 @@ export class ChallengesService {
   }
 
   /**
-   * Delete challenge (Admin/Owner only)
-   * @param competitionId - Competition ID
-   * @param challengeId - Challenge ID
-   * @param userId - User making the deletion
+   * Delete challenge
    */
-  async remove(competitionId: string, challengeId: string, userId: string) {
-    await this.verifyCompetitionOwnership(competitionId, userId);
-    
+  async remove(
+    competitionId: string,
+    challengeId: string,
+    userId: string,
+  ) {
+    await this.verifyCompetitionOwnership(
+      competitionId,
+      userId,
+    );
+
     const challenge = await this.prisma.challenge.findFirst({
       where: { id: challengeId, competitionId },
       include: { competition: true },
@@ -362,30 +435,28 @@ export class ChallengesService {
       throw new NotFoundException('Challenge not found');
     }
 
-    // Prevent deletion if competition is active
-    if (challenge.competition.status === 'ACTIVE' || challenge.competition.status === 'COMPLETED') {
-      throw new BadRequestException('Cannot delete challenges from active or completed competition');
+    if (!challenge.competition) {
+      throw new NotFoundException('Competition not found');
     }
 
-    try {
-      await this.prisma.challenge.delete({
-        where: { id: challengeId },
-      });
-
-      this.logger.log(`Challenge deleted: ${challenge.title}`);
-      return { message: 'Challenge deleted successfully' };
-    } catch (error) {
-      this.logger.error('Failed to delete challenge', error);
-      throw new BadRequestException('Failed to delete challenge');
+    if (
+      challenge.competition.status === 'ACTIVE' ||
+      challenge.competition.status === 'COMPLETED'
+    ) {
+      throw new BadRequestException(
+        'Cannot delete challenges from active or completed competition',
+      );
     }
+
+    await this.prisma.challenge.delete({
+      where: { id: challengeId },
+    });
+
+    return { message: 'Challenge deleted successfully' };
   }
 
   /**
-   * Create hint for challenge
-   * @param competitionId - Competition ID
-   * @param challengeId - Challenge ID
-   * @param createHintDto - Hint data
-   * @param userId - User creating the hint
+   * Create hint
    */
   async createHint(
     competitionId: string,
@@ -393,8 +464,11 @@ export class ChallengesService {
     createHintDto: CreateHintDto,
     userId: string,
   ) {
-    await this.verifyCompetitionOwnership(competitionId, userId);
-    
+    await this.verifyCompetitionOwnership(
+      competitionId,
+      userId,
+    );
+
     const challenge = await this.prisma.challenge.findFirst({
       where: { id: challengeId, competitionId },
     });
@@ -403,21 +477,13 @@ export class ChallengesService {
       throw new NotFoundException('Challenge not found');
     }
 
-    try {
-      const hint = await this.prisma.hint.create({
-        data: {
-          ...createHintDto,
-          challengeId,
-          creatorId: userId,
-        },
-      });
-
-      this.logger.log(`Hint created for challenge: ${challenge.title}`);
-      return hint;
-    } catch (error) {
-      this.logger.error('Failed to create hint', error);
-      throw new BadRequestException('Failed to create hint');
-    }
+    return this.prisma.hint.create({
+      data: {
+        ...createHintDto,
+        challengeId,
+        creatorId: userId,
+      },
+    });
   }
 
   /**
@@ -485,11 +551,12 @@ export class ChallengesService {
   }
 
   /**
-   * Verify competition ownership or admin access
-   * @param competitionId - Competition ID
-   * @param userId - User ID
+   * Verify competition ownership
    */
-  private async verifyCompetitionOwnership(competitionId: string, userId: string) {
+  private async verifyCompetitionOwnership(
+    competitionId: string,
+    userId: string,
+  ) {
     const competition = await this.prisma.competition.findUnique({
       where: { id: competitionId },
     });
@@ -498,14 +565,54 @@ export class ChallengesService {
       throw new NotFoundException('Competition not found');
     }
 
-    // Check if user is owner or admin
-    if (competition.adminId !== userId) {
-      const user = await this.prisma.user.findUnique({ where: { id: userId } });
-      if (user?.role !== 'ADMIN' && user?.role !== 'SUPERADMIN') {
-        throw new ForbiddenException('Only competition owner or admins can perform this action');
+    if (competition.adminId === userId) return competition;
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (
+      user?.role === 'ADMIN' ||
+      user?.role === 'SUPERADMIN'
+    ) {
+      return competition;
+    }
+
+    if (user?.role === 'CREATOR') {
+      const creatorAssignment =
+        await this.prisma.competitionCreator.findUnique({
+          where: {
+            competitionId_creatorId: {
+              competitionId,
+              creatorId: userId,
+            },
+          },
+        });
+
+      if (creatorAssignment?.status === 'APPROVED') {
+        return competition;
       }
     }
 
-    return competition;
+    throw new ForbiddenException(
+      'Only competition owner, admins, or approved creators can perform this action',
+    );
+  }
+
+  async isApprovedCreatorForCompetition(
+    competitionId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const creatorAssignment =
+      await this.prisma.competitionCreator.findUnique({
+        where: {
+          competitionId_creatorId: {
+            competitionId,
+            creatorId: userId,
+          },
+        },
+      });
+
+    return creatorAssignment?.status === 'APPROVED';
   }
 }

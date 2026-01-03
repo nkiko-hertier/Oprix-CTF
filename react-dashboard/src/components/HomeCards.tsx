@@ -16,7 +16,7 @@ export function HomeFeatureCard({
   iconColorClass = "text-slate-400",
 }: HomeFeatureCardProps) {
   return (
-    <div className="borders rounded-xl w-full border-slate-800 bg-gradient-to-bl from-slate-800/75 min-h-[130px] overflow-hidden relative">
+    <div  className="rounded-xl w-full border-slate-800 bg-gradient-to-bl from-slate-800/75 min-h-[130px] overflow-hidden relative">
       <div className="bg-blue-500 size-[50px] blur-2xl absolute bottom-[-40px] left-[40%]"></div>
       <div className="absolute top-0 h-[1px] card-gradient-line bg-slate-600 w-full"></div>
       <div className="w-full h-full flex items-center justify-center gap-3">
@@ -40,7 +40,7 @@ interface stepsCardProps {
 
 export function HomeStepsCard({ step, title, children }: stepsCardProps) {
   return (
-    <div className=" w-full min-h-[220px] overflow-hidden rounded-2xl bg-gradient-to-bl from-slate-800/75 relative backdrop-blur-md">
+    <div className=" w-full cursor-target min-h-[220px] overflow-hidden rounded-2xl bg-gradient-to-bl from-slate-800/75 relative backdrop-blur-md">
       <div className="bg-blue-500 size-[50px] blur-2xl absolute bottom-[-40px] left-[40%]"></div>
       <div className="bg-pink-500 size-[20px] h-[140px] blur-3xl absolute bottom-[10px] left-[10px]"></div>
       <h1 className="absolute text-8xl font-extrabold bottom-[-15px] [-webkit-text-stroke:1px_#fff2] rotate-12 left-5 text-white/10">

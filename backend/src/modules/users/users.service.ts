@@ -9,6 +9,9 @@ import {
 import { PrismaService } from '../../common/database/prisma.service';
 import { CreateUserDto, UpdateProfileDto } from './dto/create-user.dto';
 import { UpdateUserDto, UpdateUserRoleDto, ListUsersQueryDto } from './dto/update-user.dto';
+import { ConfigService } from '@nestjs/config';
+import { createClerkClient, type ClerkClient } from '@clerk/backend';
+import { InviteUserDto } from './dto/invite-user.dto';
 
 /**
  * Users Service
@@ -17,8 +20,76 @@ import { UpdateUserDto, UpdateUserRoleDto, ListUsersQueryDto } from './dto/updat
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
+  private readonly clerk: ClerkClient
+  private readonly frontURL: string;
 
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService,
+  ) {
+    const secretKey = this.configService.get<string>('CLERK_SECRET_KEY');
+    if (!secretKey) {
+      throw new Error('CLERK_SECRET_KEY is not configured');
+    }
+    this.clerk = createClerkClient({ secretKey });
+    const frontURL = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5000';
+    this.frontURL = frontURL + '/sign-up';
+  }
+
+  async toggleUserStatus(userId: string) {
+    console.log('Toggling user status for:', userId);
+    const user = await this.clerk.users.getUser(userId);
+
+    const isDisabled = user.banned; // This is Clerk's actual state
+
+
+    console.log('Current banned status:', isDisabled);
+
+    if (!isDisabled) {
+      await this.clerk.users.banUser(userId);
+    } else {
+      await this.clerk.users.unbanUser(userId);
+    }
+
+    await this.prisma.user.update({
+      where: { clerkId: userId },
+      data: { isActive: isDisabled },
+    });
+
+    return {
+      userId,
+      locked: !isDisabled,
+      message: isDisabled ? 'User unlocked' : 'User locked',
+    };
+  }
+
+  /**
+   * Create a new user (SuperAdmin only)
+   * Typically users are invited via Clerk invitations
+   * @param InviteUserDto - User invitation data
+   */
+  async inviteUser(inviteUserDto: InviteUserDto) {
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: inviteUserDto.email },
+        ],
+      },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
+    const role = inviteUserDto.role ?? 'ADMIN';
+    return await this.clerk.invitations.createInvitation({
+      emailAddress: inviteUserDto.email,
+      redirectUrl: this.frontURL,
+      publicMetadata: {
+        role,
+      },
+    });
+  }
 
   /**
    * Create a new user (SuperAdmin only)

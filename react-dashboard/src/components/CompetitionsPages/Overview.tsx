@@ -7,7 +7,7 @@ import { CalendarDays, Clock, Flag, Shield, Trophy } from "lucide-react"
 
 function Overview({ competition }: { competition: Competition }) {
   return (
-    <div className="relative  mx-auto mt-8 bg-white/5 backdrop-blur-md p-6 rounded-2xl border border-white/10 shadow-xl hover:shadow-2xl transition-all duration-300">
+    <div className="relative  mx-auto mt-8 bg-slate-800 p-6 rounded-md shadow-xl hover:shadow-2xl transition-all duration-300">
       {/* Title Section */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-white flex items-center gap-2">

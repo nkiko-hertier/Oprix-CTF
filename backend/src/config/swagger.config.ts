@@ -8,7 +8,7 @@ export function setupSwagger(app: INestApplication): void {
       'APIs for CTF (Capture The Flag) competition management platform. ' +
       'Handles authentication, competitions, challenges, submissions, and real-time leaderboards.'
     )
-    .setVersion('1.1.0') // Updated version
+    .setVersion('1.0')
     .addTag('auth', 'Authentication and authorization')
     .addTag('users', 'User management')
     .addTag('competitions', 'Competition management')
@@ -33,10 +33,7 @@ export function setupSwagger(app: INestApplication): void {
     )
     .build();
 
-  // Create Swagger document
   const document = SwaggerModule.createDocument(app, config);
-
-  // Swagger UI
   SwaggerModule.setup('api/v1/docs', app, document, {
     customSiteTitle: 'CTF Platform API Docs',
     customfavIcon: 'https://nestjs.com/img/logo_text.svg',
@@ -48,12 +45,4 @@ export function setupSwagger(app: INestApplication): void {
       showRequestDuration: true,
     },
   });
-
-  // Add /swagger-json endpoint for raw JSON spec
-  app.getHttpAdapter().get('/swagger-json', (req, res) => {
-    res.json(document);
-  });
-
-  // Optional: expose JSON under API prefix
-  // app.getHttpAdapter().get('/api/v1/swagger-json', (req, res) => res.json(document));
 }

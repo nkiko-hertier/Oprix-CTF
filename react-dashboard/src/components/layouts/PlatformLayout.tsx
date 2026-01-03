@@ -20,7 +20,7 @@ function PlatformLayout() {
         if (!isSignedIn) {
             return <Navigate to="/" replace />
         } else if ((user.publicMetadata.role !== 'USER')) {
-            return <Navigate to="/" replace />
+            // return <Navigate to="/" replace />
         }
     }
     return (

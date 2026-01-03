@@ -9,8 +9,8 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger, UseGuards } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Logger } from '@nestjs/common';
+import { ClerkJwtService } from '../auth/services/clerk-jwt.service';
 import { PrismaService } from '../../common/database/prisma.service';
 
 /**
@@ -32,9 +32,9 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   private readonly connectedUsers = new Map<string, { userId: string; competitionId?: string }>();
 
   constructor(
-    private jwtService: JwtService,
+    private clerkJwtService: ClerkJwtService,
     private prisma: PrismaService,
-  ) {}
+  ) { }
 
   afterInit(server: Server) {
     this.logger.log('WebSocket Gateway initialized');
@@ -43,15 +43,23 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async handleConnection(client: Socket, ...args: any[]) {
     try {
       const token = client.handshake.auth.token || client.handshake.headers.authorization?.split(' ')[1];
-      
+
       if (!token) {
         client.disconnect();
         return;
       }
 
-      const payload = this.jwtService.verify(token);
+      // Verify JWT using Clerk's JWKS
+      const payload = await this.clerkJwtService.verifyToken(token);
+      if (!payload) {
+        this.logger.warn('Invalid token - disconnecting client');
+        client.disconnect();
+        return;
+      }
+
+      // Find user by Clerk ID
       const user = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
+        where: { clerkId: payload.sub },
         select: { id: true, username: true, role: true, isActive: true },
       });
 
@@ -62,9 +70,9 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
       this.connectedUsers.set(client.id, { userId: user.id });
       client.join(`user:${user.id}`);
-      
+
       this.logger.log(`User ${user.username} connected (${client.id})`);
-      
+
       // Send initial connection confirmation
       client.emit('connected', {
         message: 'Connected to CTF real-time events',
@@ -121,15 +129,15 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       // Join new competition room
       const roomName = `competition:${data.competitionId}`;
       client.join(roomName);
-      
+
       // Update user info
-      this.connectedUsers.set(client.id, { 
-        ...userInfo, 
-        competitionId: data.competitionId 
+      this.connectedUsers.set(client.id, {
+        ...userInfo,
+        competitionId: data.competitionId
       });
 
       this.logger.log(`User ${userInfo.userId} joined competition ${data.competitionId}`);
-      
+
       client.emit('joined-competition', {
         competitionId: data.competitionId,
         message: 'Joined competition room',
@@ -153,12 +161,12 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
     const roomName = `competition:${userInfo.competitionId}`;
     client.leave(roomName);
-    
+
     this.connectedUsers.set(client.id, { userId: userInfo.userId });
-    
-    client.emit('left-competition', { 
+
+    client.emit('left-competition', {
       competitionId: userInfo.competitionId,
-      message: 'Left competition room' 
+      message: 'Left competition room'
     });
   }
 
@@ -169,7 +177,7 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     try {
       // Get top 10 for live updates
       const leaderboard = await this.getCompetitionLeaderboard(competitionId, 10);
-      
+
       this.server.to(`competition:${competitionId}`).emit('leaderboard-update', {
         competitionId,
         leaderboard,
@@ -260,15 +268,22 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
   /**
-   * Send announcement to competition
+   * Send announcement to competition participants
    */
   async sendAnnouncementToCompetition(competitionId: string, announcement: any) {
+    const connectedCount = this.getConnectedUsersCount(competitionId);
+    this.logger.log(
+      `Broadcasting announcement ${announcement.id} to ${connectedCount} connected users in competition ${competitionId}`,
+    );
+
     this.server.to(`competition:${competitionId}`).emit('announcement', {
       id: announcement.id,
+      competitionId,
       title: announcement.title,
       content: announcement.content,
       priority: announcement.priority,
-      timestamp: announcement.createdAt,
+      createdAt: announcement.createdAt,
+      competition: announcement.competition,
     });
   }
 
@@ -304,32 +319,32 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       userScores
         .filter(score => score.userId !== null)
         .map(async (score, index) => {
-        const user = await this.prisma.user.findUnique({
-          where: { id: score.userId! },
-          select: { id: true, username: true },
-        });
+          const user = await this.prisma.user.findUnique({
+            where: { id: score.userId! },
+            select: { id: true, username: true },
+          });
 
-        const lastSolve = await this.prisma.submission.findFirst({
-          where: {
-            userId: score.userId!,
-            competitionId,
-            isCorrect: true,
-          },
-          orderBy: { createdAt: 'desc' },
-          select: { createdAt: true },
-        });
+          const lastSolve = await this.prisma.submission.findFirst({
+            where: {
+              userId: score.userId!,
+              competitionId,
+              isCorrect: true,
+            },
+            orderBy: { createdAt: 'desc' },
+            select: { createdAt: true },
+          });
 
-        return {
-          rank: index + 1,
-          user: {
-            id: user?.id,
-            username: user?.username,
-          },
-          totalPoints: score._sum.points || 0,
-          solveCount: score._count.id,
-          lastSolveTime: lastSolve?.createdAt,
-        };
-      }),
+          return {
+            rank: index + 1,
+            user: {
+              id: user?.id,
+              username: user?.username,
+            },
+            totalPoints: score._sum.points || 0,
+            solveCount: score._count.id,
+            lastSolveTime: lastSolve?.createdAt,
+          };
+        }),
     );
 
     return leaderboard;
@@ -342,12 +357,12 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     if (!competitionId) {
       return this.connectedUsers.size;
     }
-    
+
     let count = 0;
     this.connectedUsers.forEach(userInfo => {
       if (userInfo.competitionId === competitionId) count++;
     });
-    
+
     return count;
   }
 
