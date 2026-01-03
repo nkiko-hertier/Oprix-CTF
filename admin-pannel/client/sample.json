@@ -1,0 +1,216 @@
+{
+    "/api/v1/certificates/request": {
+      "post": {
+        "description": "Users can request certificates after a competition ends. Requires at least one solved challenge.",
+        "operationId": "CertificatesController_requestCertificate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestCertificateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Certificate issued successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or competition not completed"
+          },
+          "404": {
+            "description": "Competition not found"
+          },
+          "409": {
+            "description": "Certificate already exists"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Request a certificate for a completed competition",
+        "tags": [
+          "Certificates"
+        ]
+      }
+    },
+    "/api/v1/certificates/my": {
+      "get": {
+        "description": "Retrieve all certificates earned by the authenticated user (individual and team-based)",
+        "operationId": "CertificatesController_getMyCertificates",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter by certificate status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "ISSUED",
+                "APPROVED",
+                "REJECTED",
+                "REVOKED"
+              ]
+            }
+          },
+          {
+            "name": "competitionId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by competition ID",
+            "schema": {
+              "example": "comp-uuid-123",
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by user ID (admin only)",
+            "schema": {
+              "example": "user-uuid-456",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "required": false,
+            "in": "query",
+            "description": "Filter by team ID (admin only)",
+            "schema": {
+              "example": "team-uuid-789",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "default": 20,
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificates retrieved successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get my certificates",
+        "tags": [
+          "Certificates"
+        ]
+      }
+    },
+    "/api/v1/certificates/{id}": {
+      "get": {
+        "description": "Retrieve a specific certificate by its ID (requires ownership)",
+        "operationId": "CertificatesController_getCertificateById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Certificate UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied"
+          },
+          "404": {
+            "description": "Certificate not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get certificate by ID",
+        "tags": [
+          "Certificates"
+        ]
+      }
+    },
+    "/api/v1/certificates/verify/{verificationCode}": {
+      "get": {
+        "description": "Public endpoint to verify a certificate using its verification code. No authentication required.",
+        "operationId": "CertificatesController_verifyCertificate",
+        "parameters": [
+          {
+            "name": "verificationCode",
+            "required": true,
+            "in": "path",
+            "description": "Certificate verification code (e.g., VRF-ABC123XYZ)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyCertificateResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verify certificate authenticity (PUBLIC)",
+        "tags": [
+          "Certificates"
+        ]
+      }
+    }
+}
