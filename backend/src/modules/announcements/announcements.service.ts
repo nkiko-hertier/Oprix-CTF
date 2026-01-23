@@ -119,7 +119,7 @@ export class AnnouncementsService {
       if (query.isVisible !== undefined) {
         where.isVisible = query.isVisible;
       }
-    } else {
+    } else if (userRole == 'USER') {
       const registrations = await this.prisma.registration.findMany({
         where: { userId, status: 'APPROVED' },
         select: { competitionId: true },

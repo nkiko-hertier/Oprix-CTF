@@ -153,7 +153,7 @@ export default function CompetitionManage() {
   }
 
   const { data: allAnnouncements, isLoading: announcementsLoading } = useQuery<AnnouncementsResponse>({
-    queryKey: ["/api/v1/announcements"],
+    queryKey: ["/api/v1/announcements", {competitionId}],
     enabled: activeTab === "announcements",
   });
 

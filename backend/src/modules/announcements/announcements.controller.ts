@@ -33,6 +33,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/auth.decorator';
+import { AdminGuard } from '../auth/guards/admin.guard';
 
 /**
  * Announcements Controller
@@ -48,7 +49,7 @@ export class AnnouncementsController {
    * Create a new announcement
    */
   @Post()
-  @Roles('ADMIN')
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiOperation({ summary: 'Create a new announcement' })
   @ApiResponse({
     status: 201,

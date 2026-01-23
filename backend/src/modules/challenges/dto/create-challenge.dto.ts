@@ -109,6 +109,18 @@ export class CreateChallengeDto {
   @IsString({ each: true })
   @IsOptional()
   hints?: string[];
+
+  
+
+  @ApiProperty({
+    example: ['xxxx-xxxxxx-xxxxxx-xxx'],
+    description: 'CompetitionId ',
+    required: false,
+  })
+
+  @IsString({ each: true })
+  @IsOptional()
+  competitionId?: string[];
 }
 
 /**

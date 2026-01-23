@@ -179,7 +179,7 @@ export function ChallengeDialog({
 
   const onSubmit = (data: ChallengeFormData) => {
     console.log("Submitting data:", data);
-    delete data.competitionId;
+    if(!data.competitionId) delete data.competitionId;
     if (isEdit) updateMutation.mutate(data);
     else createMutation.mutate(data);
   };

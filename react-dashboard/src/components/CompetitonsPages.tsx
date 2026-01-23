@@ -25,9 +25,25 @@ function CompetitionsPages({ competition }: { competition: Competition }) {
     { name: "Leaderboard", tab: "leaderboard" },
     { name: "Challanges", tab: "challanges" },
     { name: "Certificate", tab: "certificate" },
-    // { name: "Members", tab: "memebers" },
-    // { name: "Teams", tab: "teams" },
   ];
+  
+  // filtered links
+  let filteredLinks =
+    competition.status !== "ACTIVE"
+      ? Links.filter(
+          link =>
+            link.tab !== "announcements" &&
+            link.tab !== "challanges"
+        )
+      : Links;
+    filteredLinks = 
+    competition.status !== "COMPLETED"
+      ? filteredLinks.filter(
+          link =>
+            link.tab !== "certificate"
+        )
+      : filteredLinks;
+  
 
   // ✅ Detect and apply hash-based tab
   useEffect(() => {
@@ -59,7 +75,7 @@ function CompetitionsPages({ competition }: { competition: Competition }) {
     <div>
       {/* Tabs Links */}
       <ul className="flex gap-3 text-slate-400">
-        {Links.map((link) => (
+        {filteredLinks.map((link) => (
           <li
             key={link.tab}
             className={`cursor-pointer pb-2 ${

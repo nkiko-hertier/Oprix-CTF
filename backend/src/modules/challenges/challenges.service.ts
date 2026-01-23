@@ -66,7 +66,7 @@ export class ChallengesService {
           flagSalt,
           caseSensitive: createChallengeDto.caseSensitive || false,
           normalizeFlag: createChallengeDto.normalizeFlag ?? true,
-          competitionId: competitionId || null,
+          competitionId: createChallengeDto.competitionId || null,
           hints: createChallengeDto.hints
             ? {
                 create: createChallengeDto.hints.map((hint, index) => ({

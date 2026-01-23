@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -8,38 +8,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model with roles for superadmin, admin, user
 model User {
-  id           String      @id @default(uuid())
-  clerkId      String      @unique  // Clerk user ID for authentication
-  username     String      @unique
-  email        String      @unique
-  passwordHash String?     // Optional for self-hosted auth; use Clerk for primary auth
-  role         Role        @default(USER)
-  isActive     Boolean     @default(true)  // For account suspension
-  lastLoginAt  DateTime?   // Track last login
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  profile      Profile?
-  teams        TeamMember[]  // Users can be part of teams
-  submissions  Submission[]
-  registrations Registration[]  // User registrations for competitions
-  adminCompetitions Competition[] @relation("AdminCompetitions")  // Competitions administered by this user (if admin)
-  createdHints Hint[]  // Hints created by admins
-  auditLogs    AuditLog[]  // Audit logs for actions (superadmin view)
-  notifications Notification[]  // Notifications sent to user
-  scores       Score[]     // Individual scores
-  captainedTeams Team[]    @relation("TeamCaptain")  // Teams where user is captain
-  certificates Certificate[] @relation("UserCertificates")  // Certificates earned by user
-  approvedCertificates Certificate[] @relation("CertificateApprover")  // Certificates approved by admin
-  revokedCertificates Certificate[] @relation("CertificateRevoker")  // Certificates revoked by admin
-  // DISABLED: First blood feature
-  // firstBloods  Challenge[] @relation("FirstBlood")   // Challenges where user got first blood
-  
-  // Creator-related relations
-  creatorAssignments CompetitionCreator[] @relation("CreatorUser")
-  creatorInvitesSent CreatorInvite[]      @relation("InviteSender")
-  learningMaterials  LearningMaterial[]   // Learning materials created by this user
+  id                   String               @id @default(uuid())
+  clerkId              String               @unique
+  username             String               @unique
+  email                String               @unique
+  passwordHash         String?
+  role                 Role                 @default(USER)
+  isActive             Boolean              @default(true)
+  lastLoginAt          DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  auditLogs            AuditLog[]
+  approvedCertificates Certificate[]        @relation("CertificateApprover")
+  revokedCertificates  Certificate[]        @relation("CertificateRevoker")
+  certificates         Certificate[]        @relation("UserCertificates")
+  adminCompetitions    Competition[]        @relation("AdminCompetitions")
+  creatorAssignments   CompetitionCreator[] @relation("CreatorUser")
+  creatorInvitesSent   CreatorInvite[]      @relation("InviteSender")
+  createdHints         Hint[]
+  learningMaterials    LearningMaterial[]
+  notifications        Notification[]
+  profile              Profile?
+  registrations        Registration[]
+  scores               Score[]
+  submissions          Submission[]
+  captainedTeams       Team[]               @relation("TeamCaptain")
+  teams                TeamMember[]
 
   @@index([role])
   @@index([email])
@@ -47,63 +42,53 @@ model User {
   @@index([isActive])
 }
 
-// User profile for additional details
 model Profile {
-  id          String   @id @default(uuid())
-  userId      String   @unique
-  firstName   String?
-  lastName    String?
-  bio         String?
-  avatarUrl   String?
-  country     String?
-  website     String?
-  github      String?
-  linkedin    String?
-  skills      String[] // Array of skills/interests
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  firstName String?
+  lastName  String?
+  bio       String?
+  avatarUrl String?
+  country   String?
+  website   String?
+  github    String?
+  linkedin  String?
+  skills    String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Role enum for access control
-enum Role {
-  SUPERADMIN
-  ADMIN
-  CREATOR
-  USER
-}
-
-// Competition model
 model Competition {
-  id           String      @id @default(uuid())
-  name         String      // Used by services
-  title        String      // For display
-  description  String
-  startTime    DateTime    // Used by services
-  endTime      DateTime    // Used by services
-  startDate    DateTime    // Alias for compatibility
-  endDate      DateTime    // Alias for compatibility
-  adminId      String      // Admin who created/hosted the competition
-  status       CompetitionStatus @default(DRAFT)
-  isPublic     Boolean     @default(true)  // Public or private competition
-  isTeamBased  Boolean     @default(false) // Individual vs team competition
-  maxTeams     Int?        // Optional max teams allowed
-  maxUsers     Int?        // Optional max individual users
-  registrationDeadline DateTime? // Registration cutoff
-  rules        String?     // Competition rules
-  prizes       Json?       // Prize information as JSON
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  admin        User        @relation("AdminCompetitions", fields: [adminId], references: [id])
-  challenges   Challenge[]
-  registrations Registration[]  // Registered users/teams
-  teams        Team[]      // Teams in this competition
-  announcements Announcement[]  // Competition announcements
-  scores       Score[]     // Derived scores for leaderboards
-  notifications Notification[]  // Notifications related to competition
-  certificates Certificate[]   // Certificates issued for this competition
-  creators      CompetitionCreator[] // Creators assigned to this competition
-  creatorInvites CreatorInvite[]     // Pending creator invitations
+  id                   String               @id @default(uuid())
+  name                 String
+  title                String
+  description          String
+  startTime            DateTime
+  endTime              DateTime
+  startDate            DateTime
+  endDate              DateTime
+  adminId              String
+  status               CompetitionStatus    @default(DRAFT)
+  isPublic             Boolean              @default(true)
+  isTeamBased          Boolean              @default(false)
+  maxTeams             Int?
+  maxUsers             Int?
+  registrationDeadline DateTime?
+  rules                String?
+  prizes               Json?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  announcements        Announcement[]
+  certificates         Certificate[]
+  challenges           Challenge[]
+  admin                User                 @relation("AdminCompetitions", fields: [adminId], references: [id])
+  creators             CompetitionCreator[]
+  creatorInvites       CreatorInvite[]
+  notifications        Notification[]
+  registrations        Registration[]
+  scores               Score[]
+  teams                Team[]
 
   @@index([status])
   @@index([startDate])
@@ -112,46 +97,33 @@ model Competition {
   @@index([adminId])
 }
 
-enum CompetitionStatus {
-  DRAFT
-  REGISTRATION_OPEN
-  ACTIVE
-  PAUSED
-  COMPLETED
-  CANCELLED
-}
-
-// Challenge model - Enhanced to match services and DTOs
 model Challenge {
-  id            String      @id @default(uuid())
+  id            String       @id @default(uuid())
   title         String
   description   String
-  category      String?     // String-based category (Web, Crypto, etc.)
+  category      String?
   points        Int
-  flagHash      String      // Secure hash of the flag - NEVER store actual flags
-  flagSalt      String      @default("h3xsalt")
-  caseSensitive Boolean     @default(false) // Whether flag comparison is case sensitive
-  normalizeFlag Boolean     @default(true)  // Whether to normalize whitespace
+  flagHash      String
+  caseSensitive Boolean      @default(false)
+  normalizeFlag Boolean      @default(true)
   competitionId String?
-  difficulty    Difficulty  @default(MEDIUM)
-  solveCount    Int         @default(0) // Track popularity/difficulty
-  maxAttempts   Int?        // Optional attempt limit per user
-  timeLimit     Int?        // Optional time limit in minutes
-  isActive      Boolean     @default(true)
-  isVisible     Boolean     @default(true) // Is challenge visible to participants
-  isDynamic     Boolean     @default(false) // Is challenge dynamic (instances per user)
-  url           String?     // Challenge URL/endpoint
-  metadata      Json?       // Additional challenge metadata
-  // firstBloodUserId String?  // User who got first blood
-  // firstBloodAt  DateTime?   // When first blood occurred
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  difficulty    Difficulty   @default(MEDIUM)
+  solveCount    Int          @default(0)
+  maxAttempts   Int?
+  timeLimit     Int?
+  isActive      Boolean      @default(true)
+  isVisible     Boolean      @default(true)
+  isDynamic     Boolean      @default(false)
+  url           String?
+  metadata      Json?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  flagSalt      String       @default("h3xsalt")
   competition   Competition? @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  // firstBlood    User?       @relation("FirstBlood", fields: [firstBloodUserId], references: [id])
+  files         File[]
   hints         Hint[]
-  files         File[]      // Attached files for the challenge
+  scores        Score[]
   submissions   Submission[]
-  scores        Score[]     // Solves contribute to scores
 
   @@index([competitionId])
   @@index([category])
@@ -160,66 +132,55 @@ model Challenge {
   @@index([isVisible])
 }
 
-enum Difficulty {
-  TRIVIAL
-  EASY
-  MEDIUM
-  HARD
-  INSANE
-}
-
-// Hint for challenges (optional, unlockable) - Fixed structure
 model Hint {
   id          String    @id @default(uuid())
   challengeId String
   content     String
-  cost        Int       @default(0) // Point cost to unlock
-  creatorId   String    // Admin who created the hint
-  order       Int       @default(1) // Order of hints (hint 1, 2, 3...)
+  cost        Int       @default(0)
+  creatorId   String
+  order       Int       @default(1)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
   creator     User      @relation(fields: [creatorId], references: [id])
 
+  @@unique([challengeId, order])
   @@index([challengeId])
-  @@unique([challengeId, order]) // Ensure unique ordering per challenge
 }
 
-// File attachments for challenges (e.g., binaries, images)
 model File {
-  id          String    @id @default(uuid())
-  challengeId String
-  fileName    String
-  originalName String   // Original filename when uploaded
-  fileUrl     String    // S3 or local URL
-  fileType    String    // MIME type
-  fileSize    Int       // File size in bytes
-  checksum    String?   // File integrity check
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid())
+  challengeId  String
+  fileName     String
+  originalName String
+  fileUrl      String
+  fileType     String
+  fileSize     Int
+  checksum     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  challenge    Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
   @@index([challengeId])
 }
 
-// Submission model for flag attempts - Fixed with submittedAt
 model Submission {
-  id          String    @id @default(uuid())
-  userId      String
-  challengeId String
-  teamId      String?   // If team-based submission
-  competitionId String?  // Added for easier queries
-  isCorrect   Boolean  // Result of flag validation - NEVER store actual submitted flags
-  points      Int       @default(0) // Points awarded (0 if incorrect)
-  attemptNumber Int     @default(1) // Which attempt this was
-  ipAddress   String?   // For security/auditing
-  userAgent   String?   // For security/auditing
-  submittedAt DateTime  @default(now()) // When submitted (used by leaderboard)
-  createdAt   DateTime  @default(now())
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  team        Team?     @relation(fields: [teamId], references: [id])
-  score       Score?    // Links to score if correct
+  id            String    @id @default(uuid())
+  userId        String
+  challengeId   String
+  teamId        String?
+  competitionId String?
+  isCorrect     Boolean
+  points        Int       @default(0)
+  attemptNumber Int       @default(1)
+  ipAddress     String?
+  userAgent     String?
+  submittedAt   DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  score         Score?
+  challenge     Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  team          Team?     @relation(fields: [teamId], references: [id])
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([challengeId])
@@ -230,23 +191,21 @@ model Submission {
   @@index([teamId])
 }
 
-// Score model for leaderboards (derived from submissions)
 model Score {
   id            String      @id @default(uuid())
   userId        String?
-  teamId        String?     // If team-based
+  teamId        String?
   challengeId   String
   competitionId String
-  submissionId  String      @unique // Link to the submission that earned this score
+  submissionId  String      @unique
   points        Int
-  solvedAt      DateTime    @default(now()) // When the challenge was solved
-  // isFirstBlood  Boolean     @default(false) // Bonus points for first solve
+  solvedAt      DateTime    @default(now())
   createdAt     DateTime    @default(now())
-  user          User?       @relation(fields: [userId], references: [id])
-  team          Team?       @relation(fields: [teamId], references: [id])
   challenge     Challenge   @relation(fields: [challengeId], references: [id], onDelete: Cascade)
-  competition   Competition? @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   submission    Submission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  team          Team?       @relation(fields: [teamId], references: [id])
+  user          User?       @relation(fields: [userId], references: [id])
 
   @@index([competitionId])
   @@index([userId])
@@ -255,64 +214,56 @@ model Score {
   @@index([createdAt])
 }
 
-// Team model for team-based CTFs - Fixed field names
 model Team {
-  id            String       @id @default(uuid())
-  name          String       @unique
-  description   String?      // Team description
+  id            String         @id @default(uuid())
+  name          String         @unique
+  description   String?
   competitionId String
-  captainId     String       // User who leads the team
-  isActive      Boolean      @default(true)
-  maxSize       Int          @default(4) // Team size limit (renamed from maxMembers)
-  inviteCode    String?      @unique // For team invitations
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  competition   Competition  @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  captain       User         @relation("TeamCaptain", fields: [captainId], references: [id])
-  members       TeamMember[]
+  captainId     String
+  isActive      Boolean        @default(true)
+  maxSize       Int            @default(4)
+  inviteCode    String?        @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  certificates  Certificate[]
+  registrations Registration[]
   scores        Score[]
   submissions   Submission[]
-  registrations Registration[]
-  certificates  Certificate[]  // Certificates earned by team
+  captain       User           @relation("TeamCaptain", fields: [captainId], references: [id])
+  competition   Competition    @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  members       TeamMember[]
 
   @@index([competitionId])
   @@index([captainId])
   @@index([inviteCode])
 }
 
-// Team membership
 model TeamMember {
-  teamId    String
-  userId    String
-  role      TeamRole   @default(MEMBER)
-  joinedAt  DateTime   @default(now())
-  isActive  Boolean    @default(true)
-  team      Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamId   String
+  userId   String
+  role     TeamRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+  isActive Boolean  @default(true)
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([teamId, userId])
   @@index([userId])
 }
 
-enum TeamRole {
-  CAPTAIN
-  MEMBER
-}
-
-// Registration for competitions (users or teams) - Fixed constraint
 model Registration {
-  id            String      @id @default(uuid())
-  userId        String?
-  teamId        String?     // For team registrations
-  competitionId String
-  status        RegistrationStatus  @default(PENDING)
-  registeredAt  DateTime    @default(now())
-  approvedAt    DateTime?   // When approved by admin
-  rejectedAt    DateTime?   // When rejected by admin
-  rejectionReason String?   // Reason for rejection
-  user          User?       @relation(fields: [userId], references: [id])
-  team          Team?       @relation(fields: [teamId], references: [id])
-  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  id              String             @id @default(uuid())
+  userId          String?
+  teamId          String?
+  competitionId   String
+  status          RegistrationStatus @default(PENDING)
+  registeredAt    DateTime           @default(now())
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  competition     Competition        @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  team            Team?              @relation(fields: [teamId], references: [id])
+  user            User?              @relation(fields: [userId], references: [id])
 
   @@index([competitionId])
   @@index([userId])
@@ -320,61 +271,42 @@ model Registration {
   @@index([status])
 }
 
-enum RegistrationStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  WAITLISTED
-}
-
-// Certificate model for competition completion certificates
 model Certificate {
-  id                String              @id @default(uuid())
-  certificateNumber String              @unique // e.g., "OPRIX-CTF-2024-001234"
-  userId            String?             // For individual certificates
-  teamId            String?             // For team certificates
+  id                String            @id @default(uuid())
+  certificateNumber String            @unique
+  userId            String?
+  teamId            String?
   competitionId     String
-  
-  // Performance Metrics
-  finalRank         Int?                // User/Team's final rank
-  totalScore        Int                 // Total points earned
-  challengesSolved  Int                 // Number of challenges solved
-  totalChallenges   Int                 // Total challenges in competition
-  completionRate    Float               // Percentage of challenges solved
-  participantCount  Int?                // Total participants for context
-  
-  // Certificate Status & Workflow
-  status            CertificateStatus   @default(ISSUED)
-  issuedAt          DateTime            @default(now())
-  requestedAt       DateTime            @default(now())
-  
-  // Optional Admin Approval (if competition requires it)
-  requiresApproval  Boolean             @default(false)
-  approvedBy        String?             // Admin who approved
+  finalRank         Int?
+  totalScore        Int
+  challengesSolved  Int
+  totalChallenges   Int
+  completionRate    Float
+  participantCount  Int?
+  status            CertificateStatus @default(ISSUED)
+  issuedAt          DateTime          @default(now())
+  requestedAt       DateTime          @default(now())
+  requiresApproval  Boolean           @default(false)
+  approvedBy        String?
   approvedAt        DateTime?
   rejectedAt        DateTime?
   rejectionReason   String?
-  
-  // Verification System
-  verificationCode  String              @unique // Public verification code (e.g., "VRF-ABC123XYZ")
-  isRevoked         Boolean             @default(false)
+  verificationCode  String            @unique
+  isRevoked         Boolean           @default(false)
   revokedAt         DateTime?
-  revokedBy         String?             // Admin who revoked
+  revokedBy         String?
   revokedReason     String?
-  
-  // Additional Data
-  metadata          Json?               // Custom data (achievements, special mentions, etc.)
-  
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-  
-  // Relations
-  user              User?               @relation("UserCertificates", fields: [userId], references: [id], onDelete: Cascade)
-  team              Team?               @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  competition       Competition         @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  approver          User?               @relation("CertificateApprover", fields: [approvedBy], references: [id])
-  revoker           User?               @relation("CertificateRevoker", fields: [revokedBy], references: [id])
-  
+  metadata          Json?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  approver          User?             @relation("CertificateApprover", fields: [approvedBy], references: [id])
+  competition       Competition       @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  revoker           User?             @relation("CertificateRevoker", fields: [revokedBy], references: [id])
+  team              Team?             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user              User?             @relation("UserCertificates", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, competitionId])
+  @@unique([teamId, competitionId])
   @@index([userId])
   @@index([teamId])
   @@index([competitionId])
@@ -382,56 +314,37 @@ model Certificate {
   @@index([verificationCode])
   @@index([certificateNumber])
   @@index([issuedAt])
-  @@unique([userId, competitionId]) // One certificate per user per competition
-  @@unique([teamId, competitionId]) // One certificate per team per competition
 }
 
-enum CertificateStatus {
-  PENDING        // Requested, awaiting approval
-  ISSUED         // Successfully issued
-  APPROVED       // Admin approved (if approval required)
-  REJECTED       // Admin rejected
-  REVOKED        // Certificate revoked
-}
-
-// Announcements for competitions
 model Announcement {
-  id            String      @id @default(uuid())
+  id            String               @id @default(uuid())
   competitionId String
   title         String
   content       String
   priority      AnnouncementPriority @default(NORMAL)
-  isVisible     Boolean     @default(true)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  isVisible     Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  competition   Competition          @relation(fields: [competitionId], references: [id], onDelete: Cascade)
 
   @@index([competitionId])
   @@index([priority])
 }
 
-enum AnnouncementPriority {
-  LOW
-  NORMAL
-  HIGH
-  URGENT
-}
-
-// Notifications (e.g., email or in-app alerts)
 model Notification {
-  id            String      @id @default(uuid())
+  id            String               @id @default(uuid())
   userId        String?
   competitionId String?
   title         String
   content       String
   type          NotificationType
   priority      NotificationPriority @default(NORMAL)
-  isRead        Boolean     @default(false)
+  isRead        Boolean              @default(false)
   readAt        DateTime?
-  expiresAt     DateTime?   // Optional expiration
-  createdAt     DateTime    @default(now())
-  user          User?       @relation(fields: [userId], references: [id])
-  competition   Competition? @relation(fields: [competitionId], references: [id])
+  expiresAt     DateTime?
+  createdAt     DateTime             @default(now())
+  competition   Competition?         @relation(fields: [competitionId], references: [id])
+  user          User?                @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([isRead])
@@ -439,36 +352,19 @@ model Notification {
   @@index([createdAt])
 }
 
-enum NotificationType {
-  SYSTEM
-  COMPETITION_UPDATE
-  SUBMISSION_RESULT
-  NEW_CHALLENGE
-  TEAM_INVITATION
-  FIRST_BLOOD
-}
-
-enum NotificationPriority {
-  LOW
-  NORMAL
-  HIGH
-  URGENT
-}
-
-// Audit logs for superadmin
 model AuditLog {
-  id        String    @id @default(uuid())
-  userId    String    // User who performed the action
-  action    String    // e.g., "CREATE_COMPETITION", "UPDATE_USER_ROLE"
-  entityType String   // e.g., "Competition", "User", "Challenge"
-  entityId  String?   // ID of affected entity (e.g., competition ID)
-  oldValues Json?     // Previous values (for updates)
-  newValues Json?     // New values (for updates)
-  ipAddress String?   // For security tracking
-  userAgent String?   // For security tracking
-  details   Json?     // Additional details as JSON
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id])
+  id         String   @id @default(uuid())
+  userId     String
+  action     String
+  entityType String
+  entityId   String?
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  userAgent  String?
+  details    Json?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([action])
@@ -476,14 +372,13 @@ model AuditLog {
   @@index([createdAt])
 }
 
-// Settings for system configuration (superadmin only)
 model SystemSetting {
   id          String   @id @default(uuid())
-  key         String   @unique // e.g., "max_teams_per_competition"
-  value       String   // JSON string for complex values
+  key         String   @unique
+  value       String
   description String?
-  isPublic    Boolean  @default(false) // Whether visible to non-superadmins
-  updatedBy   String   // User who last updated
+  isPublic    Boolean  @default(false)
+  updatedBy   String
   updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
 
@@ -491,7 +386,6 @@ model SystemSetting {
   @@index([isPublic])
 }
 
-// Competition Creator - per-competition assignment for challenge creators
 model CompetitionCreator {
   id            String        @id @default(uuid())
   competitionId String
@@ -511,26 +405,18 @@ model CompetitionCreator {
   @@index([status])
 }
 
-enum CreatorStatus {
-  PENDING   // Accepted invite, waiting for admin approval
-  APPROVED  // Can create/edit challenges
-  REJECTED  // Admin rejected
-  REVOKED   // Access revoked by admin
-}
-
-// Creator Invite - invitation tokens for creators
 model CreatorInvite {
-  id              String      @id @default(uuid())
-  competitionId   String
-  email           String      // Email of the invited person
-  tokenHash       String      @unique // Hashed invite token
-  expiresAt       DateTime    // Invite expires after 24 hours
-  usedAt          DateTime?   // When the invite was used
-  acceptedByUserId String?    // User who accepted (set after acceptance)
-  createdByAdminId String     // Admin who created the invite
-  createdAt       DateTime    @default(now())
-  competition     Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  createdByAdmin  User        @relation("InviteSender", fields: [createdByAdminId], references: [id])
+  id               String      @id @default(uuid())
+  competitionId    String
+  email            String
+  tokenHash        String      @unique
+  expiresAt        DateTime
+  usedAt           DateTime?
+  acceptedByUserId String?
+  createdByAdminId String
+  createdAt        DateTime    @default(now())
+  competition      Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  createdByAdmin   User        @relation("InviteSender", fields: [createdByAdminId], references: [id])
 
   @@index([competitionId])
   @@index([email])
@@ -538,21 +424,94 @@ model CreatorInvite {
   @@index([expiresAt])
 }
 
-// Learning Material
 model LearningMaterial {
-  id            String   @id @default(uuid())
-  title         String
-  description   String?
-  thumbnailUrl  String?  // Thumbnail/wallpaper image URL
-  linkUrl       String   // Primary material link
-  resources     Json?    // Additional resources: [{ label: string, url: string }]
+  id              String   @id @default(uuid())
+  title           String
+  description     String?
+  thumbnailUrl    String?
+  linkUrl         String
+  resources       Json?
   createdByUserId String
-  isVisible     Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdBy     User     @relation(fields: [createdByUserId], references: [id])
+  isVisible       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       User     @relation(fields: [createdByUserId], references: [id])
 
   @@index([createdByUserId])
   @@index([isVisible])
   @@index([createdAt])
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  USER
+  CREATOR
+}
+
+enum CompetitionStatus {
+  DRAFT
+  REGISTRATION_OPEN
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum Difficulty {
+  TRIVIAL
+  EASY
+  MEDIUM
+  HARD
+  INSANE
+}
+
+enum TeamRole {
+  CAPTAIN
+  MEMBER
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WAITLISTED
+}
+
+enum CertificateStatus {
+  PENDING
+  ISSUED
+  APPROVED
+  REJECTED
+  REVOKED
+}
+
+enum AnnouncementPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum NotificationType {
+  SYSTEM
+  COMPETITION_UPDATE
+  SUBMISSION_RESULT
+  NEW_CHALLENGE
+  TEAM_INVITATION
+  FIRST_BLOOD
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum CreatorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVOKED
 }

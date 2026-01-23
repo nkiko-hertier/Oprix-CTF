@@ -14,14 +14,13 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { CompetitionDialog } from "@/components/dialogs/CompetitionDialog";
 import type { CompetitionWithDetails } from "@shared/schema";
 import { format } from "date-fns";
 import { useLocation } from "wouter";
-import { Toast } from "@radix-ui/react-toast";
 
 export default function Competitions() {
   const [, setLocation] = useLocation();
@@ -30,9 +29,8 @@ export default function Competitions() {
   const [editingCompetition, setEditingCompetition] = useState<CompetitionWithDetails | undefined>();
   const { toast } = useToast();
 
-  // const { data: competitions, isLoading } = useQuery<CompetitionWithDetails[]>({
+
   const { data: competitions, isLoading } = useQuery<any>({
-    // queryKey: ["/api/v1/competitions", { status: statusFilter }],
     queryKey: ["/api/v1/competitions"],
   });
 
