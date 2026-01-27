@@ -100,7 +100,7 @@ const CertificatesPage = ({competitionId}: CertificatesPageProps) => {
         await waitForImagesToLoad(hiddenCertificateRef.current);
 
         const dataUrl = await htmlToImage.toPng(hiddenCertificateRef.current, {
-          backgroundColor: null,
+          backgroundColor: undefined,
           pixelRatio: 1,
           cacheBust: true,
         });
@@ -124,7 +124,7 @@ const CertificatesPage = ({competitionId}: CertificatesPageProps) => {
       await waitForImagesToLoad(hiddenCertificateRef.current);
 
       const dataUrl = await htmlToImage.toPng(hiddenCertificateRef.current, {
-        backgroundColor: null,
+        backgroundColor: undefined,
         pixelRatio: 2,
         cacheBust: true,
       });

@@ -18,12 +18,13 @@ interface Announcement {
   priority: AnnouncementPriority;
   createdAt: string;
   updatedAt: string;
+  isVisible: boolean;
 }
 
 // Priority mappings
 const PRIORITY_CONFIG: Record<
   AnnouncementPriority,
-  { icon: JSX.Element; borderColor: string; badgeColor: string }
+  { icon: React.ReactNode; borderColor: string; badgeColor: string }
 > = {
   URGENT: {
     icon: <AlertCircle className="size-5 text-red-400" />,

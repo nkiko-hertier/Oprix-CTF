@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 function CompetitionsPage() {
-  const [competitions, setCompetitions] = useState([])
+  const [competitions, setCompetitions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchCompetitons = async () => {
@@ -56,7 +56,7 @@ function CompetitionsPage() {
             {/* Header */}
             <div className="flex justify-between items-start mt-3">
               <h2 className="text-lg font-semibold">
-                {competition.title || competition.name}
+                {competition.name}
               </h2>
             </div>
 

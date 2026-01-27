@@ -21,7 +21,7 @@ function getRankIcon(rank: number): React.ReactNode {
   }
 
 function CompetitionById() {
-    const [competitions, setCompetitions] = useState<Competition | {}>({})
+    const [competitions, setCompetitions] = useState<Competition | null>(null)
 
     const [loading, setLoading] = useState(true);
     const [individualLeaderboard, setIndividualLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -62,14 +62,20 @@ function CompetitionById() {
                 <img src="https://cdn.pixabay.com/photo/2017/02/09/15/10/sea-2052650_1280.jpg" className='object-center object-cover size-full' alt="Dolphine in the sea" />
                 <div className='absolute size-full bg-linear-to-t from-slate-900 to-transparent top-0'></div>
             </div>
-            <h1 className='text-xl mt-3'>
-                {competitions.name}
-            </h1>
-            <p className='text-slate-400'>{competitions.description}</p>
-            <div className='flex gap-2 flex-wrap mt-3'>
-                <span className='bg-slate-800 px-3 p-1 text-sm rounded-sm'>Start {competitions.startDate}</span>
-                <span className='bg-slate-800 px-3 p-1 text-sm rounded-sm'>End {competitions.endDate}</span>
-            </div>
+            {competitions ? (
+                <>
+                <h1 className='text-xl mt-3'>
+                    {competitions.name}
+                </h1>
+                <p className='text-slate-400'>{competitions.description}</p>
+                <div className='flex gap-2 flex-wrap mt-3'>
+                    <span className='bg-slate-800 px-3 p-1 text-sm rounded-sm'>Start {competitions.startTime}</span>
+                    <span className='bg-slate-800 px-3 p-1 text-sm rounded-sm'>End {competitions.endTime}</span>
+                </div>
+                </>
+            ) : (
+                <div className='mt-3'>Loading competition details...</div>
+            )}
 
             <div className='mt-5'>
                 <h1 className='text-xl'>Leaderboard</h1>

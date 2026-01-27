@@ -54,7 +54,7 @@ function ChallangeItem({
             }
             setIsSubmitting(false)
         })
-        .catch((err) => {
+        .catch(() => {
             toast.error('Your flag might be incorect!');
             setIsSubmitting(false)
         })
@@ -118,7 +118,7 @@ function ChallangeItem({
                             <div>
                                 <h1>Hints</h1>
                                 <div className='flex gap-2 mt-2'>
-                                    {challenge.hints?.map((hint, i)=>
+                                    {challenge.hints?.map((hint)=>
                                         <button className='bg-green-500/5 p-1 text-sm rounded-sm px-3 flex items-center gap-1'>
                                             <AiFillExperiment className='text-green-500' />
                                             {hint.content}

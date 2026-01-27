@@ -60,7 +60,7 @@ function LearningPage() {
       >(`${API_ENDPOINTS.LEARNING.LIST}?${params.toString()}`)
 
       setMaterials(response.data.data || [])
-      setTotalPages(response.data.totalPages || 1)
+      setTotalPages(response.data.pagination.pages || 1)
     } catch (error) {
       console.error('Failed to fetch learning materials:', error)
     } finally {

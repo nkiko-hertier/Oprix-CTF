@@ -1,6 +1,15 @@
 import { useRef, useEffect, useState, useMemo, useId } from 'react';
 import './CurvedLoop.css';
 
+interface CurvedLoopProps {
+  marqueeText?: string;
+  speed?: number;
+  className?: string;
+  curveAmount?: number;
+  direction?: 'left' | 'right';
+  interactive?: boolean;
+}
+
 export const CurvedLoop = ({
   marqueeText = '',
   speed = 2,
@@ -8,15 +17,15 @@ export const CurvedLoop = ({
   curveAmount = 400,
   direction = 'left',
   interactive = true
-}) => {
+}: CurvedLoopProps) => {
   const text = useMemo(() => {
     const hasTrailing = /\s|\u00A0$/.test(marqueeText);
     return (hasTrailing ? marqueeText.replace(/\s+$/, '') : marqueeText) + '\u00A0';
   }, [marqueeText]);
 
-  const measureRef = useRef(null);
-  const textPathRef = useRef(null);
-  const pathRef = useRef(null);
+  const measureRef = useRef<SVGTextElement>(null);
+  const textPathRef = useRef<SVGTextPathElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
   const [spacing, setSpacing] = useState(0);
   const [offset, setOffset] = useState(0);
   const uid = useId();
@@ -71,15 +80,15 @@ export const CurvedLoop = ({
     return () => cancelAnimationFrame(frame);
   }, [spacing, speed, ready]);
 
-  const onPointerDown = e => {
+  const onPointerDown = (e: React.PointerEvent) => {
     if (!interactive) return;
     dragRef.current = true;
     lastXRef.current = e.clientX;
     velRef.current = 0;
-    e.target.setPointerCapture(e.pointerId);
+    (e.target as Element).setPointerCapture(e.pointerId);
   };
 
-  const onPointerMove = e => {
+  const onPointerMove = (e: React.PointerEvent) => {
     if (!interactive || !dragRef.current || !textPathRef.current) return;
     const dx = e.clientX - lastXRef.current;
     lastXRef.current = e.clientX;
