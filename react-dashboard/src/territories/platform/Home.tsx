@@ -10,7 +10,7 @@ function PlatformHome() {
         <div className=''>
             <h1 className='text-2xl mt-5 sm:text-3xl text-center sm:text-left'>👋  Hii, {username}<br /> whats on your mind today?</h1>
             <div className='mt-10 sm:grid grid-cols-2 gap-4 flex flex-col overflow-y-auto'>
-                <Link to="/platform/learning">
+                <Link to="/platform/Challanges">
                 <GradientCard className='row-span-2 group/card1 cursor-pointer'>
                     <div className='h-1 w-full bg-slate-500/5 absolute -bottom-2.5 group-hover/card1:bottom-0'>
                         <div className='h-1 w-[0%] bg-blue-500 group-hover/card1:w-[30%]'></div>
@@ -21,7 +21,7 @@ function PlatformHome() {
 
                     <div className='h-full flex items-end p-6 pl-10 relative'>
                         <h1 className='text-5xl anton-font'>Learning</h1>
-                        <p className='love-font text-5xl absolute text-yellow-500 top-[50px]'>with Ai</p>
+                        <p className='love-font text-5xl absolute text-yellow-500 top-[50px]'>with Challanges</p>
                     </div>
                 </GradientCard>
                 </Link>

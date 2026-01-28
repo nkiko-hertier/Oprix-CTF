@@ -20,16 +20,29 @@ import HomeLayout from "@/components/layouts/HomeLayout";
 import FAQSection from "./competitions/FaqSection";
 import { TargetCursor } from "../../components/TargetCursor";
 import { RiDiscordFill } from "react-icons/ri";
+import { useAuth } from "@clerk/clerk-react";
+import { useEffect } from "react";
+import PlatformHome from "../platform/Home";
 
 function Home2() {
+
+    
+    const { isLoaded, isSignedIn} = useAuth();
+
+    useEffect(() => {
+        if (isLoaded && isSignedIn) {
+            location.href = '/platform'
+        }
+    }, [isLoaded, isSignedIn]);
+    
     return (
         <div>
             <div>
                 <section hidden className="md:text-center md:h-[calc(100vh-100px)] max-md:my-15  gap-7 flex flex-col justify-center relative">
 
 
-                    <div className="bg-gradient-to-bl from-blue-500 absolute to-blue-200 w-[500px] blur-3xl h-[40px] rotate-45 left-[-300px] bottom-[500px]"></div>
-                    <div className="bg-gradient-to-bl from-pink-500 absolute to-pink-200 w-[500px] blur-3xl h-[10px] -rotate-45 left-[-100px] bottom-[550px]"></div>
+                    <div className="bg-linear-to-bl from-blue-500 absolute to-blue-200 w-[500px] blur-3xl h-[40px] rotate-45 left-[-300px] bottom-[500px]"></div>
+                    <div className="bg-linear-to-bl from-pink-500 absolute to-pink-200 w-[500px] blur-3xl h-[10px] -rotate-45 left-[-100px] bottom-[550px]"></div>
                     <div className="grid ">
                         <div>
                             <div className="relative">

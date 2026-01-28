@@ -10,7 +10,7 @@ function SwitchBack() {
 
     const links = [
         { name: "Home", path: "/platform" },
-        { name: "Learning", path: "/platform/learning" },
+        { name: "Learning", path: "/platform/Challanges" },
         { name: "Competition", path: "/platform/competition" },
         { name: "Profile", path: "/platform/profile" },
     ];

@@ -46,9 +46,10 @@ function PlatformPublicChallenges() {
     }, [])
     return (
         <div>
+            <h1 className='text-2xl mt-5 sm:text-3xl text-center sm:text-left mb-5'>Welcome here 👋 <br /> May we do some practices?</h1>
             <div className='flex justify-between'>
-                <h1>Public Challenges</h1>
-                <div className='flex gap-2'>
+                <h1 className='text-sm'><span className='text-zinc-600'>Platform/</span>Public-Challenges</h1>
+                <div className='flex gap-2 hidden'>
                     <Input placeholder='search by keyword' />
                     <Select>
                         <SelectTrigger className="w-[180px]">

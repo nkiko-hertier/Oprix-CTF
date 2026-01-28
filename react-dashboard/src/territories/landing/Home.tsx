@@ -4,18 +4,19 @@ import { FaFacebook, FaLinkedin } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import { GrTwitter } from 'react-icons/gr'
 import { TfiYoutube } from 'react-icons/tfi'
-import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
+import { SignedIn, SignedOut, useAuth } from '@clerk/clerk-react'
 import { ArrowRight, Home } from 'lucide-react'
 import { MobileMenu } from './competitions/MobileMenu'
 import { triggerSideCannons } from '@/lib/confetti'
+import PlatformHome from '../platform/Home'
 // import SvgFixer from './competitions/SVgFixer'
 
 function HomePage() {
+    const { isLoaded, isSignedIn} = useAuth();
     const [menuOpen, setMenuOpen] = useState(false)
     const [activeSection, setActiveSection] = useState("home")
 
     const toggleMenu = () => setMenuOpen(!menuOpen)
-
     // Detect which section is in view (scroll spy)
     useEffect(() => {
         const sections = document.querySelectorAll("section[id]")
