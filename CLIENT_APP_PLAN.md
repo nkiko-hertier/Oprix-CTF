@@ -44,16 +44,31 @@ The client app will align to the OpenAPI contract. Below is a condensed endpoint
 | `/api/v1/competitions/:id/register` | DELETE | Unregister | `200`, `400` |
 | `/api/v1/competitions/:id/progress` | GET | My progress | `200` |
 
-#### Challenges + Hints + Submissions
+#### Learning Materials
 | Endpoint | Method | Purpose | Expected Responses |
 | --- | --- | --- | --- |
-| `/api/v1/challenges` | GET | List challenges (filters) | `200` list |
-| `/api/v1/challenges/:id` | GET | Challenge detail | `200`, `404` |
-| `/api/v1/challenges` | POST | Create (admin) | `201`, `400` |
-| `/api/v1/challenges/:id` | PUT/DELETE | Update/delete | `200`, `403`, `404` |
-| `/api/v1/challenges/:id/hints` | POST | Add hint | `201` |
+| `/api/v1/learning-materials` | GET | Learning materials | `200` list |
+
+#### Challenges + Hints
+| Endpoint | Method | Purpose | Expected Responses |
+| --- | --- | --- | --- |
+| `/api/v1/competitions/:compId/challenges` | GET | List competition challenges | `200` list |
+| `/api/v1/competitions/:compId/challenges` | POST | Create challenge (admin) | `201`, `400` |
+| `/api/v1/challenges/:chalId` | GET | Challenge detail | `200`, `404` |
+| `/api/v1/competitions/:compId/challenges/:chalId` | PUT/DELETE | Update/delete | `200`, `403`, `404` |
+| `/api/v1/competitions/:compId/challenges/:chalId/hints` | POST | Add hint | `201` |
+| `/api/v1/competitions/:compId/challenges/:chalId/hints/:hintId/unlock` | POST | Unlock hint | `200`, `400` |
+
+#### Submissions
+| Endpoint | Method | Purpose | Expected Responses |
+| --- | --- | --- | --- |
 | `/api/v1/submissions` | POST | Submit flag | `201`, `400` invalid, `429` rate-limit |
-| `/api/v1/submissions` | GET | Submissions list | `200` list |
+| `/api/v1/submissions/public` | POST | Public submit | `201`, `400` |
+| `/api/v1/submissions/my` | GET | My submissions | `200` list |
+| `/api/v1/submissions/admin` | GET | Admin submissions | `200` list |
+| `/api/v1/submissions/:id` | GET | Submission detail | `200`, `404` |
+| `/api/v1/submissions/challenge/:chalId` | GET | Challenge submissions | `200` list |
+| `/api/v1/submissions/competition/:compId` | GET | Competition submissions | `200` list |
 
 #### Teams
 | Endpoint | Method | Purpose | Expected Responses |
@@ -67,8 +82,13 @@ The client app will align to the OpenAPI contract. Below is a condensed endpoint
 #### Leaderboards
 | Endpoint | Method | Purpose | Expected Responses |
 | --- | --- | --- | --- |
-| `/api/v1/leaderboard` | GET | Global leaderboard | `200` list |
-| `/api/v1/leaderboard/competition/:id` | GET | Competition leaderboard | `200`, `404` |
+| `/api/v1/leaderboard/global` | GET | Global leaderboard | `200` list |
+| `/api/v1/leaderboard/competition/:compId` | GET | Competition leaderboard | `200`, `404` |
+| `/api/v1/leaderboard/competition/:compId/team` | GET | Team leaderboard | `200` list |
+| `/api/v1/leaderboard/user/:userId/competition/:compId` | GET | User rank | `200`, `404` |
+| `/api/v1/leaderboard/my/competition/:compId` | GET | My rank | `200` |
+| `/api/v1/leaderboard/team/:teamId/competition/:compId` | GET | Team rank | `200`, `404` |
+| `/api/v1/leaderboard/live/:compId` | GET | Live leaderboard | `200` stream |
 
 #### Announcements + Notifications
 | Endpoint | Method | Purpose | Expected Responses |
@@ -82,8 +102,15 @@ The client app will align to the OpenAPI contract. Below is a condensed endpoint
 | --- | --- | --- | --- |
 | `/api/v1/certificates/request` | POST | Request certificate | `201`, `400`, `404` |
 | `/api/v1/certificates/verify/:code` | GET | Verify | `200` valid/invalid |
-| `/api/v1/files/:id/download` | GET | Download asset | `200`, `404` |
-| `/api/v1/health/*` | GET | Health checks | `200` |
+| `/api/v1/files/upload` | POST | Upload file | `201`, `400` |
+| `/api/v1/files` | GET | Files list | `200` |
+| `/api/v1/files/challenge/:chalId` | GET | Challenge files | `200` |
+| `/api/v1/files/download/:fileName` | GET | Download asset | `200`, `404` |
+| `/api/v1/files/:id` | GET/DELETE | File detail/delete | `200`, `404` |
+| `/api/v1/health` | GET | Health check | `200` |
+| `/api/v1/health/detailed` | GET | Detailed health | `200` |
+| `/api/v1/health/ready` | GET | Readiness | `200` |
+| `/api/v1/health/live` | GET | Liveness | `200` |
 
 ### Admin Panel (reference UX + data requirements)
 - Admin UI already covers all management surfaces with structured layout, role-based access, dashboard analytics, and documented API usage patterns. This is a strong reference for data models and endpoint expectations, and can be used for consistency in branding + data contracts.
