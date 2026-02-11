@@ -48,12 +48,11 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
     const [files, setFiles] = useState<FileRecord[]>([]);
     const [loadingFiles, setLoadingFiles] = useState(false);
     const [unlockingHint, setUnlockingHint] = useState<string | null>(null);
+    const [competitionId, setCompetitionId] = useState('')
 
     const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
 
     const countdown = useSubmissionCountdown(errorMessage);
-
-    const competitionId = ''
 
 
     const updateHints = (HintId: string, content: string) => {
@@ -74,6 +73,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
             );
 
             setChallenge(res.data);
+            setCompetitionId(res.data.competitionId)
             fetchFiles();
         } catch {
             toast.error("Failed to load challenge details");
@@ -137,7 +137,6 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
         try {
             setUnlockingHint(hintId);
 
-            console.log(competitionId);
             const res = await getApiClient().post(
                 API_ENDPOINTS.CHALLENGES.UNLOCK_HINT(competitionId, challengeId, hintId)
             );
