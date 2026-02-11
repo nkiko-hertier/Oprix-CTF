@@ -137,6 +137,7 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
         try {
             setUnlockingHint(hintId);
 
+            console.log(competitionId);
             const res = await getApiClient().post(
                 API_ENDPOINTS.CHALLENGES.UNLOCK_HINT(competitionId, challengeId, hintId)
             );
