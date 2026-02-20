@@ -362,6 +362,8 @@ export class ChallengesService {
             userId: userInstance.userId,
             duration: userInstance.duration,
             githubUrl: userInstance.githubUrl,
+            port: userInstance.port,
+            hostname: userInstance.hostname,
             createdAt: userInstance.createdAt,
             expiresAt: expirationTime,
             isExpired: false,

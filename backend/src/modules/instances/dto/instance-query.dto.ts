@@ -55,4 +55,25 @@ export class InstanceQueryDto {
   @Min(1)
   @Max(100)
   limit?: number = 10;
+
+  @ApiProperty({
+    example: 8080,
+    description: 'Filter by port number',
+    required: false,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  @Max(65535)
+  port?: number;
+
+  @ApiProperty({
+    example: 'localhost',
+    description: 'Filter by hostname',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  hostname?: string;
 }

@@ -41,6 +41,8 @@ export class InstancesService {
       userId: instance.userId,
       duration: instance.duration,
       githubUrl: instance.githubUrl,
+      port: instance.port || null,
+      hostname: instance.hostname || null,
       createdAt: instance.createdAt,
       expiresAt: this.getExpiresAt(instance),
       isExpired: this.isExpired(instance),
@@ -121,6 +123,8 @@ export class InstancesService {
           challengeId: createInstanceDto.challengeId,
           duration: challenge.timeLimit,
           githubUrl: challenge.url,
+          port: createInstanceDto.port || null,
+          hostname: createInstanceDto.hostname || null,
         },
       });
 
@@ -168,6 +172,17 @@ export class InstancesService {
 
       if (query.challengeId) {
         where.challengeId = query.challengeId;
+      }
+
+      if (query.port) {
+        where.port = query.port;
+      }
+
+      if (query.hostname) {
+        where.hostname = {
+          contains: query.hostname,
+          mode: 'insensitive',
+        };
       }
 
       // Get total count before pagination

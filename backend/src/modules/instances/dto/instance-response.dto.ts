@@ -48,4 +48,18 @@ export class InstanceResponseDto {
     description: 'User ID who created this instance',
   })
   userId: string;
+
+  @ApiProperty({
+    example: 8080,
+    description: 'The port number where the instance is running',
+    required: false,
+  })
+  port: number | null;
+
+  @ApiProperty({
+    example: 'localhost',
+    description: 'The hostname where the instance is running',
+    required: false,
+  })
+  hostname: string | null;
 }

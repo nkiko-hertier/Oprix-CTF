@@ -1,4 +1,4 @@
-import { IsString, IsUUID } from 'class-validator';
+import { IsString, IsUUID, IsOptional, IsInt, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateInstanceDto {
@@ -9,4 +9,24 @@ export class CreateInstanceDto {
   @IsString()
   @IsUUID()
   challengeId: string;
+
+  @ApiProperty({
+    example: 8080,
+    description: 'The port number where the instance is running',
+    required: false,
+  })
+  @IsInt()
+  @Min(1)
+  @Max(65535)
+  @IsOptional()
+  port?: number;
+
+  @ApiProperty({
+    example: 'localhost',
+    description: 'The hostname where the instance is running',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  hostname?: string;
 }
