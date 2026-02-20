@@ -336,6 +336,40 @@ export class ChallengesService {
 
     const challengeAny = challenge as any;
 
+    // Fetch instance data for dynamic challenges
+    let instance = null;
+    if (challengeAny.isDynamic && userId) {
+      const userInstance = await this.prisma.instance.findUnique({
+        where: {
+          userId_challengeId: {
+            userId,
+            challengeId,
+          },
+        },
+      });
+
+      // Check if instance exists and is not expired
+      if (userInstance) {
+        const expirationTime = new Date(
+          userInstance.createdAt.getTime() + userInstance.duration * 1000,
+        );
+        const isExpired = new Date() > expirationTime;
+
+        if (!isExpired) {
+          instance = {
+            id: userInstance.id,
+            challengeId: userInstance.challengeId,
+            userId: userInstance.userId,
+            duration: userInstance.duration,
+            githubUrl: userInstance.githubUrl,
+            createdAt: userInstance.createdAt,
+            expiresAt: expirationTime,
+            isExpired: false,
+          };
+        }
+      }
+    }
+
     return {
       ...challenge,
       isSolved: userId
@@ -353,6 +387,7 @@ export class ChallengesService {
           isUnlocked: false,
           content: undefined,
         })) || [],
+      instance,
       submissions: undefined,
       flag: undefined,
       flagHash: undefined,
