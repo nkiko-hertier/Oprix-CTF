@@ -337,7 +337,7 @@ export class ChallengesService {
     const challengeAny = challenge as any;
 
     // Fetch instance data for dynamic challenges
-    let instance = null;
+    let instance: any = null; // [IMPROVEMENT] need a Ts type
     if (challengeAny.isDynamic && userId) {
       const userInstance = await this.prisma.instance.findUnique({
         where: {
