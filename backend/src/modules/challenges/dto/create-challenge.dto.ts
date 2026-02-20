@@ -53,11 +53,12 @@ export class CreateChallengeDto {
   @Max(1000)
   points: number;
 
-  @ApiProperty({ example: 'flag{sql_1nj3ct10n_m4st3r}', description: 'The flag to submit' })
+  @ApiProperty({ example: 'flag{sql_1nj3ct10n_m4st3r}', description: 'The flag to submit', required: false })
   @IsString()
   @MinLength(5)
   @MaxLength(200)
-  flag: string;
+  @IsOptional()
+  flag?: string;
 
   @ApiProperty({ 
     example: false, 
@@ -91,6 +92,15 @@ export class CreateChallengeDto {
   @IsUrl()
   @IsOptional()
   url?: string;
+
+  @ApiProperty({ 
+    example: 'https://storage.example.com/challenges/sqli.zip', 
+    description: 'URL to challenge file or resource', 
+    required: false 
+  })
+  @IsUrl()
+  @IsOptional()
+  File_URL?: string;
 
   @ApiProperty({
     example: { author: 'John Doe', source: 'DefCon 2023', docker_image: 'myctf/sqli:latest' },

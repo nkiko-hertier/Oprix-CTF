@@ -53,8 +53,21 @@ export class ChallengesService {
   }
 
     try {
-      const { hash: flagHash, salt: flagSalt } =
-        this.cryptoService.hashFlag(createChallengeDto.flag);
+      // Validate: at least one of flag or File_URL must be provided
+      if (!createChallengeDto.flag && !createChallengeDto.File_URL) {
+        throw new BadRequestException(
+          'Either a flag or File_URL must be provided for the challenge',
+        );
+      }
+
+      // Hash flag only if provided
+      let flagHash: string | null = null;
+      let flagSalt: string | null = null;
+      if (createChallengeDto.flag) {
+        const hashed = this.cryptoService.hashFlag(createChallengeDto.flag);
+        flagHash = hashed.hash;
+        flagSalt = hashed.salt;
+      }
 
       const challenge = await this.prisma.challenge.create({
         data: {
@@ -64,6 +77,7 @@ export class ChallengesService {
           points: createChallengeDto.points,
           flagHash,
           flagSalt,
+          File_URL: createChallengeDto.File_URL || null,
           caseSensitive: createChallengeDto.caseSensitive || false,
           normalizeFlag: createChallengeDto.normalizeFlag ?? true,
           competitionId: createChallengeDto.competitionId || null,

@@ -70,6 +70,14 @@ export class SubmissionsService {
 
     // SECURITY: Validate flag using secure hash comparison
     const challengeData = challenge as any; // Type assertion for new schema fields
+    
+    // Check if challenge accepts flag submissions
+    if (!challengeData.flagHash || !challengeData.flagSalt) {
+      throw new BadRequestException(
+        'This challenge does not accept flag submissions. It may use a file-based verification system.',
+      );
+    }
+
     const isCorrect = this.cryptoService.verifyFlag(
       flag, 
       challengeData.flagHash, 
@@ -185,6 +193,14 @@ export class SubmissionsService {
   
     // Validate flag using secure hash comparison
     const challengeData = challenge as any;
+    
+    // Check if challenge accepts flag submissions
+    if (!challengeData.flagHash || !challengeData.flagSalt) {
+      throw new BadRequestException(
+        'This challenge does not accept flag submissions. It may use a file-based verification system.',
+      );
+    }
+
     const isCorrect = this.cryptoService.verifyFlag(
       flag,
       challengeData.flagHash,
