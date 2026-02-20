@@ -27,6 +27,7 @@ model User {
   creatorAssignments   CompetitionCreator[] @relation("CreatorUser")
   creatorInvitesSent   CreatorInvite[]      @relation("InviteSender")
   createdHints         Hint[]
+  instances            Instance[]
   learningMaterials    LearningMaterial[]
   notifications        Notification[]
   profile              Profile?
@@ -103,7 +104,7 @@ model Challenge {
   description   String
   category      String?
   points        Int
-  flagHash      String
+  flagHash      String?
   caseSensitive Boolean      @default(false)
   normalizeFlag Boolean      @default(true)
   competitionId String?
@@ -115,13 +116,15 @@ model Challenge {
   isVisible     Boolean      @default(true)
   isDynamic     Boolean      @default(false)
   url           String?
+  File_URL      String?
   metadata      Json?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
-  flagSalt      String       @default("h3xsalt")
+  flagSalt      String?      @default("h3xsalt")
   competition   Competition? @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   files         File[]
   hints         Hint[]
+  instances     Instance[]
   scores        Score[]
   submissions   Submission[]
 
@@ -514,4 +517,23 @@ enum CreatorStatus {
   APPROVED
   REJECTED
   REVOKED
+}
+
+model Instance {
+  id          String    @id @default(uuid())
+  userId      String
+  challengeId String
+  duration    Int       @default(0)
+  githubUrl   String?
+  port        Int?
+  hostname    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([challengeId])
+  @@index([createdAt])
+  @@unique([userId, challengeId])
 }

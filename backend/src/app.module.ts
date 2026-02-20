@@ -19,6 +19,7 @@ import { MonitoringModule } from './modules/monitoring/monitoring.module';
 import { CertificatesModule } from './modules/certificates/certificates.module';
 import { AnnouncementsModule } from './modules/announcements/announcements.module';
 import { LearningMaterialsModule } from './modules/learning-materials/learning-materials.module';
+import { InstancesModule } from './modules/instances/instances.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { LearningMaterialsModule } from './modules/learning-materials/learning-m
     CertificatesModule,
     AnnouncementsModule,
     LearningMaterialsModule,
+    InstancesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
