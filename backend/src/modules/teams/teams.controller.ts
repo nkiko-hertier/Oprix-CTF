@@ -99,7 +99,7 @@ export class TeamsController {
     @Param('id') id: string,
     @CurrentUser() user: any,
   ) {
-    return this.teamsService.findMemeberShip(id, user.id);
+    return this.teamsService.findMemeberShip(user.id, id);
   }
 
   /**
