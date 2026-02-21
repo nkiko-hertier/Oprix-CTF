@@ -274,17 +274,11 @@ export class TeamsService {
   async findMemeberShip(userId?: string, competitionId?: string) {
 
     console.log('competitionId: ', competitionId, 'UserId: ', userId)
-    const membership = await this.prisma.teamMember.findFirst({
+    const membership = await this.prisma.registration.findFirst({
       where: {
-        userId: userId,
-        team: {
-          competitionId
-        }
+        userId,
+        competitionId
       },
-      select: {
-        role: true,
-        team: true
-      }
     });
 
     if (!membership) {
