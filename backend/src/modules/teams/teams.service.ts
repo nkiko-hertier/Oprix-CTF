@@ -272,11 +272,13 @@ export class TeamsService {
    * @param competitionId - Get competition id
    */
   async findMemeberShip(userId?: string, competitionId?: string) {
+
+    console.log('competitionId: ', competitionId, 'UserId: ', userId)
     const membership = await this.prisma.teamMember.findFirst({
       where: {
         userId: userId,
         team: {
-          competitionId: competitionId
+          competitionId
         }
       },
       select: {
@@ -288,6 +290,8 @@ export class TeamsService {
     if (!membership) {
       throw new NotFoundException('Membership not found');
     }
+
+    return membership;
   }
 
   /**
