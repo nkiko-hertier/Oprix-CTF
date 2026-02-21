@@ -106,6 +106,7 @@ export interface Competition {
     registrations: number
     challenges: number
   }
+  isRegistered?: boolean
 
 }
 
