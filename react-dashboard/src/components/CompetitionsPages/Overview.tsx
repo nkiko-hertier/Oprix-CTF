@@ -1,11 +1,29 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useState } from "react"
 import type { Competition } from "@/types"
 import { formatTimeAgoOrRemaining } from "@/lib/utils"
 import { CalendarDays, Clock, Flag, Shield, Trophy } from "lucide-react"
+import getApiClient from "@/lib/api-client"
 
 function Overview({ competition }: { competition: Competition }) {
+
+  const [memeberShip, setMemeberShip] = useState({});
+
+  
+  const fetchMemberShip = async () => {
+
+    if(competition && competition.isRegistered && competition.isTeamBased) {
+      const response = await getApiClient().get(`/teams/membership/${competition.id}`);
+      if (response){
+        setMemeberShip(response);
+      }
+    }
+  }
+
+  useEffect(()=> {
+    fetchMemberShip()
+  }, [])
   return (
     <div className="relative  mx-auto mt-8 bg-slate-800 p-6 rounded-md shadow-xl hover:shadow-2xl transition-all duration-300">
       {/* Title Section */}
@@ -29,7 +47,7 @@ function Overview({ competition }: { competition: Competition }) {
 
       {/* Description */}
       <p className="text-sm text-white/70 leading-relaxed mb-5">
-        {competition.description || "No description available."}
+        {competition.description || "No description available."} {competition.isRegistered && 'You are member' }
       </p>
 
       <div className="space-y-4 text-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
