@@ -89,6 +89,18 @@ export class TeamsController {
   ) {
     return this.teamsService.findOne(id, user.id);
   }
+  
+
+  @Get('/membership/:id')
+  @ApiOperation({ summary: 'Get team details' })
+  @ApiResponse({ status: 200, description: 'Team details retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Team not found' })
+  findMemeberShip(
+    @Param('id') id: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.teamsService.findMemeberShip(id, user.id);
+  }
 
   /**
    * Update team details (Captain only)

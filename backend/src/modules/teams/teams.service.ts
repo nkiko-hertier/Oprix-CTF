@@ -267,6 +267,30 @@ export class TeamsService {
   }
 
   /**
+   * Get team by ID
+   * @param userId - User requesting (for permission checks)
+   * @param competitionId - Get competition id
+   */
+  async findMemeberShip(userId?: string, competitionId?: string) {
+    const membership = await this.prisma.teamMember.findFirst({
+      where: {
+        userId: userId,
+        team: {
+          competitionId: competitionId
+        }
+      },
+      select: {
+        role: true,
+        team: true
+      }
+    });
+
+    if (!membership) {
+      throw new NotFoundException('Membership not found');
+    }
+  }
+
+  /**
    * Update team details (Captain only)
    * @param id - Team ID
    * @param updateTeamDto - Update data

@@ -293,43 +293,15 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                         Hints:
                                     </p>
 
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 flex gap-2 font-mono">
                                         {challenge.hints.map((hint) => {
                                             const isUnlocked = hints.some(h => h.id === hint.id && h.content);
                                             return (
                                             <div
                                                 key={hint.id}
-                                                className={`p-3 rounded-md border ${
-                                                    hint.isUnlocked
-                                                        ? "bg-green-500/10 border-green-500/50"
-                                                        : "bg-slate-800/50 border-slate-700"
-                                                }`}
                                             >
                                                 <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        {isUnlocked ? (
-                                                            <Unlock className="size-4 text-green-400" />
-                                                        ) : (
-                                                            <Lock className="size-4 text-slate-400" />
-                                                        )}
-                                                        <span className="text-sm font-medium text-slate-300">
-                                                            {
-                                                                isUnlocked ?
-                                                                <div>
-                                                                    Content: 
-                                                                    <span className="bg-slate-800 ml-2 p-1 px-2 rounded-md font-normal">
-                                                                    {hints.find(h => h.id === hint.id)?.content}
-                                                                    </span>
-                                                                </div>
-                                                                :  `Hint ${hint.order}`
-                                                            }
-                                                        </span>
-                                                        {!isUnlocked && hint.cost > 0 && (
-                                                            <span className="text-xs text-yellow-400">
-                                                                ({hint.cost} pts)
-                                                            </span>
-                                                        )}
-                                                    </div>
+                                                    
 
                                                     {!isUnlocked ? (
                                                         <button
@@ -356,9 +328,9 @@ const ChallengePopup: React.FC<ChallengePopupProps> = ({ challengeId, open, onCl
                                                             )}
                                                         </button>
                                                     ) : 
-                                                    <button className="px-3 py-1 bg-linear-to-l from-blue-500 to-purple-500 rounded-md text-xs text-white flex items-center gap-1">
+                                                    <button className="px-4 py-2 bg-slate-800 hover:bg-blue-600 rounded-md text-xs text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1">
                                                         <Unlock className="size-3" />
-                                                        Open
+                                                        {hints.find(h => h.id === hint.id)?.content}
                                                     </button>
                                                     }
                                                 </div>

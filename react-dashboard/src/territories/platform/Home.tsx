@@ -32,7 +32,7 @@ function PlatformHome() {
                     </div>
                     <div className='h-full flex items-end p-6 pl-10 relative'>
                         <h1 className='text-5xl anton-font'>Explore Competitions</h1>
-                        <p className='love-font text-5xl absolute text-yellow-500 top-[50px]'>Open opprtunities</p>
+                        <p className='love-font text-5xl absolute text-yellow-500 top-[50px]'>Open opportunities</p>
                     </div>
                 </GradientCard>
                 </Link>

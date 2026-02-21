@@ -125,6 +125,7 @@ export const JoinCompetition = ({ competition, isReged = false }: JoinCompetitio
         } catch (error: any) {
             console.error(error)
             if (error.response?.status === 409) {
+                location.href = `/platform/competition/${competition.id}#challanges`;
                 toast.warning("You or your team is already registered for this competition.");
                 setLoading(false);
             } else {
@@ -162,7 +163,7 @@ export const JoinCompetition = ({ competition, isReged = false }: JoinCompetitio
                         <p className='text-zinc-400'><strong className='flex text-white gap-2 items-center'><PiUsersThreeFill /> Participants:</strong> {competition._count.registrations}</p>
                     </div>
 
-                    {(competition.isTeamBased && competition.status == "REGISTRATION_OPEN") && (
+                    {(competition.isTeamBased && competition.status == "REGISTRATION_OPEN" && !isMember) && (
                         <div className="grid bg-white/10 p-3 py-6 rounded-md">
                             <div className='mb-5'>
                                 <h1 className='text-center text-xl'>You Need a team to join</h1>
