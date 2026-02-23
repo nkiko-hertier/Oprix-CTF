@@ -26,7 +26,7 @@ export class ChallengesService {
   constructor(
     private prisma: PrismaService,
     private cryptoService: CryptoService,
-  ) {}
+  ) { }
 
   /**
    * Create a new challenge (Admin/Competition Owner only)
@@ -36,21 +36,21 @@ export class ChallengesService {
     userId: string,
     competitionId?: string,
   ) {
-    if(competitionId){
+    if (competitionId) {
       const competition = await this.verifyCompetitionOwnership(
         competitionId,
         userId,
       );
-      
+
       if (
-      competition.status === 'ACTIVE' ||
-      competition.status === 'COMPLETED'
-    ) {
-      throw new BadRequestException(
-        'Cannot add challenges to active or completed competition',
-      );
+        competition.status === 'ACTIVE' ||
+        competition.status === 'COMPLETED'
+      ) {
+        throw new BadRequestException(
+          'Cannot add challenges to active or completed competition',
+        );
+      }
     }
-  }
 
     try {
       const { hash: flagHash, salt: flagSalt } =
@@ -60,22 +60,28 @@ export class ChallengesService {
         data: {
           title: createChallengeDto.title,
           description: createChallengeDto.description,
+          category: createChallengeDto.category,
           difficulty: createChallengeDto.difficulty,
+          challengeType: createChallengeDto.challengeType || 'STATIC',
+          externalUrl: createChallengeDto.externalUrl || null,
           points: createChallengeDto.points,
           flagHash,
           flagSalt,
           caseSensitive: createChallengeDto.caseSensitive || false,
           normalizeFlag: createChallengeDto.normalizeFlag ?? true,
           competitionId: createChallengeDto.competitionId || null,
+          isVisible: createChallengeDto.isVisible ?? true,
+          isDynamic: createChallengeDto.isDynamic || false,
+          url: createChallengeDto.url || null,
           hints: createChallengeDto.hints
             ? {
-                create: createChallengeDto.hints.map((hint, index) => ({
-                  content: hint,
-                  cost: 0,
-                  order: index + 1,
-                  creatorId: userId,
-                })),
-              }
+              create: createChallengeDto.hints.map((hint, index) => ({
+                content: hint,
+                cost: 0,
+                order: index + 1,
+                creatorId: userId,
+              })),
+            }
             : undefined,
         } as any,
         include: {
@@ -125,9 +131,9 @@ export class ChallengesService {
       const isOwner = competition.adminId === userId;
       let isApprovedCreator = false;
 
-      if (user?.role === 'CREATOR') {
+      if (user?.role === 'CREATOR' as any) {
         const creatorAssignment =
-          await this.prisma.competitionCreator.findUnique({
+          await (this.prisma as any).competitionCreator.findUnique({
             where: {
               competitionId_creatorId: {
                 competitionId,
@@ -162,6 +168,7 @@ export class ChallengesService {
 
     if (query.category) where.category = query.category;
     if (query.difficulty) where.difficulty = query.difficulty;
+    if (query.challengeType) where.challengeType = query.challengeType;
     if (query.search) {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
@@ -181,9 +188,9 @@ export class ChallengesService {
         _count: { select: { submissions: true } },
         submissions: userId
           ? {
-              where: { userId, isCorrect: true },
-              select: { id: true, createdAt: true },
-            }
+            where: { userId, isCorrect: true },
+            select: { id: true, createdAt: true },
+          }
           : false,
       },
       orderBy: [{ points: 'asc' }, { createdAt: 'asc' }],
@@ -216,6 +223,7 @@ export class ChallengesService {
 
     if (query.category) where.category = query.category;
     if (query.difficulty) where.difficulty = query.difficulty;
+    if (query.challengeType) where.challengeType = query.challengeType;
     if (query.search) {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
@@ -235,9 +243,9 @@ export class ChallengesService {
         _count: { select: { submissions: true } },
         submissions: userId
           ? {
-              where: { userId, isCorrect: true },
-              select: { id: true, createdAt: true },
-            }
+            where: { userId, isCorrect: true },
+            select: { id: true, createdAt: true },
+          }
           : false,
       },
       orderBy: [{ points: 'asc' }, { createdAt: 'asc' }],
@@ -264,7 +272,7 @@ export class ChallengesService {
     userId?: string,
   ) {
     const challenge = await this.prisma.challenge.findFirst({
-      where: { id: challengeId},
+      where: { id: challengeId },
       include: {
         competition: {
           select: {
@@ -286,9 +294,9 @@ export class ChallengesService {
         _count: { select: { submissions: true } },
         submissions: userId
           ? {
-              where: { userId, isCorrect: true },
-              select: { id: true, createdAt: true },
-            }
+            where: { userId, isCorrect: true },
+            select: { id: true, createdAt: true },
+          }
           : false,
       },
     });
@@ -578,9 +586,9 @@ export class ChallengesService {
       return competition;
     }
 
-    if (user?.role === 'CREATOR') {
+    if (user?.role === 'CREATOR' as any) {
       const creatorAssignment =
-        await this.prisma.competitionCreator.findUnique({
+        await (this.prisma as any).competitionCreator.findUnique({
           where: {
             competitionId_creatorId: {
               competitionId,
@@ -604,7 +612,7 @@ export class ChallengesService {
     userId: string,
   ): Promise<boolean> {
     const creatorAssignment =
-      await this.prisma.competitionCreator.findUnique({
+      await (this.prisma as any).competitionCreator.findUnique({
         where: {
           competitionId_creatorId: {
             competitionId,

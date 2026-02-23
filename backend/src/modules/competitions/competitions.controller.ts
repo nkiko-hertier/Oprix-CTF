@@ -73,6 +73,20 @@ export class CompetitionsController {
   }
 
   /**
+   * Get user's team for a competition (with invite code and stats)
+   */
+  @Get(':id/my-team')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: "Get my team for this competition (includes invite code)" })
+  @ApiResponse({ status: 200, description: 'Team info retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Authentication required' })
+  @ApiResponse({ status: 404, description: 'Competition not found' })
+  async getMyTeam(@Param('id') competitionId: string, @CurrentUser() user: any) {
+    return this.competitionsService.getMyTeam(competitionId, user.id);
+  }
+
+  /**
    * Get a specific competition by ID
    */
   @Get(':id')
@@ -85,9 +99,9 @@ export class CompetitionsController {
     return this.competitionsService.findOne(id, user?.id);
   }
 
- /**
-   * Get a specific competition by ID users progress
-   */
+  /**
+    * Get a specific competition by ID users progress
+    */
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get my registered competitions progres by id' })

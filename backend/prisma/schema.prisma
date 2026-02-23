@@ -98,28 +98,30 @@ model Competition {
 }
 
 model Challenge {
-  id            String       @id @default(uuid())
+  id            String         @id @default(uuid())
   title         String
   description   String
   category      String?
+  challengeType ChallengeType  @default(STATIC)
+  externalUrl   String?
   points        Int
   flagHash      String
   caseSensitive Boolean      @default(false)
   normalizeFlag Boolean      @default(true)
   competitionId String?
-  difficulty    Difficulty   @default(MEDIUM)
-  solveCount    Int          @default(0)
+  difficulty    Difficulty     @default(MEDIUM)
+  solveCount    Int            @default(0)
   maxAttempts   Int?
   timeLimit     Int?
-  isActive      Boolean      @default(true)
-  isVisible     Boolean      @default(true)
-  isDynamic     Boolean      @default(false)
+  isActive      Boolean        @default(true)
+  isVisible     Boolean        @default(true)
+  isDynamic     Boolean        @default(false)
   url           String?
   metadata      Json?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  flagSalt      String       @default("h3xsalt")
-  competition   Competition? @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  flagSalt      String         @default("h3xsalt")
+  competition   Competition?   @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   files         File[]
   hints         Hint[]
   scores        Score[]
@@ -130,6 +132,7 @@ model Challenge {
   @@index([difficulty])
   @@index([isActive])
   @@index([isVisible])
+  @@index([challengeType])
 }
 
 model Hint {
@@ -514,4 +517,10 @@ enum CreatorStatus {
   APPROVED
   REJECTED
   REVOKED
+}
+
+enum ChallengeType {
+  STATIC
+  DOWNLOAD
+  EXTERNAL_URL
 }

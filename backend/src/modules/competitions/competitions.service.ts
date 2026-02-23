@@ -31,6 +31,198 @@ export class CompetitionsService {
     private certificatesService: CertificatesService,
   ) { }
 
+  async getMyTeam(competitionId: string, userId: string) {
+    // Verify competition exists
+    const competition = await this.prisma.competition.findUnique({
+      where: { id: competitionId },
+      select: { id: true, name: true, isTeamBased: true },
+    });
+
+    if (!competition) {
+      throw new NotFoundException('Competition not found');
+    }
+
+    // Find user's team in this competition
+    // Check if user is captain
+    const captainTeam = await this.prisma.team.findFirst({
+      where: {
+        competitionId,
+        captainId: userId,
+      },
+      include: {
+        captain: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        },
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                email: true,
+                profile: {
+                  select: {
+                    avatarUrl: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { joinedAt: 'asc' },
+        },
+        registrations: {
+          where: { competitionId },
+          select: {
+            status: true,
+          },
+        },
+        _count: {
+          select: {
+            members: true,
+          },
+        },
+      },
+    });
+
+    // Check if user is a team member (not captain)
+    const memberTeam = !captainTeam
+      ? await this.prisma.team.findFirst({
+        where: {
+          competitionId,
+          members: {
+            some: { userId },
+          },
+        },
+        include: {
+          captain: {
+            select: {
+              id: true,
+              username: true,
+              email: true,
+            },
+          },
+          members: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  email: true,
+                  profile: {
+                    select: {
+                      avatarUrl: true,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: { joinedAt: 'asc' },
+          },
+          registrations: {
+            where: { competitionId },
+            select: {
+              status: true,
+            },
+          },
+          _count: {
+            select: {
+              members: true,
+            },
+          },
+        },
+      })
+      : null;
+
+    const team = captainTeam || memberTeam;
+
+    if (!team) {
+      return {
+        hasTeam: false,
+        message: 'You are not a member of any team in this competition',
+      };
+    }
+
+    // Calculate team score and rank
+    const teamScore = await this.prisma.score.aggregate({
+      where: {
+        competitionId,
+        teamId: team.id,
+      },
+      _sum: {
+        points: true,
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    // Get team's rank by comparing scores
+    const higherScoringTeams = await this.prisma.score.groupBy({
+      by: ['teamId'],
+      where: {
+        competitionId,
+        teamId: { not: team.id },
+      },
+      _sum: {
+        points: true,
+      },
+      having: {
+        points: {
+          _sum: {
+            gt: teamScore._sum.points || 0,
+          },
+        },
+      },
+    });
+
+    const rank = higherScoringTeams.length + 1;
+
+    // Determine user's role in team
+    const isCaptain = team.captainId === userId;
+    const userMembership = team.members.find((m) => m.userId === userId);
+
+    this.logger.log(`User ${userId} retrieved team info for competition ${competitionId}`);
+
+    return {
+      hasTeam: true,
+      team: {
+        id: team.id,
+        name: team.name,
+        description: team.description,
+        inviteCode: team.inviteCode,
+        maxSize: team.maxSize,
+        memberCount: (team as any)._count.members,
+        availableSlots: team.maxSize - (team as any)._count.members,
+        isActive: team.isActive,
+        createdAt: team.createdAt,
+      },
+      captain: team.captain,
+      members: team.members.map((member) => ({
+        id: member.user.id,
+        username: member.user.username,
+        email: member.user.email,
+        avatarUrl: member.user.profile?.avatarUrl,
+        role: member.role,
+        joinedAt: member.joinedAt,
+        isCurrentUser: member.userId === userId,
+      })),
+      userRole: isCaptain ? 'CAPTAIN' : userMembership?.role || 'MEMBER',
+      isCaptain,
+      canShareCode: true, // All members can share the code
+      canManageTeam: isCaptain,
+      registrationStatus: team.registrations[0]?.status || null,
+      stats: {
+        rank,
+        totalPoints: teamScore._sum.points || 0,
+        challengesSolved: teamScore._count._all || 0,
+      },
+    };
+  }
+
   /**
    * Create a new competition (Admin only)
    * @param createCompetitionDto - Competition data
@@ -113,7 +305,7 @@ export class CompetitionsService {
     }
 
     console.log('Filtering competitions with userId:', userId, 'and role:', user ?? 'N/A');
-    if(user.id && user.role && user.role == 'ADMIN') {
+    if (user.id && user.role && user.role == 'ADMIN') {
       where.adminId = user.id;
     } else {
       console.log('No userId or userRole provided, skipping adminId filter');

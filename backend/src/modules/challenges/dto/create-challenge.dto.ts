@@ -10,9 +10,13 @@ import {
   Min,
   Max,
   IsBoolean,
-  IsJSON,
   IsUrl,
 } from 'class-validator';
+
+/**
+ * Challenge types
+ */
+export type ChallengeType = 'STATIC' | 'DOWNLOAD' | 'EXTERNAL_URL';
 
 /**
  * DTO for creating a new challenge
@@ -59,19 +63,19 @@ export class CreateChallengeDto {
   @MaxLength(200)
   flag: string;
 
-  @ApiProperty({ 
-    example: false, 
-    description: 'Whether flag comparison should be case sensitive', 
-    required: false 
+  @ApiProperty({
+    example: false,
+    description: 'Whether flag comparison should be case sensitive',
+    required: false,
   })
   @IsBoolean()
   @IsOptional()
   caseSensitive?: boolean;
 
-  @ApiProperty({ 
-    example: true, 
-    description: 'Whether to normalize whitespace in flag comparison', 
-    required: false 
+  @ApiProperty({
+    example: true,
+    description: 'Whether to normalize whitespace in flag comparison',
+    required: false,
   })
   @IsBoolean()
   @IsOptional()
@@ -82,7 +86,11 @@ export class CreateChallengeDto {
   @IsOptional()
   isVisible?: boolean;
 
-  @ApiProperty({ example: false, description: 'Is challenge dynamic (instances per user)?', required: false })
+  @ApiProperty({
+    example: false,
+    description: 'Is challenge dynamic (instances per user)?',
+    required: false,
+  })
   @IsBoolean()
   @IsOptional()
   isDynamic?: boolean;
@@ -91,6 +99,25 @@ export class CreateChallengeDto {
   @IsUrl()
   @IsOptional()
   url?: string;
+
+  @ApiProperty({
+    enum: ['STATIC', 'DOWNLOAD', 'EXTERNAL_URL'],
+    example: 'STATIC',
+    description: 'Challenge type: STATIC (view in browser), DOWNLOAD (file download), EXTERNAL_URL (external service)',
+    required: false,
+  })
+  @IsEnum(['STATIC', 'DOWNLOAD', 'EXTERNAL_URL'])
+  @IsOptional()
+  challengeType?: ChallengeType;
+
+  @ApiProperty({
+    example: 'http://challenge.ctf.com:8080',
+    description: 'External URL for EXTERNAL_URL type challenges (e.g., remote service)',
+    required: false,
+  })
+  @IsUrl()
+  @IsOptional()
+  externalUrl?: string;
 
   @ApiProperty({
     example: { author: 'John Doe', source: 'DefCon 2023', docker_image: 'myctf/sqli:latest' },
@@ -109,8 +136,6 @@ export class CreateChallengeDto {
   @IsString({ each: true })
   @IsOptional()
   hints?: string[];
-
-  
 
   @ApiProperty({
     example: ['xxxx-xxxxxx-xxxxxx-xxx'],

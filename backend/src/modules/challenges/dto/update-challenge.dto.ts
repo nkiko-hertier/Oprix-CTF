@@ -63,6 +63,15 @@ export class ChallengeQueryDto {
   @IsOptional()
   difficulty?: 'BEGINNER' | 'EASY' | 'MEDIUM' | 'HARD' | 'EXPERT';
 
+  @ApiProperty({
+    enum: ['STATIC', 'DOWNLOAD', 'EXTERNAL_URL'],
+    required: false,
+    description: 'Filter by challenge type',
+  })
+  @IsEnum(['STATIC', 'DOWNLOAD', 'EXTERNAL_URL'])
+  @IsOptional()
+  challengeType?: 'STATIC' | 'DOWNLOAD' | 'EXTERNAL_URL';
+
   @ApiProperty({ required: false, description: 'Show solved challenges only' })
   @IsOptional()
   solved?: boolean;
