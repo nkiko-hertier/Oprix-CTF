@@ -120,7 +120,7 @@ model Challenge {
   metadata      Json?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  flagSalt      String         @default("h3xsalt")
+  flagSalt      String
   competition   Competition?   @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   files         File[]
   hints         Hint[]
